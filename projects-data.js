@@ -63,12 +63,12 @@ function buildProject(p) {
 
 window.PROJECTS_DATA = RAW_PROJECTS.map(buildProject);
 
-// Carousel + grid only need a few fields; every project links to project.html?slug=…
+// Carousel + grid only need a few fields; every project links to /project?slug=…
 window.PROJECTS = window.PROJECTS_DATA.map(function (p) {
   return {
     title: p.title,
     loc: p.location,
-    file: "project.html?slug=" + encodeURIComponent(p.slug),
+    file: "/project?slug=" + encodeURIComponent(p.slug),
     img: p.cover_url || ""
   };
 });

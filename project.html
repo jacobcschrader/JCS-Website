@@ -10,15 +10,15 @@
 <body>
 
 <nav class="nav nav--over-hero">
-  <a class="nav__brand" href="index.html">JCS<span>.</span></a>
+  <a class="nav__brand" href="/">JCS<span>.</span></a>
   <button class="nav__toggle" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="nav__links">
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="projects.html" class="active">Projects</a>
-    <a href="architecture.html">Architecture</a>
-    <a href="films.html">Films</a>
-    <a href="contact.html">Contact</a>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/projects" class="active">Projects</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/films">Films</a>
+    <a href="/contact">Contact</a>
   </div>
 </nav>
 
@@ -26,13 +26,13 @@
 
 <footer class="footer footer--min">
   <div class="wrap footer__center">
-    <a class="footer__brand" href="index.html">JCS</a>
+    <a class="footer__brand" href="/">JCS</a>
     <nav class="footer__links">
-      <a href="projects.html">Projects</a>
-      <a href="architecture.html">Architecture</a>
-      <a href="films.html">Films</a>
-      <a href="about.html">About</a>
-      <a href="contact.html">Contact</a>
+      <a href="/projects">Projects</a>
+      <a href="/architecture">Architecture</a>
+      <a href="/films">Films</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
     </nav>
     <div class="footer__meta">
       <a href="mailto:jacob@thevisaro.com">jacob@thevisaro.com</a>
@@ -58,7 +58,7 @@
     root.innerHTML = '<section class="section"><div class="wrap center" style="padding-top:7rem;max-width:600px;margin-inline:auto">'+html+'</div></section>';
   }
   function notFound(){
-    message('<h1 class="h-section">Project not found.</h1><p class="lead" style="margin-top:1rem"><a href="projects.html" style="text-decoration:underline;text-underline-offset:5px">Back to projects</a></p>');
+    message('<h1 class="h-section">Project not found.</h1><p class="lead" style="margin-top:1rem"><a href="/projects" style="text-decoration:underline;text-underline-offset:5px">Back to projects</a></p>');
   }
 
   // Render the project page from a normalized object {p, prev, next}.
@@ -106,8 +106,8 @@
     var hasGallery = galleryUrls.length > 0;
 
     var nav = '<div class="proj-nav">'+
-      (prev ? '<a href="project.html?slug='+encodeURIComponent(prev.slug)+'"><small>Previous</small><b>'+esc(prev.title)+'</b></a>' : '<span></span>')+
-      (next ? '<a class="next" href="project.html?slug='+encodeURIComponent(next.slug)+'"><small>Next</small><b>'+esc(next.title)+'</b></a>' : '')+
+      (prev ? '<a href="/project?slug='+encodeURIComponent(prev.slug)+'"><small>Previous</small><b>'+esc(prev.title)+'</b></a>' : '<span></span>')+
+      (next ? '<a class="next" href="/project?slug='+encodeURIComponent(next.slug)+'"><small>Next</small><b>'+esc(next.title)+'</b></a>' : '')+
       '</div>';
 
     root.innerHTML =
