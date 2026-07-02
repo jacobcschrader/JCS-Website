@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact — Jacob Schrader</title>
+<meta name="description" content="Get in touch with Jacob Schrader to commission architectural photography or film.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav__brand" href="index.html">JCS<span>.</span></a>
+  <button class="nav__toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  <div class="nav__links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="projects.html">Projects</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="films.html">Films</a>
+    <a href="design.html">Design</a>
+    <a href="contact.html" class="active">Contact</a>
+  </div>
+</nav>
+
+<section class="csection">
+  <div class="wrap">
+    <div class="csplit">
+      <!-- INTRO + DETAILS -->
+      <div class="csplit__intro hero-in">
+        <span class="eyebrow">Contact</span>
+        <h1 class="display" style="font-size:clamp(1.7rem,3vw,2.5rem)">Let's begin<br>a conversation.</h1>
+        <p class="lead">Tell me about your project — the space, the timeline, and what you're hoping to capture. I reply to every enquiry personally, usually within 24 hours.</p>
+        <div class="cdetails">
+          <div class="cdetail"><span class="k">Email</span><a href="mailto:jacob@thevisaro.com">jacob@thevisaro.com</a></div>
+          <div class="cdetail"><span class="k">Phone</span><a href="tel:+14088248719">(408) 824-8719</a></div>
+          <div class="cdetail"><span class="k">Based in</span><span class="v">Diablo, CA — serving worldwide</span></div>
+          <div class="cdetail"><span class="k">Follow</span><a href="#">Instagram</a></div>
+        </div>
+      </div>
+
+      <!-- FORM CARD -->
+      <form class="cform reveal" onsubmit="event.preventDefault(); this.querySelector('.form-msg').style.display='block';">
+        <div class="cform__head">Send an enquiry</div>
+        <div class="cform__sub">Fields marked * are required.</div>
+        <div class="crow">
+          <div class="cfield">
+            <label for="name">Name *</label>
+            <input id="name" name="name" type="text" placeholder="Your full name" required>
+          </div>
+          <div class="cfield">
+            <label for="phone">Phone <span class="opt">(optional)</span></label>
+            <input id="phone" name="phone" type="tel" placeholder="(000) 000-0000">
+          </div>
+        </div>
+        <div class="cfield">
+          <label for="email">Email *</label>
+          <input id="email" name="email" type="email" placeholder="you@email.com" required>
+        </div>
+        <div class="cfield">
+          <label for="type">Project type</label>
+          <select id="type" name="type">
+            <option>Architectural Photography</option>
+            <option>Film / Videography</option>
+            <option>Aerial &amp; Drone</option>
+            <option>Full Campaign (Stills + Film)</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="cfield">
+          <label for="message">About the project *</label>
+          <textarea id="message" name="message" placeholder="Location, scope, timeline, and anything else worth knowing…" required></textarea>
+        </div>
+        <button class="btn btn--solid" type="submit">Send enquiry</button>
+        <p class="form-msg muted" style="display:none">
+          Thank you — your message has been noted. <em>(Connect this form to email or a service like Formspree to receive submissions.)</em>
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="footer footer--min">
+  <div class="wrap footer__center">
+    <a class="footer__brand" href="index.html">JCS</a>
+    <nav class="footer__links">
+      <a href="projects.html">Projects</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="films.html">Films</a>
+      <a href="design.html">Design</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="footer__meta">
+      <a href="mailto:jacob@thevisaro.com">jacob@thevisaro.com</a>
+      <span class="sep">·</span>
+      <a href="tel:+14088248719">(408) 824-8719</a>
+      <span class="sep">·</span>
+      <a href="#">Instagram</a>
+    </div>
+    <div class="footer__base">© 2026 Jacob Schrader · Real Estate · Architecture · Design</div>
+  </div>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>

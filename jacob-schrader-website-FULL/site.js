@@ -1,0 +1,292 @@
+// Mark JS active, then trigger the first-load hero intro after first paint
+document.documentElement.classList.add('js');
+window.addEventListener('DOMContentLoaded', function () {
+  setTimeout(function () { document.documentElement.classList.add('is-loaded'); }, 80);
+});
+
+// Shared site behaviour: sticky nav, mobile menu, scroll reveals
+(function () {
+  var nav = document.querySelector('.nav');
+  var toggle = document.querySelector('.nav__toggle');
+  var links = document.querySelector('.nav__links');
+
+  function onScroll() {
+    if (!nav) return;
+    if (window.scrollY > 40) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if (toggle && links) {
+    toggle.addEventListener('click', function () {
+      links.classList.toggle('open');
+    });
+    links.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () { links.classList.remove('open'); });
+    });
+  }
+
+  // Reveal on scroll — snappy, with a light stagger for grouped items
+  var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+  document.querySelectorAll('.reveal').forEach(function (el) {
+    if (!reduceMotion && el.parentElement) {
+      var sibs = [].slice.call(el.parentElement.children).filter(function (c) { return c.classList.contains('reveal'); });
+      var idx = sibs.indexOf(el);
+      if (idx > 0) el.style.transitionDelay = Math.min(idx, 6) * 65 + 'ms';
+    }
+    io.observe(el);
+  });
+
+
+  /* ---------------------------------------------------------------
+     Auto-playing, muted-by-default video with a click-to-unmute button.
+     Usage: add  data-video="videos/clip.mp4"  (and optionally
+     data-poster="images/clip.jpg") to any .ph / .hero-photo /
+     .hero__media-fill element. Everything below is automatic.
+     --------------------------------------------------------------- */
+  var ICON_MUTED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
+  var ICON_SOUND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>';
+
+  var clips = [];  // every enhanced clip: { video, btn }
+
+  function setMuted(clip, muted) {
+    clip.video.muted = muted;
+    if (clip.btn) {
+      clip.btn.innerHTML = muted ? ICON_MUTED : ICON_SOUND;
+      clip.btn.setAttribute('aria-label', muted ? 'Unmute video' : 'Mute video');
+    }
+  }
+  function tryPlay(v) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+
+  function makeButton(clip) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'vid-sound';
+    btn.setAttribute('aria-label', 'Unmute video');
+    btn.innerHTML = ICON_MUTED;
+    btn.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      var turnOn = clip.video.muted;
+      // Only one clip plays sound at a time — mute every other clip first.
+      if (turnOn) clips.forEach(function (c) { if (c !== clip) setMuted(c, true); });
+      setMuted(clip, !turnOn);
+      if (turnOn) tryPlay(clip.video);
+    });
+    return btn;
+  }
+
+  // Play only what's on screen; pause (and mute) clips that scroll away.
+  var vio = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var clip = e.target._clip;
+      if (!clip) return;
+      if (e.isIntersecting) {
+        tryPlay(clip.video);
+      } else {
+        clip.video.pause();
+        if (!clip.video.muted) setMuted(clip, true);   // keep the one-sound rule tidy
+      }
+    });
+  }, { threshold: 0.4 });
+
+  function enhanceOne(host) {
+    if (host._clip) return;                       // already enhanced
+    var src = host.getAttribute('data-video');
+    if (!src) return;
+
+    var video = document.createElement('video');
+    video.className = 'vid';
+    video.muted = true;            // muted by default — required for autoplay
+    video.defaultMuted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.preload = 'metadata';
+    if (host.getAttribute('data-poster')) video.poster = host.getAttribute('data-poster');
+    video.src = src;
+
+    var clip = { video: video, btn: null };
+    host._clip = clip;
+
+    // Only swap in the video (and show the sound button) once it actually loads.
+    video.addEventListener('loadeddata', function () {
+      host.classList.add('has-video');
+      clip.btn = makeButton(clip);
+      host.appendChild(clip.btn);
+      clips.push(clip);
+      vio.observe(host);          // start watching visibility -> play/pause
+    });
+    // If the file is missing, leave the placeholder untouched.
+    video.addEventListener('error', function () {
+      if (video.parentNode) video.parentNode.removeChild(video);
+    });
+
+    host.insertBefore(video, host.firstChild);
+  }
+
+  // Public: enhance any [data-video] elements within scope (default: whole doc).
+  // Safe to call repeatedly — already-enhanced hosts are skipped. Used by
+  // dynamically-rendered pages (e.g. project.html) after they build their DOM.
+  function enhance(scope) {
+    (scope || document).querySelectorAll('[data-video]').forEach(enhanceOne);
+  }
+  window.JSVideos = { enhance: enhance };
+  enhance(document);
+})();
+
+/* ---------------------------------------------------------------------
+   Projects carousel (coverflow) — builds from window.PROJECTS, peeking
+   neighbours, arrows, click-to-center, swipe, and seamless infinite loop.
+   --------------------------------------------------------------------- */
+(async function () {
+  var car = document.getElementById('pcar');
+  if (!car) return;
+  if (window.PROJECTS_READY) { try { await window.PROJECTS_READY; } catch (e) {} }
+  if (!window.PROJECTS || !window.PROJECTS.length) return;
+
+  var base = window.PROJECTS, N = base.length;
+  var viewport = car.querySelector('.pcar__viewport');
+  var track = car.querySelector('.pcar__track');
+  var locEl = car.querySelector('.pcar__loc');
+  var REPS = 3;                 // triple the list for an infinite feel
+  var active = N;               // start in the middle copy
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+
+  var html = '';
+  for (var r = 0; r < REPS; r++) {
+    for (var i = 0; i < N; i++) {
+      var p = base[i];
+      var media = p.img
+        ? '<div class="ph ph--wide"><img src="' + esc(p.img) + '" alt="' + esc(p.title) + '"></div>'
+        : '<div class="ph ph--wide"></div>';
+      html += '<div class="pslide" data-i="' + (r*N+i) + '" data-href="' + esc(p.file) + '" data-base="' + i + '">' +
+        media +
+        '<div class="pslide__overlay"><div class="pslide__title">' + esc(p.title) + '</div>' +
+        '<span class="pslide__btn">View project</span></div></div>';
+    }
+  }
+  track.innerHTML = html;
+  var slides = Array.prototype.slice.call(track.children);
+
+  function center(i, instant) {
+    var slide = slides[i]; if (!slide) return;
+    if (instant) track.classList.add('no-anim');   // freeze track + slide transitions
+    var x = viewport.clientWidth / 2 - (slide.offsetLeft + slide.offsetWidth / 2);
+    track.style.transform = 'translateX(' + x + 'px)';
+    slides.forEach(function (s) { s.classList.toggle('is-active', s === slide); });
+    if (locEl) locEl.textContent = base[+slide.dataset.base].loc;
+    if (instant) { void track.offsetWidth; track.classList.remove('no-anim'); }   // re-enable after reflow
+  }
+
+  function go(n) { active += n; center(active); }
+
+  // seamless loop: after the animated move lands in an outer copy, jump
+  // back to the equivalent middle slide with no transition.
+  track.addEventListener('transitionend', function (e) {
+    if (e.propertyName !== 'transform') return;
+    if (active < N) { active += N; center(active, true); }
+    else if (active >= 2 * N) { active -= N; center(active, true); }
+  });
+
+  car.querySelector('.pcar__arrow--next').addEventListener('click', function () { go(1); });
+  car.querySelector('.pcar__arrow--prev').addEventListener('click', function () { go(-1); });
+
+  track.addEventListener('click', function (e) {
+    var slide = e.target.closest('.pslide'); if (!slide) return;
+    if (e.target.closest('.pslide__btn')) {
+      if (slide.classList.contains('is-active')) location.href = slide.dataset.href;
+      return;
+    }
+    if (!slide.classList.contains('is-active')) { active = +slide.dataset.i; center(active); }
+  });
+
+  // drag / swipe
+  var down = null;
+  viewport.addEventListener('pointerdown', function (e) { down = e.clientX; viewport.classList.add('dragging'); });
+  window.addEventListener('pointerup', function (e) {
+    if (down === null) return;
+    var dx = e.clientX - down; down = null; viewport.classList.remove('dragging');
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+
+  // autoplay (pauses on hover / interaction)
+  var timer = setInterval(function () { go(1); }, 4000);
+  function pause(){ clearInterval(timer); }
+  function resume(){ pause(); timer = setInterval(function () { go(1); }, 4000); }
+  car.addEventListener('mouseenter', pause);
+  car.addEventListener('mouseleave', resume);
+  car.addEventListener('pointerdown', resume);
+
+  window.addEventListener('resize', function () { center(active, true); });
+  center(active, true);
+  // recenter once images/fonts settle
+  setTimeout(function () { center(active, true); }, 250);
+  window.addEventListener('load', function () { center(active, true); });
+})();
+
+/* ---------------------------------------------------------------------
+   Custom inverting cursor — a trailing ring + center dot that grows
+   over interactive elements. Fine-pointer, non-reduced-motion only.
+   --------------------------------------------------------------------- */
+(function () {
+  if (!window.matchMedia) return;
+  if (!matchMedia('(pointer: fine)').matches) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var ring = document.createElement('div'); ring.className = 'cursor';
+  var dot = document.createElement('div'); dot.className = 'cursor-dot';
+  document.body.appendChild(ring); document.body.appendChild(dot);
+  document.documentElement.classList.add('has-cursor');
+
+  var mx = window.innerWidth / 2, my = window.innerHeight / 2, rx = mx, ry = my;
+  var hoverSel = 'a, button, input, textarea, select, .work, .proj-card, .pslide, .reel, .pcar__arrow, .nav__toggle, .vid-sound, [role="button"]';
+
+  // Blue trail — a small pool of fading dots spawned as the cursor moves.
+  var pool = [], POOL = 18, pi = 0, lastX = mx, lastY = my, canAnim = !!document.body.animate;
+  for (var i = 0; i < POOL; i++) { var d = document.createElement('div'); d.className = 'cursor-trail'; document.body.appendChild(d); pool.push(d); }
+  var darkSel = '.hero, .hero-photo, .section--navy, .footer, .ph, .pslide';
+  function overDark(x, y) {
+    var el = document.elementFromPoint(x, y);
+    return !!(el && el.closest && el.closest(darkSel));
+  }
+  function spawnTrail(x, y) {
+    if (!canAnim) return;
+    var el = pool[pi]; pi = (pi + 1) % POOL;
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+    el.style.background = overDark(x, y) ? '#ffffff' : '#0f2240';
+    el.animate(
+      [{ opacity: 0.45, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.2)' }],
+      { duration: 700, easing: 'cubic-bezier(.22,1,.36,1)' }
+    );
+  }
+
+  document.addEventListener('mousemove', function (e) {
+    mx = e.clientX; my = e.clientY;
+    dot.style.transform = 'translate(' + mx + 'px,' + my + 'px)';
+    var dx = mx - lastX, dy = my - lastY;
+    if (dx * dx + dy * dy > 160) { spawnTrail(mx, my); lastX = mx; lastY = my; }
+  });
+  (function loop() {
+    rx += (mx - rx) * 0.2; ry += (my - ry) * 0.2;
+    ring.style.transform = 'translate(' + rx + 'px,' + ry + 'px)';
+    requestAnimationFrame(loop);
+  })();
+
+  document.addEventListener('mouseover', function (e) {
+    if (e.target.closest && e.target.closest(hoverSel)) ring.classList.add('is-hover');
+  });
+  document.addEventListener('mouseout', function (e) {
+    if (e.target.closest && e.target.closest(hoverSel)) ring.classList.remove('is-hover');
+  });
+  document.addEventListener('mouseleave', function () { ring.style.opacity = 0; dot.style.opacity = 0; });
+  document.addEventListener('mouseenter', function () { ring.style.opacity = 1; dot.style.opacity = 1; });
+})();

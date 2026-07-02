@@ -1,0 +1,15 @@
+# PROJECT INFO — fill in the blanks, then tell me and I'll update the site.
+# Leave a field blank to hide it. Photo count is detected automatically.
+# For videos, put the file in this folder named horizontal.mp4 / vertical.mp4
+# (web-sized) and set the matching line to "yes".
+
+TITLE: Rincon Point
+LOCATION: Carpinteria, CA
+YEAR: 2026
+HEADLINE:
+DESCRIPTION:
+SHOT FOR:
+BROKERAGE:
+PRICE:
+HORIZONTAL VIDEO (yes/no): no
+VERTICAL VIDEO (yes/no): no
