@@ -156,8 +156,12 @@ window.addEventListener('DOMContentLoaded', function () {
   var viewport = car.querySelector('.pcar__viewport');
   var track = car.querySelector('.pcar__track');
   var locEl = car.querySelector('.pcar__loc');
-  var REPS = 3;                 // triple the list for an infinite feel
-  var active = N;               // start in the middle copy
+  // With a single project there's nothing to loop — show one centered
+  // slide and hide the arrows (drafts are filtered out of PROJECTS).
+  var single = N < 2;
+  var REPS = single ? 1 : 3;    // triple the list for an infinite feel
+  var active = single ? 0 : N;  // start in the middle copy
+  if (single) car.querySelectorAll('.pcar__arrow').forEach(function (a) { a.style.display = 'none'; });
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
 
@@ -166,7 +170,7 @@ window.addEventListener('DOMContentLoaded', function () {
     for (var i = 0; i < N; i++) {
       var p = base[i];
       var media = p.img
-        ? '<div class="ph ph--wide"><img src="' + esc(p.img) + '" alt="' + esc(p.title) + '"></div>'
+        ? '<div class="ph ph--wide"><img src="' + esc(p.img) + '" alt="' + esc(p.title) + '" loading="lazy" decoding="async"></div>'
         : '<div class="ph ph--wide"></div>';
       html += '<div class="pslide" data-i="' + (r*N+i) + '" data-href="' + esc(p.file) + '" data-base="' + i + '">' +
         media +
@@ -187,7 +191,7 @@ window.addEventListener('DOMContentLoaded', function () {
     if (instant) { void track.offsetWidth; track.classList.remove('no-anim'); }   // re-enable after reflow
   }
 
-  function go(n) { active += n; center(active); }
+  function go(n) { if (single) return; active += n; center(active); }
 
   // seamless loop: after the animated move lands in an outer copy, jump
   // back to the equivalent middle slide with no transition.
@@ -218,10 +222,10 @@ window.addEventListener('DOMContentLoaded', function () {
     if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
   });
 
-  // autoplay (pauses on hover / interaction)
-  var timer = setInterval(function () { go(1); }, 4000);
+  // autoplay (pauses on hover / interaction; off for a single slide)
+  var timer = single ? null : setInterval(function () { go(1); }, 4000);
   function pause(){ clearInterval(timer); }
-  function resume(){ pause(); timer = setInterval(function () { go(1); }, 4000); }
+  function resume(){ pause(); if (!single) timer = setInterval(function () { go(1); }, 4000); }
   car.addEventListener('mouseenter', pause);
   car.addEventListener('mouseleave', resume);
   car.addEventListener('pointerdown', resume);
@@ -289,4 +293,82 @@ window.addEventListener('DOMContentLoaded', function () {
   });
   document.addEventListener('mouseleave', function () { ring.style.opacity = 0; dot.style.opacity = 0; });
   document.addEventListener('mouseenter', function () { ring.style.opacity = 1; dot.style.opacity = 1; });
+})();
+
+/* ---------------------------------------------------------------------
+   Fullscreen gallery lightbox — JSLightbox.open(urls, startIndex).
+   Arrow keys / on-screen arrows / swipe to navigate; Esc, the × button
+   or a click on the backdrop to close. Neighbouring photos are
+   preloaded so paging feels instant.
+   --------------------------------------------------------------------- */
+(function () {
+  var urls = [], idx = 0, box = null, img = null, count = null, lastFocus = null;
+
+  function build() {
+    box = document.createElement('div');
+    box.className = 'lb';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-label', 'Photo viewer');
+    box.innerHTML =
+      '<figure class="lb__stage"><img class="lb__img" alt=""></figure>' +
+      '<button class="lb__close" aria-label="Close viewer">&#10005;</button>' +
+      '<button class="lb__arrow lb__arrow--prev" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>' +
+      '<button class="lb__arrow lb__arrow--next" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>' +
+      '<div class="lb__count" aria-hidden="true"></div>';
+    document.body.appendChild(box);
+    img = box.querySelector('.lb__img');
+    count = box.querySelector('.lb__count');
+    box.querySelector('.lb__close').addEventListener('click', close);
+    box.querySelector('.lb__arrow--prev').addEventListener('click', function (e) { e.stopPropagation(); go(-1); });
+    box.querySelector('.lb__arrow--next').addEventListener('click', function (e) { e.stopPropagation(); go(1); });
+    box.addEventListener('click', function (e) {
+      if (e.target === box || e.target.classList.contains('lb__stage')) close();
+    });
+    // swipe
+    var x0 = null;
+    box.addEventListener('pointerdown', function (e) { x0 = e.clientX; });
+    box.addEventListener('pointerup', function (e) {
+      if (x0 === null) return;
+      var dx = e.clientX - x0; x0 = null;
+      if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+    });
+  }
+
+  function show() {
+    img.src = urls[idx];
+    count.textContent = (idx + 1) + ' / ' + urls.length;
+    [idx + 1, idx - 1].forEach(function (n) {
+      if (n >= 0 && n < urls.length) { (new Image()).src = urls[n]; }
+    });
+  }
+  function go(n) { if (urls.length < 2) return; idx = (idx + n + urls.length) % urls.length; show(); }
+
+  function onKey(e) {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowRight') go(1);
+    else if (e.key === 'ArrowLeft') go(-1);
+  }
+
+  function open(list, start) {
+    if (!list || !list.length) return;
+    urls = list; idx = Math.min(Math.max(start || 0, 0), list.length - 1);
+    if (!box) build();
+    box.classList.toggle('lb--single', urls.length < 2);
+    lastFocus = document.activeElement;
+    box.classList.add('open');
+    document.documentElement.classList.add('lb-open');
+    document.addEventListener('keydown', onKey);
+    show();
+    box.querySelector('.lb__close').focus();
+  }
+  function close() {
+    if (!box) return;
+    box.classList.remove('open');
+    document.documentElement.classList.remove('lb-open');
+    document.removeEventListener('keydown', onKey);
+    img.removeAttribute('src');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  window.JSLightbox = { open: open };
 })();

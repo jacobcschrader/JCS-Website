@@ -180,3 +180,36 @@ automatic.
 *Everything is plain files — open `index.html` in a browser to preview locally
 (some video autoplay may behave better once hosted). Nothing else is required to
 run it.*
+
+---
+
+## 11. July 2026 — client-experience upgrades (Claude session)
+
+1. **Contact form now really sends** — POSTs via FormSubmit AJAX to
+   jacob@thevisaro.com (contact.html). ⚠️ One-time step: the first submission
+   triggers a FormSubmit activation email to that address — click the link in
+   it once, and all later enquiries arrive normally. Honeypot spam trap included.
+2. **Social link previews** — every page has Open Graph/Twitter tags
+   (default share image: `images/og/og-default.jpg`, 1200×630). Per-project
+   previews: `tools/generate-share-pages.mjs` writes a static copy of
+   project.html per finished project into `p/` with that project's
+   title/cover baked in, and `vercel.json` rewrites `/project?slug=…` to it.
+   **Re-run `node tools/generate-share-pages.mjs` whenever projects-data.js
+   or project.html changes.**
+3. **Gallery lightbox** — click any project photo for a fullscreen viewer
+   (arrows / keyboard / swipe, counter). Code: `JSLightbox` in site.js +
+   `.lb` styles in styles.css.
+4. **Lazy loading** — project galleries (first 8 photos eager, rest lazy),
+   projects grid, home carousel. The justified layout now re-lays-out as lazy
+   photos arrive (placeholder ratio 1.5 until measured).
+5. **Drafts hidden** — `draft: true` in projects-data.js hides a project from
+   the carousel/grid (direct URL still works). All six sample projects are
+   drafts; only 9290 Brae Road is public. Remove the flag as real projects land.
+   Carousel supports a single slide (no arrows/autoplay until ≥2 projects).
+6. **Films page cleaned** — fake cuts/reels commented out until real videos
+   exist; the three real films got poster frames (`images/posters/`,
+   via `data-poster`). Vertical Reels section is commented out entirely.
+7. **Responsive heroes** — home + architecture heroes use `srcset`
+   (1280/1920/2560/3840w, generated at q82); phones now pull ~190–360KB
+   instead of ~2.4–2.8MB.
+8. **184 Tiburon Bay** — folder set to "" (no more 404 cover); it's also a draft.

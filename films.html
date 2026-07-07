@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Films — Jacob Schrader</title>
 <meta name="description" content="Cinematic filmmaking by Jacob Schrader — social media reels and horizontal listing films that sell the lifestyle.">
+<!-- Social link previews (Open Graph + Twitter) -->
+<link rel="canonical" href="https://jacobcschrader.com/films">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jacob Schrader">
+<meta property="og:title" content="Films — Jacob Schrader">
+<meta property="og:description" content="Cinematic filmmaking by Jacob Schrader — social media reels and horizontal listing films that sell the lifestyle.">
+<meta property="og:url" content="https://jacobcschrader.com/films">
+<meta property="og:image" content="https://jacobcschrader.com/images/og/og-default.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Films — Jacob Schrader">
+<meta name="twitter:description" content="Cinematic filmmaking by Jacob Schrader — social media reels and horizontal listing films that sell the lifestyle.">
+<meta name="twitter:image" content="https://jacobcschrader.com/images/og/og-default.jpg">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -24,14 +38,15 @@
 </nav>
 
 <!-- HERO (full-screen, centered) — autoplays muted with a sound toggle -->
-<header class="hero-photo hero-photo--intro" data-video="videos/1590%20Mckinley%20Rd%20-%20Horizontal.mp4">
+<header class="hero-photo hero-photo--intro" data-video="videos/1590%20Mckinley%20Rd%20-%20Horizontal.mp4" data-poster="images/posters/1590-mckinley.jpg" style="background-image:url('images/posters/1590-mckinley.jpg');background-size:cover;background-position:center">
   <div class="wrap hero-in" style="max-width:920px">
     <span class="eyebrow" style="justify-content:center;margin-bottom:1.4rem;display:inline-flex">Films</span>
     <h1 class="display" style="font-size:clamp(2.2rem,4.2vw,3.2rem)"><em>Cinematic Filmmaking</em></h1>
     <p class="sub">Selling the lifestyle &amp; telling each story.</p>
     <div class="jumps">
       <a href="#horizontal">Horizontal Films</a>
-      <a href="#reels">Vertical Reels</a>
+      <!-- Restore this jump link when the Vertical Reels section returns:
+      <a href="#reels">Vertical Reels</a> -->
     </div>
   </div>
 </header>
@@ -44,7 +59,7 @@
     </div>
     <div class="cuts">
       <a class="cut work reveal" href="#">
-        <div class="ph" data-video="videos/3%20N%20La%20Senda%20Drive.mp4"><div class="ph__play"><span></span></div></div>
+        <div class="ph" data-video="videos/3%20N%20La%20Senda%20Drive.mp4" data-poster="images/posters/3-n-la-senda.jpg"><div class="ph__play"><span></span></div></div>
         <div class="cut__meta">
           <div class="cut__title">Three Arch Bay Estate</div>
           <div class="cut__loc">Laguna Beach, CA</div>
@@ -52,6 +67,7 @@
           <div class="cut__agent">Leita Covington · Berkshire Hathaway</div>
         </div>
       </a>
+      <!-- HIDDEN until its video is added (drop the file in videos/, add data-video, uncomment):
       <a class="cut work reveal" href="#">
         <div class="ph"><div class="ph__play"><span></span></div></div>
         <div class="cut__meta">
@@ -61,8 +77,9 @@
           <div class="cut__agent">Geoffrey Nelson · Coldwell Banker</div>
         </div>
       </a>
+      -->
       <a class="cut work reveal" href="#">
-        <div class="ph" data-video="videos/739%20Burgundy%20Lane.mp4"><div class="ph__play"><span></span></div></div>
+        <div class="ph" data-video="videos/739%20Burgundy%20Lane.mp4" data-poster="images/posters/739-burgundy.jpg"><div class="ph__play"><span></span></div></div>
         <div class="cut__meta">
           <div class="cut__title">Incline Village Estate</div>
           <div class="cut__loc">Lake Tahoe, CA</div>
@@ -70,6 +87,7 @@
           <div class="cut__agent">Sabrina Belleci · Casa Tua</div>
         </div>
       </a>
+      <!-- HIDDEN until its video is added (drop the file in videos/, add data-video, uncomment):
       <a class="cut work reveal" href="#">
         <div class="ph"><div class="ph__play"><span></span></div></div>
         <div class="cut__meta">
@@ -79,23 +97,32 @@
           <div class="cut__agent">Taso Tsakos · Sotheby's</div>
         </div>
       </a>
+      -->
     </div>
   </div>
 </section>
 
-<!-- VERTICAL REELS -->
+<!-- VERTICAL REELS — HIDDEN until real reels are added.
+     To restore: put the 9:16 files in videos/, add data-video="videos/…" to each
+     .ph below, update the captions, uncomment this section AND the #reels jump
+     link in the hero above.
 <section class="section anchor" id="reels" style="padding-top:clamp(2rem,4vw,3rem)">
   <div class="wrap">
     <div class="reveal" style="margin-bottom:clamp(2.5rem,5vw,3.5rem)">
       <span class="eyebrow">Vertical Reels</span>
     </div>
     <div class="reels">
-      <a class="reel work reveal" href="#"><div class="ph" data-video="videos/reel-wpb.mp4"><div class="ph__play"><span></span></div></div><div class="reel__cap">West Palm Beach · $45M</div></a>
+      <a class="reel work reveal" href="#"><div class="ph"><div class="ph__play"><span></span></div></div><div class="reel__cap">West Palm Beach · $45M</div></a>
       <a class="reel work reveal" href="#"><div class="ph"><div class="ph__play"><span></span></div></div><div class="reel__cap">Alamo · $8M</div></a>
       <a class="reel work reveal" href="#"><div class="ph"><div class="ph__play"><span></span></div></div><div class="reel__cap">Lake Tahoe · $9M</div></a>
       <a class="reel work reveal" href="#"><div class="ph"><div class="ph__play"><span></span></div></div><div class="reel__cap">Reno · $8M</div></a>
     </div>
-    <div class="reveal" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:clamp(2.5rem,5vw,3.5rem)">
+  </div>
+</section>
+-->
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="reveal" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
       <a class="btn btn--solid" href="/projects">Projects</a>
       <a class="btn" href="/contact">Contact</a>
     </div>

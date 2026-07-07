@@ -19,6 +19,10 @@
 //  Leave folder as "" for a project whose media isn't ready yet — it
 //  will show elegant placeholders until you add it.
 //
+//  draft: true  hides a project from the home carousel and the projects
+//  grid (it stays reachable at its direct /project?slug=… URL). Remove
+//  the flag when the real media + text are in.
+//
 //  TIP: to add a project, duplicate a project folder, swap in the new
 //  media (keep the same names: cover.jpg, 1.jpg, 2.jpg…), then copy one
 //  entry below, rename its folder/slug, and update the text + counts.
@@ -29,12 +33,12 @@
 
 var RAW_PROJECTS = [
   { slug: "9290-brae-road",  folder: "9290-brae-road", title: "9290 Brae Road", location: "Truckee, CA", year: "2026", headline: "Schaffers Mill Estate", summary: "", shot_for: "Eric Navarro", brokerage: "Compass", price: "$4,350,000", photos: 49, horizontal: false, vertical: false },
-  { slug: "toro-canyon",     folder: "420-toro-canyon", title: "420 Toro Canyon Road", location: "Montecito, CA", year: "2026", headline: "Light above the canyon", summary: "A refined modern residence set into the Montecito hillside — photographed across golden hour and twilight to lead with the view. (Sample text — edit me.)", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 8, horizontal: false, vertical: false },
-  { slug: "san-miguel",      folder: "1437-san-miguel", title: "1437 San Miguel Avenue", location: "Santa Barbara, CA", year: "2026", headline: "Sample headline", summary: "Sample text — edit me.", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 6, horizontal: false, vertical: false },
-  { slug: "rincon-point",    folder: "rincon-point", title: "Rincon Point",           location: "Carpinteria, CA",   year: "2026", headline: "Sample headline", summary: "Sample text — edit me.", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 6, horizontal: false, vertical: false },
-  { slug: "rockbridge",      folder: "850-rockbridge", title: "850 Rockbridge Road",    location: "Montecito, CA",     year: "2026", headline: "Sample headline", summary: "Sample text — edit me.", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 6, horizontal: false, vertical: false },
-  { slug: "la-vista-grande", folder: "la-vista-grande", title: "La Vista Grande",        location: "Santa Barbara, CA", year: "2026", headline: "Sample headline", summary: "Sample text — edit me.", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 6, horizontal: false, vertical: false },
-  { slug: "tiburon-bay",     folder: "184-tiburon-bay", title: "184 Tiburon Bay Lane",   location: "Montecito, CA",     year: "2026", headline: "Sample headline", summary: "Sample text — edit me.", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 6, horizontal: false, vertical: false }
+  { slug: "toro-canyon", draft: true,     folder: "420-toro-canyon", title: "420 Toro Canyon Road", location: "Montecito, CA", year: "2026", headline: "Light above the canyon", summary: "A refined modern residence set into the Montecito hillside — photographed across golden hour and twilight to lead with the view. (Sample text — edit me.)", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 8, horizontal: false, vertical: false },
+  { slug: "san-miguel", draft: true,      folder: "1437-san-miguel", title: "1437 San Miguel Avenue", location: "Santa Barbara, CA", year: "2026", headline: "Sample headline", summary: "Sample text — edit me.", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 6, horizontal: false, vertical: false },
+  { slug: "rincon-point", draft: true,    folder: "rincon-point", title: "Rincon Point",           location: "Carpinteria, CA",   year: "2026", headline: "Sample headline", summary: "Sample text — edit me.", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 6, horizontal: false, vertical: false },
+  { slug: "rockbridge", draft: true,      folder: "850-rockbridge", title: "850 Rockbridge Road",    location: "Montecito, CA",     year: "2026", headline: "Sample headline", summary: "Sample text — edit me.", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 6, horizontal: false, vertical: false },
+  { slug: "la-vista-grande", draft: true, folder: "la-vista-grande", title: "La Vista Grande",        location: "Santa Barbara, CA", year: "2026", headline: "Sample headline", summary: "Sample text — edit me.", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 6, horizontal: false, vertical: false },
+  { slug: "tiburon-bay", draft: true,     folder: "", title: "184 Tiburon Bay Lane",   location: "Montecito, CA",     year: "2026", headline: "Sample headline", summary: "Sample text — edit me.", shot_for: "Sample Agent", brokerage: "Sample Brokerage", photos: 0, horizontal: false, vertical: false }
 ];
 
 // Build the full project objects (file paths derived from the folder).
@@ -46,6 +50,7 @@ function buildProject(p) {
   }
   return {
     slug: p.slug,
+    draft: !!p.draft,
     title: p.title,
     location: p.location,
     year: p.year || "",
@@ -64,7 +69,8 @@ function buildProject(p) {
 window.PROJECTS_DATA = RAW_PROJECTS.map(buildProject);
 
 // Carousel + grid only need a few fields; every project links to /project?slug=…
-window.PROJECTS = window.PROJECTS_DATA.map(function (p) {
+// Drafts are excluded — clients only ever see finished work.
+window.PROJECTS = window.PROJECTS_DATA.filter(function (p) { return !p.draft; }).map(function (p) {
   return {
     title: p.title,
     loc: p.location,

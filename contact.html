@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Contact — Jacob Schrader</title>
 <meta name="description" content="Get in touch with Jacob Schrader to commission architectural photography or film.">
+<!-- Social link previews (Open Graph + Twitter) -->
+<link rel="canonical" href="https://jacobcschrader.com/contact">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jacob Schrader">
+<meta property="og:title" content="Contact — Jacob Schrader">
+<meta property="og:description" content="Get in touch with Jacob Schrader to commission architectural photography or film.">
+<meta property="og:url" content="https://jacobcschrader.com/contact">
+<meta property="og:image" content="https://jacobcschrader.com/images/og/og-default.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Contact — Jacob Schrader">
+<meta name="twitter:description" content="Get in touch with Jacob Schrader to commission architectural photography or film.">
+<meta name="twitter:image" content="https://jacobcschrader.com/images/og/og-default.jpg">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -40,7 +54,7 @@
       </div>
 
       <!-- FORM CARD -->
-      <form class="cform reveal" onsubmit="event.preventDefault(); this.querySelector('.form-msg').style.display='block';">
+      <form class="cform reveal" id="enquiry" method="POST" action="https://formsubmit.co/jacob@thevisaro.com">
         <div class="cform__head">Send an enquiry</div>
         <div class="cform__sub">Fields marked * are required.</div>
         <div class="crow">
@@ -71,10 +85,12 @@
           <label for="message">About the project *</label>
           <textarea id="message" name="message" placeholder="Location, scope, timeline, and anything else worth knowing…" required></textarea>
         </div>
+        <!-- FormSubmit config (invisible): subject line, no captcha page, honeypot spam trap -->
+        <input type="hidden" name="_subject" value="New enquiry — jacobcschrader.com">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
         <button class="btn btn--solid" type="submit">Send enquiry</button>
-        <p class="form-msg muted" style="display:none">
-          Thank you — your message has been noted. <em>(Connect this form to email or a service like Formspree to receive submissions.)</em>
-        </p>
+        <p class="form-msg muted" style="display:none"></p>
       </form>
     </div>
   </div>
@@ -103,5 +119,41 @@
 </footer>
 
 <script src="site.js"></script>
+<script>
+// Real form delivery via FormSubmit (AJAX — stays on the page).
+(function () {
+  var form = document.getElementById('enquiry');
+  if (!form) return;
+  var btn = form.querySelector('button[type="submit"]');
+  var msg = form.querySelector('.form-msg');
+  function show(text, ok) {
+    msg.textContent = text;
+    msg.style.display = 'block';
+    msg.style.color = ok ? '' : '#a33';
+  }
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    var data = new FormData(form);
+    fetch('https://formsubmit.co/ajax/jacob@thevisaro.com', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: data
+    }).then(function (r) { return r.json(); }).then(function (r) {
+      if (r.success === 'true' || r.success === true) {
+        form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(function (f) { f.value = ''; });
+        btn.textContent = 'Sent';
+        show('Thank you — your enquiry has been sent. I reply personally, usually within 24 hours.', true);
+      } else { throw new Error(); }
+    }).catch(function () {
+      // Network/service issue: fall back to plain POST (FormSubmit thank-you page).
+      btn.disabled = false;
+      btn.textContent = 'Send enquiry';
+      show('Something went wrong sending the form — please email jacob@thevisaro.com directly.', false);
+    });
+  });
+})();
+</script>
 </body>
 </html>

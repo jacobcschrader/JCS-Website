@@ -1,4 +1,17 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/project",
+      "has": [
+        {
+          "type": "query",
+          "key": "slug",
+          "value": "9290-brae-road"
+        }
+      ],
+      "destination": "/p/9290-brae-road.html"
+    }
+  ]
 }
