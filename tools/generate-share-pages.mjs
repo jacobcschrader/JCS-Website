@@ -3,16 +3,18 @@
 //
 //      node tools/generate-share-pages.mjs
 //
-//  Why this exists: project pages are rendered by JavaScript from
-//  ?slug=…, but the crawlers that build link previews (iMessage,
-//  Instagram, Facebook, Slack…) don't run JavaScript — they'd all see
-//  the same generic preview. This script writes one static copy of
-//  the project page per finished project into p/, with that project's
-//  title, description and cover photo baked into the <head>. It also
-//  rewrites vercel.json so /project?slug=<slug> serves the matching
-//  copy. Same URL, same page for humans — correct preview for crawlers.
+//  Why this exists: the dynamic project page renders from JavaScript,
+//  but the crawlers that build link previews (iMessage, Instagram,
+//  Facebook, Slack…) don't run JavaScript — they'd all see the same
+//  generic preview. This script writes one static copy of project.html
+//  per finished project into project/<slug>.html, with that project's
+//  title, description and cover photo baked into the <head>. With
+//  cleanUrls, each serves at /project/<slug> — the URL the whole site
+//  links to. No Vercel rewrites involved (they proved unreliable with
+//  cleanUrls; static files always win).
 //
-//  Drafts (draft: true) and projects without media are skipped.
+//  Drafts (draft: true) and projects without media are skipped —
+//  drafts stay reachable at /project?slug=<slug> (the dynamic page).
 // =====================================================================
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -27,17 +29,16 @@ const sandbox = { window: {} };
 new Function("window", dataSrc)(sandbox.window);
 const projects = (sandbox.window.PROJECTS_DATA || []).filter(p => !p.draft && p.cover_url);
 
-// --- build one stub per project from project-view.html --------------
-const template = readFileSync(join(root, "project-view.html"), "utf8");
+// --- build one static page per project from project.html ------------
+const template = readFileSync(join(root, "project.html"), "utf8");
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-mkdirSync(join(root, "p"), { recursive: true });
+mkdirSync(join(root, "project"), { recursive: true });
 
-const rewrites = [];
 for (const p of projects) {
   const title = `${p.title} — Jacob Schrader`;
   const bits = [p.location, p.price].filter(Boolean).join(" · ");
   const desc = `${p.headline || p.title}${bits ? " — " + bits : ""}. Photography & film by Jacob Schrader.`;
-  const url = `${BASE}/project?slug=${encodeURIComponent(p.slug)}`;
+  const url = `${BASE}/project/${p.slug}`;
   const img = `${BASE}/${p.cover_url}`;
 
   let out = template
@@ -53,26 +54,18 @@ for (const p of projects) {
     .replace(/(<meta name="twitter:image" content=")[^"]*(">)/, `$1${esc(img)}$2`)
     // cover dimensions vary per project — drop the fixed 1200×630 hints
     .replace(/\n<meta property="og:image:(width|height)" content="\d+">/g, "")
-    // let the stub also work when opened directly at /p/<slug> (no ?slug=)
-    .replace('var slug = qs("slug");', `var slug = qs("slug") || ${JSON.stringify(p.slug)};`);
+    // the static page knows its own slug (no ?slug= in the URL)
+    .replace('var slug = qs("slug");', `var slug = qs("slug") || ${JSON.stringify(p.slug)};`)
+    // served from /project/<slug>, so relative asset/media paths need a root base
+    .replace("<head>", '<head>\n<base href="/">');
 
-  writeFileSync(join(root, "p", `${p.slug}.html`), out);
-  rewrites.push({
-    source: "/project",
-    has: [{ type: "query", key: "slug", value: p.slug }],
-    destination: `/p/${p.slug}.html`
-  });
-  console.log(`p/${p.slug}.html`);
+  writeFileSync(join(root, "project", `${p.slug}.html`), out);
+  console.log(`project/${p.slug}.html`);
 }
 
-// Anything without a per-slug stub (drafts, unknown slugs) falls through
-// to the dynamic page. NOTE: this only works because no file named
-// project.html exists — Vercel serves real files before rewrites.
-rewrites.push({ source: "/project", destination: "/project-view.html" });
-
-// --- point vercel.json at the stubs ---------------------------------
+// --- no rewrites needed: make sure none linger in vercel.json --------
 const vercelPath = join(root, "vercel.json");
 const vercel = JSON.parse(readFileSync(vercelPath, "utf8"));
-vercel.rewrites = rewrites;
+delete vercel.rewrites;
 writeFileSync(vercelPath, JSON.stringify(vercel, null, 2) + "\n");
-console.log(`vercel.json: ${rewrites.length} rewrite(s)`);
+console.log("vercel.json: rewrites removed");

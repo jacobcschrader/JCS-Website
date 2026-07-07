@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<base href="/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Project — Jacob Schrader</title>
-<meta name="description" content="A project by Jacob Schrader — real estate, architecture & design photography and film.">
+<title>9290 Brae Road — Jacob Schrader</title>
+<meta name="description" content="Schaffers Mill Estate — Truckee, CA · $4,350,000. Photography &amp; film by Jacob Schrader.">
 <!-- Social link previews (Open Graph + Twitter) -->
-<link rel="canonical" href="https://www.jacobcschrader.com/project">
+<link rel="canonical" href="https://www.jacobcschrader.com/project/9290braeroad">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Jacob Schrader">
-<meta property="og:title" content="Project — Jacob Schrader">
-<meta property="og:description" content="A project by Jacob Schrader — real estate, architecture & design photography and film.">
-<meta property="og:url" content="https://www.jacobcschrader.com/project">
-<meta property="og:image" content="https://www.jacobcschrader.com/images/og/og-default.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:title" content="9290 Brae Road — Jacob Schrader">
+<meta property="og:description" content="Schaffers Mill Estate — Truckee, CA · $4,350,000. Photography &amp; film by Jacob Schrader.">
+<meta property="og:url" content="https://www.jacobcschrader.com/project/9290braeroad">
+<meta property="og:image" content="https://www.jacobcschrader.com/projects/9290-brae-road/cover.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Project — Jacob Schrader">
-<meta name="twitter:description" content="A project by Jacob Schrader — real estate, architecture & design photography and film.">
-<meta name="twitter:image" content="https://www.jacobcschrader.com/images/og/og-default.jpg">
+<meta name="twitter:title" content="9290 Brae Road — Jacob Schrader">
+<meta name="twitter:description" content="Schaffers Mill Estate — Truckee, CA · $4,350,000. Photography &amp; film by Jacob Schrader.">
+<meta name="twitter:image" content="https://www.jacobcschrader.com/projects/9290-brae-road/cover.jpg">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -66,7 +65,7 @@
   var root = document.getElementById("proj");
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
   function qs(k){ return new URLSearchParams(location.search).get(k); }
-  var slug = qs("slug");
+  var slug = qs("slug") || "9290braeroad";
 
   function message(html){
     root.innerHTML = '<section class="section"><div class="wrap center" style="padding-top:7rem;max-width:600px;margin-inline:auto">'+html+'</div></section>';
@@ -120,8 +119,8 @@
     var hasGallery = galleryUrls.length > 0;
 
     var nav = '<div class="proj-nav">'+
-      (prev ? '<a href="/project?slug='+encodeURIComponent(prev.slug)+'"><small>Previous</small><b>'+esc(prev.title)+'</b></a>' : '<span></span>')+
-      (next ? '<a class="next" href="/project?slug='+encodeURIComponent(next.slug)+'"><small>Next</small><b>'+esc(next.title)+'</b></a>' : '')+
+      (prev ? '<a href="/project/'+encodeURIComponent(prev.slug)+'"><small>Previous</small><b>'+esc(prev.title)+'</b></a>' : '<span></span>')+
+      (next ? '<a class="next" href="/project/'+encodeURIComponent(next.slug)+'"><small>Next</small><b>'+esc(next.title)+'</b></a>' : '')+
       '</div>';
 
     root.innerHTML =

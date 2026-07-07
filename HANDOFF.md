@@ -234,3 +234,17 @@ the enquirer thanks to reply-to.
   project-view.html (drafts/unknown). Don't recreate a file named project.html.
 - All canonical/OG URLs now use https://www.jacobcschrader.com (the apex
   domain 308-redirects to www).
+
+### Update 3 (FINAL project-URL scheme): static pages, no rewrites
+
+Vercel silently ignored the query-based rewrites, which 404'd /project?slug=…
+after the rename. Fixed for good by dropping rewrites entirely:
+
+- The dynamic page is back at its original name, **project.html**
+  (serves /project?slug=… — now only used for previewing drafts).
+- Finished projects get REAL static pages: `tools/generate-share-pages.mjs`
+  writes `project/<slug>.html` (own OG tags + `<base href="/">`), served at
+  **/project/<slug>** thanks to cleanUrls. The whole site (carousel, grid,
+  prev/next) links there. `p/` folder is gone; vercel.json has no rewrites.
+- As before: re-run `node tools/generate-share-pages.mjs` after changing
+  projects-data.js or project.html.
