@@ -116,20 +116,37 @@ window.addEventListener('DOMContentLoaded', function () {
     var clip = { video: video, btn: null };
     host._clip = clip;
 
-    // Only swap in the video (and show the sound button) once it actually loads.
-    video.addEventListener('loadeddata', function () {
+    // Swap in the video (and show the sound button) once frames exist.
+    // Fires on 'loadeddata' OR 'playing' — mobile browsers load almost
+    // nothing until play() is called, so 'loadeddata' alone may never come.
+    var activated = false;
+    function activate() {
+      if (activated) return;
+      activated = true;
       host.classList.add('has-video');
       clip.btn = makeButton(clip);
       host.appendChild(clip.btn);
-      clips.push(clip);
-      vio.observe(host);          // start watching visibility -> play/pause
-    });
+    }
+    video.addEventListener('loadeddata', activate);
+    video.addEventListener('playing', activate);
+
     // If the file is missing, leave the placeholder untouched.
     video.addEventListener('error', function () {
+      vio.unobserve(host);
+      var i = clips.indexOf(clip); if (i > -1) clips.splice(i, 1);
       if (video.parentNode) video.parentNode.removeChild(video);
     });
 
+    // Low Power Mode / data-saver blocks autoplay entirely — a tap on the
+    // (frozen or poster) video starts it manually.
+    video.addEventListener('click', function (e) {
+      if (video.paused) { e.preventDefault(); e.stopPropagation(); tryPlay(video); }
+    });
+
     host.insertBefore(video, host.firstChild);
+    clips.push(clip);
+    vio.observe(host);   // watch visibility immediately — the observer's
+                         // play() call is what makes mobile start loading
   }
 
   // Public: enhance any [data-video] elements within scope (default: whole doc).
