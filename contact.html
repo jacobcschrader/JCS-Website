@@ -46,7 +46,7 @@
         <h1 class="display" style="font-size:clamp(1.7rem,3vw,2.5rem)">Let's begin<br>a conversation.</h1>
         <p class="lead">Tell me about your project — the space, the timeline, and what you're hoping to capture. I reply to every enquiry personally, usually within 24 hours.</p>
         <div class="cdetails">
-          <div class="cdetail"><span class="k">Email</span><a href="mailto:jacob@thevisaro.com">jacob@thevisaro.com</a></div>
+          <div class="cdetail"><span class="k">Email</span><a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a></div>
           <div class="cdetail"><span class="k">Phone</span><a href="tel:+14088248719">(408) 824-8719</a></div>
           <div class="cdetail"><span class="k">Based in</span><span class="v">Diablo, CA — serving worldwide</span></div>
           <div class="cdetail"><span class="k">Follow</span><a href="#">Instagram</a></div>
@@ -54,7 +54,7 @@
       </div>
 
       <!-- FORM CARD -->
-      <form class="cform reveal" id="enquiry" method="POST" action="https://formsubmit.co/jacob@thevisaro.com">
+      <form class="cform reveal" id="enquiry" method="POST" action="/api/contact">
         <div class="cform__head">Send an enquiry</div>
         <div class="cform__sub">Fields marked * are required.</div>
         <div class="crow">
@@ -85,9 +85,7 @@
           <label for="message">About the project *</label>
           <textarea id="message" name="message" placeholder="Location, scope, timeline, and anything else worth knowing…" required></textarea>
         </div>
-        <!-- FormSubmit config (invisible): subject line, no captcha page, honeypot spam trap -->
-        <input type="hidden" name="_subject" value="New enquiry — jacobcschrader.com">
-        <input type="hidden" name="_captcha" value="false">
+        <!-- Honeypot spam trap (invisible to humans; bots fill it and get dropped) -->
         <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
         <button class="btn btn--solid" type="submit">Send enquiry</button>
         <p class="form-msg muted" style="display:none"></p>
@@ -108,7 +106,7 @@
       <a href="/contact">Contact</a>
     </nav>
     <div class="footer__meta">
-      <a href="mailto:jacob@thevisaro.com">jacob@thevisaro.com</a>
+      <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a>
       <span class="sep">·</span>
       <a href="tel:+14088248719">(408) 824-8719</a>
       <span class="sep">·</span>
@@ -120,9 +118,8 @@
 
 <script src="site.js"></script>
 <script>
-// Real form delivery: Resend (via /api/contact) first, FormSubmit as a
-// safety net — used until RESEND_API_KEY is configured in Vercel, or if
-// the function ever fails. Enquiries are never lost either way.
+// Form delivery via Resend (/api/contact). The enquirer also receives a
+// branded confirmation email automatically.
 (function () {
   var form = document.getElementById('enquiry');
   if (!form) return;
@@ -132,25 +129,6 @@
     msg.textContent = text;
     msg.style.display = 'block';
     msg.style.color = ok ? '' : '#a33';
-  }
-  function done() {
-    form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(function (f) { f.value = ''; });
-    btn.textContent = 'Sent';
-    show('Thank you — your enquiry has been sent. I reply personally, usually within 24 hours.', true);
-  }
-  function fail() {
-    btn.disabled = false;
-    btn.textContent = 'Send enquiry';
-    show('Something went wrong sending the form — please email jacob@thevisaro.com directly.', false);
-  }
-  function viaFormSubmit() {
-    fetch('https://formsubmit.co/ajax/jacob@thevisaro.com', {
-      method: 'POST',
-      headers: { 'Accept': 'application/json' },
-      body: new FormData(form)
-    }).then(function (r) { return r.json(); }).then(function (r) {
-      if (r.success === 'true' || r.success === true) done(); else fail();
-    }).catch(fail);
   }
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -163,9 +141,16 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).then(function (r) {
-      if (r.ok) { done(); return; }
-      viaFormSubmit();          // Resend not configured / errored — fall back
-    }).catch(viaFormSubmit);    // network issue reaching the function
+      if (r.ok) {
+        form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(function (f) { f.value = ''; });
+        btn.textContent = 'Sent';
+        show('Thank you — your enquiry has been sent. I reply personally, usually within 24 hours.', true);
+      } else { throw new Error(); }
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Send enquiry';
+      show('Something went wrong sending the form — please email jacxbschrader@gmail.com directly.', false);
+    });
   });
 })();
 </script>

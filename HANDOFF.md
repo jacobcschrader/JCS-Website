@@ -95,7 +95,7 @@ Any element with `data-video="…"` autoplays muted and loops, with a mute butto
   video files** (no Vimeo/YouTube embeds).
 - **Project content** — the six projects in `projects-data.js` have titles +
   locations only; add covers, galleries, copy, and films.
-- **Email** — every page uses `jacob@thevisaro.com`. Confirm that's the address
+- **Email** — every page uses `jacxbschrader@gmail.com`. Confirm that's the address
   you want, or swap it (it's the old "Visaro" address). Search/replace across
   files if changing.
 - **Instagram** — the footer + contact "Instagram" links point to `#`. Put in
@@ -186,7 +186,7 @@ run it.*
 ## 11. July 2026 — client-experience upgrades (Claude session)
 
 1. **Contact form now really sends** — POSTs via FormSubmit AJAX to
-   jacob@thevisaro.com (contact.html). ⚠️ One-time step: the first submission
+   jacxbschrader@gmail.com (contact.html). ⚠️ One-time step: the first submission
    triggers a FormSubmit activation email to that address — click the link in
    it once, and all later enquiries arrive normally. Honeypot spam trap included.
 2. **Social link previews** — every page has Open Graph/Twitter tags
@@ -248,3 +248,17 @@ after the rename. Fixed for good by dropping rewrites entirely:
   prev/next) links there. `p/` folder is gone; vercel.json has no rewrites.
 - As before: re-run `node tools/generate-share-pages.mjs` after changing
   projects-data.js or project.html.
+
+### Update 4: Resend is now the ONLY email path (FormSubmit removed)
+
+- `api/_lib/email.js` — shared email layer. ALL future site email (any new
+  function) must go through its `sendEmail()`; `brandedHtml()` gives the
+  navy/JCS email template.
+- `api/contact.js` — sends the enquiry to Jacob (reply-to = enquirer) AND a
+  branded auto-reply confirmation to the enquirer (non-fatal if it fails).
+- Required setup in Vercel env vars: `RESEND_API_KEY`.
+- For the auto-reply to actually deliver (and for best inbox placement),
+  verify the domain at resend.com/domains and set
+  `CONTACT_FROM = Jacob Schrader <enquiry@jacobcschrader.com>`.
+- No FormSubmit fallback anymore: if Resend fails, the visitor is shown an
+  error asking them to email directly.
