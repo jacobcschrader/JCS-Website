@@ -6,19 +6,19 @@
 <title>Contact — Jacob Schrader</title>
 <meta name="description" content="Get in touch with Jacob Schrader to commission architectural photography or film.">
 <!-- Social link previews (Open Graph + Twitter) -->
-<link rel="canonical" href="https://jacobcschrader.com/contact">
+<link rel="canonical" href="https://www.jacobcschrader.com/contact">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Jacob Schrader">
 <meta property="og:title" content="Contact — Jacob Schrader">
 <meta property="og:description" content="Get in touch with Jacob Schrader to commission architectural photography or film.">
-<meta property="og:url" content="https://jacobcschrader.com/contact">
-<meta property="og:image" content="https://jacobcschrader.com/images/og/og-default.jpg">
+<meta property="og:url" content="https://www.jacobcschrader.com/contact">
+<meta property="og:image" content="https://www.jacobcschrader.com/images/og/og-default.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Contact — Jacob Schrader">
 <meta name="twitter:description" content="Get in touch with Jacob Schrader to commission architectural photography or film.">
-<meta name="twitter:image" content="https://jacobcschrader.com/images/og/og-default.jpg">
+<meta name="twitter:image" content="https://www.jacobcschrader.com/images/og/og-default.jpg">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -120,7 +120,9 @@
 
 <script src="site.js"></script>
 <script>
-// Real form delivery via FormSubmit (AJAX — stays on the page).
+// Real form delivery: Resend (via /api/contact) first, FormSubmit as a
+// safety net — used until RESEND_API_KEY is configured in Vercel, or if
+// the function ever fails. Enquiries are never lost either way.
 (function () {
   var form = document.getElementById('enquiry');
   if (!form) return;
@@ -131,27 +133,39 @@
     msg.style.display = 'block';
     msg.style.color = ok ? '' : '#a33';
   }
+  function done() {
+    form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(function (f) { f.value = ''; });
+    btn.textContent = 'Sent';
+    show('Thank you — your enquiry has been sent. I reply personally, usually within 24 hours.', true);
+  }
+  function fail() {
+    btn.disabled = false;
+    btn.textContent = 'Send enquiry';
+    show('Something went wrong sending the form — please email jacob@thevisaro.com directly.', false);
+  }
+  function viaFormSubmit() {
+    fetch('https://formsubmit.co/ajax/jacob@thevisaro.com', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: new FormData(form)
+    }).then(function (r) { return r.json(); }).then(function (r) {
+      if (r.success === 'true' || r.success === true) done(); else fail();
+    }).catch(fail);
+  }
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     btn.disabled = true;
     btn.textContent = 'Sending…';
-    var data = new FormData(form);
-    fetch('https://formsubmit.co/ajax/jacob@thevisaro.com', {
+    var payload = {};
+    new FormData(form).forEach(function (v, k) { payload[k] = v; });
+    fetch('/api/contact', {
       method: 'POST',
-      headers: { 'Accept': 'application/json' },
-      body: data
-    }).then(function (r) { return r.json(); }).then(function (r) {
-      if (r.success === 'true' || r.success === true) {
-        form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(function (f) { f.value = ''; });
-        btn.textContent = 'Sent';
-        show('Thank you — your enquiry has been sent. I reply personally, usually within 24 hours.', true);
-      } else { throw new Error(); }
-    }).catch(function () {
-      // Network/service issue: fall back to plain POST (FormSubmit thank-you page).
-      btn.disabled = false;
-      btn.textContent = 'Send enquiry';
-      show('Something went wrong sending the form — please email jacob@thevisaro.com directly.', false);
-    });
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (r) {
+      if (r.ok) { done(); return; }
+      viaFormSubmit();          // Resend not configured / errored — fall back
+    }).catch(viaFormSubmit);    // network issue reaching the function
   });
 })();
 </script>

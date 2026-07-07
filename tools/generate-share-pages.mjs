@@ -7,7 +7,7 @@
 //  ?slug=…, but the crawlers that build link previews (iMessage,
 //  Instagram, Facebook, Slack…) don't run JavaScript — they'd all see
 //  the same generic preview. This script writes one static copy of
-//  project.html per finished project into p/, with that project's
+//  the project page per finished project into p/, with that project's
 //  title, description and cover photo baked into the <head>. It also
 //  rewrites vercel.json so /project?slug=<slug> serves the matching
 //  copy. Same URL, same page for humans — correct preview for crawlers.
@@ -19,7 +19,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const BASE = "https://jacobcschrader.com";
+const BASE = "https://www.jacobcschrader.com";
 
 // --- load RAW_PROJECTS from the browser data file -------------------
 const dataSrc = readFileSync(join(root, "projects-data.js"), "utf8");
@@ -27,8 +27,8 @@ const sandbox = { window: {} };
 new Function("window", dataSrc)(sandbox.window);
 const projects = (sandbox.window.PROJECTS_DATA || []).filter(p => !p.draft && p.cover_url);
 
-// --- build one stub per project from project.html -------------------
-const template = readFileSync(join(root, "project.html"), "utf8");
+// --- build one stub per project from project-view.html --------------
+const template = readFileSync(join(root, "project-view.html"), "utf8");
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 mkdirSync(join(root, "p"), { recursive: true });
 
@@ -52,7 +52,9 @@ for (const p of projects) {
     .replace(/(<meta name="twitter:description" content=")[^"]*(">)/, `$1${esc(desc)}$2`)
     .replace(/(<meta name="twitter:image" content=")[^"]*(">)/, `$1${esc(img)}$2`)
     // cover dimensions vary per project — drop the fixed 1200×630 hints
-    .replace(/\n<meta property="og:image:(width|height)" content="\d+">/g, "");
+    .replace(/\n<meta property="og:image:(width|height)" content="\d+">/g, "")
+    // let the stub also work when opened directly at /p/<slug> (no ?slug=)
+    .replace('var slug = qs("slug");', `var slug = qs("slug") || ${JSON.stringify(p.slug)};`);
 
   writeFileSync(join(root, "p", `${p.slug}.html`), out);
   rewrites.push({
@@ -62,6 +64,11 @@ for (const p of projects) {
   });
   console.log(`p/${p.slug}.html`);
 }
+
+// Anything without a per-slug stub (drafts, unknown slugs) falls through
+// to the dynamic page. NOTE: this only works because no file named
+// project.html exists — Vercel serves real files before rewrites.
+rewrites.push({ source: "/project", destination: "/project-view.html" });
 
 // --- point vercel.json at the stubs ---------------------------------
 const vercelPath = join(root, "vercel.json");

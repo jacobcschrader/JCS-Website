@@ -213,3 +213,24 @@ run it.*
    (1280/1920/2560/3840w, generated at q82); phones now pull ~190–360KB
    instead of ~2.4–2.8MB.
 8. **184 Tiburon Bay** — folder set to "" (no more 404 cover); it's also a draft.
+
+### Update: contact form now uses Resend (with FormSubmit fallback)
+
+`api/contact.js` is a Vercel serverless function that emails enquiries via
+Resend. To activate: create a Resend account → make an API key → Vercel →
+Settings → Environment Variables → `RESEND_API_KEY` → redeploy. Optional:
+verify jacobcschrader.com at resend.com/domains, then set
+`CONTACT_FROM = JCS Website <enquiry@jacobcschrader.com>`.
+Until the key is set (or if Resend ever fails), the form automatically
+falls back to FormSubmit, so no enquiry is lost. Replies go straight to
+the enquirer thanks to reply-to.
+
+### Update 2: dynamic project page renamed + canonical host
+
+- `project.html` → **`project-view.html`**. Reason: Vercel serves real files
+  before rewrites, so while project.html existed, the per-project share pages
+  in `p/` were never served. `/project?slug=…` URLs are unchanged — vercel.json
+  now rewrites them to the right `p/` stub (finished projects) or to
+  project-view.html (drafts/unknown). Don't recreate a file named project.html.
+- All canonical/OG URLs now use https://www.jacobcschrader.com (the apex
+  domain 308-redirects to www).

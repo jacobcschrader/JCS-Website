@@ -12,6 +12,10 @@
         }
       ],
       "destination": "/p/9290-brae-road.html"
+    },
+    {
+      "source": "/project",
+      "destination": "/project-view.html"
     }
   ]
 }
