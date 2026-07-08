@@ -262,3 +262,33 @@ after the rename. Fixed for good by dropping rewrites entirely:
   `CONTACT_FROM = Jacob Schrader <enquiry@jacobcschrader.com>`.
 - No FormSubmit fallback anymore: if Resend fails, the visitor is shown an
   error asking them to email directly.
+
+---
+
+## 12. Studio Admin (Phase 1) — jacobcschrader.com/admin
+
+Password-protected business dashboard: projects overview, clients, and
+bookings. Phase 2 (planned): invoices (branded email + mark-paid) and
+gallery delivery emails.
+
+**Files:** `admin.html` (UI, served at /admin, noindex),
+`api/admin/{login,logout,me,clients,bookings}.js`,
+`api/_lib/auth.js` (scrypt + HMAC session cookie, 7 days),
+`api/_lib/db.js` (Neon Postgres, schema auto-created),
+`tools/hash-password.mjs`, `package.json` (@neondatabase/serverless).
+
+**One-time setup (Jacob):**
+1. Vercel → project → **Storage → Create Database → Neon** (free) →
+   connect to the project. This injects `DATABASE_URL` automatically.
+2. Run `node tools/hash-password.mjs` in Terminal (from the JCS-Website
+   folder), type a password, copy the printed hash.
+3. Vercel env vars (Settings → Environment Variables):
+   - `ADMIN_EMAIL` = jacxbschrader@gmail.com
+   - `ADMIN_PASSWORD_HASH` = (the hash from step 2 — NOT the password)
+   - `SESSION_SECRET` = any long random string (e.g. 40 random characters)
+4. Redeploy. Log in at jacobcschrader.com/admin.
+
+**Notes:** single admin user by design. Sessions are stateless signed
+cookies; changing SESSION_SECRET logs out everywhere. Tables:
+`clients`, `bookings` (see db.js). Projects tab reads projects-data.js —
+project publishing still goes through the normal Claude workflow.

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Jacob Schrader</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ---------- Admin-only styles (brand tokens come from styles.css) ---------- */
+body { background: var(--paper-warm); }
+.adm-hidden { display: none !important; }
+
+/* Login */
+.adm-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.adm-login__card { background: #fff; width: min(400px, 100%); padding: clamp(2rem, 5vw, 3rem); box-shadow: 0 20px 60px rgba(15,34,64,0.08); text-align: center; }
+.adm-login__brand { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 2.2rem; color: var(--navy); }
+.adm-login__sub { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin: 0.5rem 0 2rem; }
+
+/* Shell */
+.adm-bar { position: sticky; top: 0; z-index: 50; background: var(--navy); color: #fff; display: flex; align-items: center; gap: 1.5rem; padding: 0.85rem clamp(1rem, 4vw, 2.5rem); }
+.adm-bar__brand { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 1.3rem; color: #fff; }
+.adm-bar__tag { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+.adm-nav { display: flex; gap: 0.25rem; margin-left: auto; flex-wrap: wrap; }
+.adm-nav button { background: none; border: 0; color: rgba(255,255,255,0.66); font-family: var(--sans); font-size: 0.78rem; letter-spacing: 0.08em; padding: 0.5rem 0.9rem; cursor: pointer; }
+.adm-nav button.on { color: #fff; box-shadow: inset 0 -2px 0 #fff; }
+.adm-out { background: none; border: 1px solid rgba(255,255,255,0.3); color: #fff; font-size: 0.72rem; letter-spacing: 0.1em; padding: 0.45rem 0.9rem; cursor: pointer; }
+.adm-wrap { max-width: 1100px; margin: 0 auto; padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem) 5rem; }
+
+/* Cards / tables / forms */
+.adm-h { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.7rem; color: var(--navy); margin: 0 0 1.4rem; }
+.adm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+.adm-stat { background: #fff; padding: 1.4rem 1.5rem; }
+.adm-stat b { display: block; font-family: var(--serif); font-size: 2rem; font-weight: 500; color: var(--navy); line-height: 1.1; }
+.adm-stat span { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.adm-card { background: #fff; padding: clamp(1.2rem, 3vw, 2rem); margin-bottom: 2rem; }
+.adm-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.adm-table th { text-align: left; font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0.6rem 0.8rem 0.6rem 0; border-bottom: 1px solid var(--line); }
+.adm-table td { padding: 0.75rem 0.8rem 0.75rem 0; border-bottom: 1px solid var(--line-soft); color: var(--ink); vertical-align: top; }
+.adm-table a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
+.adm-badge { display: inline-block; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.25rem 0.6rem; background: var(--paper-warm); color: var(--muted); }
+.adm-badge--live { background: #e8f0e8; color: #2e5d3a; }
+.adm-badge--draft { background: #f4ede0; color: #8a6d2f; }
+.adm-badge--scheduled { background: #e8edf5; color: var(--navy); }
+.adm-badge--completed { background: #e8f0e8; color: #2e5d3a; }
+.adm-badge--delivered { background: #ece8f5; color: #4a3d7a; }
+.adm-badge--canceled { background: #f5e8e8; color: #7a3d3d; }
+.adm-row-act { white-space: nowrap; }
+.adm-row-act button { background: none; border: 0; cursor: pointer; font-size: 0.75rem; color: var(--navy); text-decoration: underline; text-underline-offset: 3px; padding: 0 0.4rem; }
+.adm-row-act button.del { color: #a33; }
+
+.adm-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.9rem; margin-top: 1rem; }
+.adm-form .full { grid-column: 1 / -1; }
+.adm-field label { display: block; font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
+.adm-field input, .adm-field select, .adm-field textarea {
+  width: 100%; font-family: var(--sans); font-size: 0.9rem; color: var(--ink);
+  background: var(--paper-warm); border: 1px solid var(--line); padding: 0.6rem 0.7rem; outline: none;
+}
+.adm-field textarea { min-height: 70px; resize: vertical; }
+.adm-field input:focus, .adm-field select:focus, .adm-field textarea:focus { border-color: var(--navy); background: #fff; }
+.adm-btn { display: inline-block; background: var(--navy); color: #fff; border: 0; cursor: pointer; font-family: var(--sans); font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.8rem 1.8rem; }
+.adm-btn--ghost { background: none; color: var(--navy); border: 1px solid var(--line); }
+.adm-msg { font-size: 0.85rem; margin-top: 0.8rem; color: var(--muted); }
+.adm-msg.err { color: #a33; }
+.adm-empty { color: var(--muted); font-size: 0.9rem; padding: 1.2rem 0; }
+@media (max-width: 700px) { .adm-table .hide-m { display: none; } }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login" class="adm-login adm-hidden">
+  <form id="login-form" class="adm-login__card">
+    <div class="adm-login__brand">JCS</div>
+    <div class="adm-login__sub">Studio Admin</div>
+    <div class="adm-field" style="text-align:left;margin-bottom:0.9rem">
+      <label for="l-email">Email</label>
+      <input id="l-email" type="email" autocomplete="username" required>
+    </div>
+    <div class="adm-field" style="text-align:left;margin-bottom:1.4rem">
+      <label for="l-pass">Password</label>
+      <input id="l-pass" type="password" autocomplete="current-password" required>
+    </div>
+    <button class="adm-btn" type="submit" style="width:100%">Sign in</button>
+    <p id="login-msg" class="adm-msg err adm-hidden"></p>
+  </form>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="adm-hidden">
+  <div class="adm-bar">
+    <span class="adm-bar__brand">JCS</span>
+    <span class="adm-bar__tag">Studio Admin</span>
+    <nav class="adm-nav" id="nav">
+      <button data-v="dash" class="on">Dashboard</button>
+      <button data-v="projects">Projects</button>
+      <button data-v="clients">Clients</button>
+      <button data-v="bookings">Bookings</button>
+    </nav>
+    <button class="adm-out" id="logout">Sign out</button>
+  </div>
+
+  <div class="adm-wrap">
+    <!-- DASHBOARD -->
+    <section id="v-dash">
+      <h1 class="adm-h">Dashboard</h1>
+      <div class="adm-stats" id="stats"></div>
+      <div class="adm-card">
+        <h2 class="adm-h" style="font-size:1.2rem">Upcoming shoots</h2>
+        <div id="upcoming"></div>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="v-projects" class="adm-hidden">
+      <h1 class="adm-h">Projects</h1>
+      <div class="adm-card">
+        <div id="projects-list"></div>
+        <p class="adm-msg">Projects are published from the website files — to add or edit one, drop the media in a staging folder and ask Claude in the JCS-Website Cowork session.</p>
+      </div>
+    </section>
+
+    <!-- CLIENTS -->
+    <section id="v-clients" class="adm-hidden">
+      <h1 class="adm-h">Clients</h1>
+      <div class="adm-card">
+        <form id="client-form" class="adm-form">
+          <input type="hidden" id="c-id">
+          <div class="adm-field"><label for="c-name">Name *</label><input id="c-name" required></div>
+          <div class="adm-field"><label for="c-email">Email</label><input id="c-email" type="email"></div>
+          <div class="adm-field"><label for="c-phone">Phone</label><input id="c-phone"></div>
+          <div class="adm-field"><label for="c-brokerage">Brokerage</label><input id="c-brokerage"></div>
+          <div class="adm-field full"><label for="c-notes">Notes</label><textarea id="c-notes"></textarea></div>
+          <div class="full">
+            <button class="adm-btn" type="submit" id="c-submit">Add client</button>
+            <button class="adm-btn adm-btn--ghost adm-hidden" type="button" id="c-cancel">Cancel</button>
+          </div>
+        </form>
+        <p id="c-msg" class="adm-msg adm-hidden"></p>
+      </div>
+      <div class="adm-card"><div id="clients-list"></div></div>
+    </section>
+
+    <!-- BOOKINGS -->
+    <section id="v-bookings" class="adm-hidden">
+      <h1 class="adm-h">Bookings</h1>
+      <div class="adm-card">
+        <form id="booking-form" class="adm-form">
+          <input type="hidden" id="b-id">
+          <div class="adm-field"><label for="b-title">Property / title *</label><input id="b-title" required placeholder="123 Main St"></div>
+          <div class="adm-field"><label for="b-client">Client</label><select id="b-client"><option value="">—</option></select></div>
+          <div class="adm-field"><label for="b-location">Location</label><input id="b-location" placeholder="Alamo, CA"></div>
+          <div class="adm-field"><label for="b-date">Date</label><input id="b-date" type="date"></div>
+          <div class="adm-field"><label for="b-time">Time</label><input id="b-time" placeholder="Golden hour"></div>
+          <div class="adm-field"><label for="b-type">Type</label>
+            <select id="b-type">
+              <option>Architectural Photography</option>
+              <option>Film / Videography</option>
+              <option>Aerial &amp; Drone</option>
+              <option>Full Campaign (Stills + Film)</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="adm-field"><label for="b-price">Price ($)</label><input id="b-price" type="number" min="0" step="1"></div>
+          <div class="adm-field"><label for="b-status">Status</label>
+            <select id="b-status">
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+              <option value="delivered">Delivered</option>
+              <option value="canceled">Canceled</option>
+            </select>
+          </div>
+          <div class="adm-field full"><label for="b-notes">Notes</label><textarea id="b-notes"></textarea></div>
+          <div class="full">
+            <button class="adm-btn" type="submit" id="b-submit">Add booking</button>
+            <button class="adm-btn adm-btn--ghost adm-hidden" type="button" id="b-cancel">Cancel</button>
+          </div>
+        </form>
+        <p id="b-msg" class="adm-msg adm-hidden"></p>
+      </div>
+      <div class="adm-card"><div id="bookings-list"></div></div>
+    </section>
+  </div>
+</div>
+
+<script src="projects-data.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+  function money(n){ return n==null||n===''?'—':'$'+Number(n).toLocaleString(); }
+  function dstr(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
+
+  var state = { clients: [], bookings: [] };
+
+  async function api(path, method, body) {
+    var r = await fetch('/api/admin/' + path, {
+      method: method || 'GET',
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (r.status === 401) { showLogin(); throw new Error('unauthorized'); }
+    var j = await r.json().catch(function(){ return {}; });
+    if (!r.ok) throw new Error(j.error || 'error');
+    return j;
+  }
+
+  // ---------- login / shell ----------
+  function showLogin(){ $('login').classList.remove('adm-hidden'); $('app').classList.add('adm-hidden'); }
+  function showApp(){ $('login').classList.add('adm-hidden'); $('app').classList.remove('adm-hidden'); refreshAll(); }
+
+  $('login-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var msg = $('login-msg'); msg.classList.add('adm-hidden');
+    try {
+      var r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: $('l-email').value, password: $('l-pass').value }) });
+      if (!r.ok) {
+        var j = await r.json().catch(function(){ return {}; });
+        msg.textContent = j.error === 'not-configured'
+          ? 'Admin login is not configured yet (missing env vars — see HANDOFF.md).'
+          : 'Wrong email or password.';
+        msg.classList.remove('adm-hidden');
+        return;
+      }
+      $('l-pass').value = '';
+      showApp();
+    } catch (_) { msg.textContent = 'Network error — try again.'; msg.classList.remove('adm-hidden'); }
+  });
+
+  $('logout').addEventListener('click', async function () {
+    await fetch('/api/admin/logout', { method: 'POST' }).catch(function(){});
+    showLogin();
+  });
+
+  $('nav').addEventListener('click', function (e) {
+    var btn = e.target.closest('button'); if (!btn) return;
+    document.querySelectorAll('#nav button').forEach(function (b) { b.classList.toggle('on', b === btn); });
+    ['dash','projects','clients','bookings'].forEach(function (v) {
+      $('v-' + v).classList.toggle('adm-hidden', v !== btn.dataset.v);
+    });
+  });
+
+  // ---------- dashboard ----------
+  function renderDash() {
+    var projects = (window.PROJECTS_DATA || []);
+    var live = projects.filter(function (p) { return !p.draft; }).length;
+    var upcoming = state.bookings.filter(function (b) {
+      return b.status === 'scheduled' && b.shoot_date && new Date(b.shoot_date) >= new Date(new Date().toDateString());
+    }).sort(function (a, b) { return new Date(a.shoot_date) - new Date(b.shoot_date); });
+    var booked = state.bookings.filter(function (b) { return b.status !== 'canceled'; })
+      .reduce(function (sum, b) { return sum + (Number(b.price) || 0); }, 0);
+
+    $('stats').innerHTML =
+      '<div class="adm-stat"><b>' + live + '</b><span>Live projects</span></div>' +
+      '<div class="adm-stat"><b>' + (projects.length - live) + '</b><span>Drafts</span></div>' +
+      '<div class="adm-stat"><b>' + state.clients.length + '</b><span>Clients</span></div>' +
+      '<div class="adm-stat"><b>' + upcoming.length + '</b><span>Upcoming shoots</span></div>' +
+      '<div class="adm-stat"><b>' + money(booked) + '</b><span>Booked (all time)</span></div>';
+
+    $('upcoming').innerHTML = upcoming.length
+      ? '<table class="adm-table"><tr><th>Date</th><th>Property</th><th>Client</th><th class="hide-m">Type</th><th>Price</th></tr>' +
+        upcoming.map(function (b) {
+          return '<tr><td>' + dstr(b.shoot_date) + (b.shoot_time ? ' · ' + esc(b.shoot_time) : '') + '</td><td>' + esc(b.title) +
+            (b.location ? '<br><small style="color:var(--muted)">' + esc(b.location) + '</small>' : '') + '</td><td>' +
+            esc(b.client_name || '—') + '</td><td class="hide-m">' + esc(b.type || '—') + '</td><td>' + money(b.price) + '</td></tr>';
+        }).join('') + '</table>'
+      : '<p class="adm-empty">No upcoming shoots — add one under Bookings.</p>';
+  }
+
+  // ---------- projects ----------
+  function renderProjects() {
+    var projects = (window.PROJECTS_DATA || []);
+    $('projects-list').innerHTML = projects.length
+      ? '<table class="adm-table"><tr><th>Project</th><th class="hide-m">Location</th><th class="hide-m">Photos</th><th>Status</th><th></th></tr>' +
+        projects.map(function (p) {
+          var badge = p.draft ? '<span class="adm-badge adm-badge--draft">Draft</span>' : '<span class="adm-badge adm-badge--live">Live</span>';
+          var url = p.draft ? '/project?slug=' + encodeURIComponent(p.slug) : '/project/' + p.slug;
+          return '<tr><td>' + esc(p.title) + '</td><td class="hide-m">' + esc(p.location || '—') + '</td><td class="hide-m">' +
+            (p.gallery ? p.gallery.length : 0) + '</td><td>' + badge + '</td><td class="adm-row-act"><a href="' + url + '" target="_blank">View</a></td></tr>';
+        }).join('') + '</table>'
+      : '<p class="adm-empty">No projects found.</p>';
+  }
+
+  // ---------- clients ----------
+  function clientFormReset() {
+    $('client-form').reset(); $('c-id').value = '';
+    $('c-submit').textContent = 'Add client'; $('c-cancel').classList.add('adm-hidden');
+  }
+  function renderClients() {
+    $('clients-list').innerHTML = state.clients.length
+      ? '<table class="adm-table"><tr><th>Name</th><th>Contact</th><th class="hide-m">Brokerage</th><th class="hide-m">Bookings</th><th></th></tr>' +
+        state.clients.map(function (c) {
+          return '<tr><td>' + esc(c.name) + (c.notes ? '<br><small style="color:var(--muted)">' + esc(c.notes) + '</small>' : '') + '</td><td>' +
+            (c.email ? '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>' : '') + (c.phone ? '<br>' + esc(c.phone) : (c.email ? '' : '—')) +
+            '</td><td class="hide-m">' + esc(c.brokerage || '—') + '</td><td class="hide-m">' + (c.booking_count || 0) +
+            '</td><td class="adm-row-act"><button data-edit="' + c.id + '">Edit</button><button class="del" data-del="' + c.id + '">Delete</button></td></tr>';
+        }).join('') + '</table>'
+      : '<p class="adm-empty">No clients yet — add your first above.</p>';
+
+    var sel = $('b-client');
+    var current = sel.value;
+    sel.innerHTML = '<option value="">—</option>' + state.clients.map(function (c) {
+      return '<option value="' + c.id + '">' + esc(c.name) + '</option>';
+    }).join('');
+    sel.value = current;
+  }
+
+  $('client-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var body = { id: $('c-id').value, name: $('c-name').value, email: $('c-email').value,
+                 phone: $('c-phone').value, brokerage: $('c-brokerage').value, notes: $('c-notes').value };
+    try {
+      await api('clients', body.id ? 'PUT' : 'POST', body);
+      clientFormReset(); await loadClients(); renderDash();
+    } catch (err) { flash('c-msg', friendly(err), true); }
+  });
+  $('c-cancel').addEventListener('click', clientFormReset);
+
+  $('clients-list').addEventListener('click', async function (e) {
+    var ed = e.target.dataset.edit, del = e.target.dataset.del;
+    if (ed) {
+      var c = state.clients.find(function (x) { return x.id == ed; }); if (!c) return;
+      $('c-id').value = c.id; $('c-name').value = c.name; $('c-email').value = c.email || '';
+      $('c-phone').value = c.phone || ''; $('c-brokerage').value = c.brokerage || ''; $('c-notes').value = c.notes || '';
+      $('c-submit').textContent = 'Save changes'; $('c-cancel').classList.remove('adm-hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (del) {
+      if (!confirm('Delete this client? Their bookings are kept (unlinked).')) return;
+      try { await api('clients', 'DELETE', { id: del }); await loadClients(); renderDash(); }
+      catch (err) { flash('c-msg', friendly(err), true); }
+    }
+  });
+
+  // ---------- bookings ----------
+  function bookingFormReset() {
+    $('booking-form').reset(); $('b-id').value = '';
+    $('b-submit').textContent = 'Add booking'; $('b-cancel').classList.add('adm-hidden');
+  }
+  function renderBookings() {
+    $('bookings-list').innerHTML = state.bookings.length
+      ? '<table class="adm-table"><tr><th>Date</th><th>Property</th><th class="hide-m">Client</th><th>Price</th><th>Status</th><th></th></tr>' +
+        state.bookings.map(function (b) {
+          return '<tr><td>' + dstr(b.shoot_date) + '</td><td>' + esc(b.title) +
+            (b.location ? '<br><small style="color:var(--muted)">' + esc(b.location) + '</small>' : '') +
+            '</td><td class="hide-m">' + esc(b.client_name || '—') + '</td><td>' + money(b.price) +
+            '</td><td><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span>' +
+            '</td><td class="adm-row-act"><button data-edit="' + b.id + '">Edit</button><button class="del" data-del="' + b.id + '">Delete</button></td></tr>';
+        }).join('') + '</table>'
+      : '<p class="adm-empty">No bookings yet — add your first above.</p>';
+  }
+
+  $('booking-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var body = { id: $('b-id').value, title: $('b-title').value, client_id: $('b-client').value,
+                 location: $('b-location').value, shoot_date: $('b-date').value, shoot_time: $('b-time').value,
+                 type: $('b-type').value, price: $('b-price').value, status: $('b-status').value, notes: $('b-notes').value };
+    try {
+      await api('bookings', body.id ? 'PUT' : 'POST', body);
+      bookingFormReset(); await loadBookings(); renderDash();
+    } catch (err) { flash('b-msg', friendly(err), true); }
+  });
+  $('b-cancel').addEventListener('click', bookingFormReset);
+
+  $('bookings-list').addEventListener('click', async function (e) {
+    var ed = e.target.dataset.edit, del = e.target.dataset.del;
+    if (ed) {
+      var b = state.bookings.find(function (x) { return x.id == ed; }); if (!b) return;
+      $('b-id').value = b.id; $('b-title').value = b.title; $('b-client').value = b.client_id || '';
+      $('b-location').value = b.location || ''; $('b-date').value = b.shoot_date ? String(b.shoot_date).slice(0, 10) : '';
+      $('b-time').value = b.shoot_time || ''; $('b-type').value = b.type || 'Architectural Photography';
+      $('b-price').value = b.price == null ? '' : b.price; $('b-status').value = b.status; $('b-notes').value = b.notes || '';
+      $('b-submit').textContent = 'Save changes'; $('b-cancel').classList.remove('adm-hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (del) {
+      if (!confirm('Delete this booking?')) return;
+      try { await api('bookings', 'DELETE', { id: del }); await loadBookings(); renderDash(); }
+      catch (err) { flash('b-msg', friendly(err), true); }
+    }
+  });
+
+  // ---------- shared ----------
+  function friendly(err) {
+    return String(err.message) === 'db-not-configured'
+      ? 'Database not connected yet — create the Neon database in Vercel (see HANDOFF.md).'
+      : 'Something went wrong — try again.';
+  }
+  function flash(id, text, isErr) {
+    var el = $(id); el.textContent = text;
+    el.classList.remove('adm-hidden'); el.classList.toggle('err', !!isErr);
+    setTimeout(function () { el.classList.add('adm-hidden'); }, 6000);
+  }
+  async function loadClients(){ state.clients = (await api('clients')).clients; renderClients(); }
+  async function loadBookings(){ state.bookings = (await api('bookings')).bookings; renderBookings(); }
+  async function refreshAll() {
+    renderProjects();
+    try { await loadClients(); await loadBookings(); }
+    catch (err) {
+      if (String(err.message) !== 'unauthorized') {
+        $('clients-list').innerHTML = '<p class="adm-empty">' + friendly(err) + '</p>';
+        $('bookings-list').innerHTML = '<p class="adm-empty">' + friendly(err) + '</p>';
+      }
+    }
+    renderDash();
+  }
+
+  // ---------- boot: session check ----------
+  fetch('/api/admin/me').then(function (r) { r.ok ? showApp() : showLogin(); }).catch(showLogin);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "jcs-website",
+  "private": true,
+  "description": "jacobcschrader.com — static site + Vercel functions (contact form, admin)",
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.0"
+  }
+}

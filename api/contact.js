@@ -12,7 +12,7 @@
 //  there, not here.
 // =====================================================================
 
-const { sendEmail, brandedHtml, OWNER } = require("./_lib/email.js");
+const { sendEmail, brandedHtml, detailRow, SANS, INK, PAPER_WARM, NAVY, OWNER } = require("./_lib/email.js");
 
 const escHtml = (s) =>
   String(s).replace(/[&<>"']/g, (c) =>
@@ -56,6 +56,18 @@ module.exports = async function handler(req, res) {
         "",
         message,
       ].filter(Boolean).join("\n"),
+      html: brandedHtml({
+        eyebrowText: "New enquiry",
+        headline: escHtml(name),
+        bodyHtml:
+          `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:2px 0 22px;">` +
+          detailRow("Email", `<a href="mailto:${escHtml(email)}" style="color:${NAVY};">${escHtml(email)}</a>`) +
+          (phone ? detailRow("Phone", escHtml(phone)) : "") +
+          (type ? detailRow("Type", escHtml(type)) : "") +
+          `</table>` +
+          `<div style="background:${PAPER_WARM};padding:20px 22px;font-family:${SANS};font-size:14.5px;line-height:1.7;color:${INK};white-space:pre-line;">${escHtml(message)}</div>` +
+          `<p style="margin:18px 0 0;font-size:12.5px;color:#8a94a6;">Reply to this email to answer ${escHtml(name)} directly.</p>`,
+      }),
     });
   } catch (e) {
     res.status(502).json({ error: "send-failed" });
@@ -76,11 +88,13 @@ module.exports = async function handler(req, res) {
         "jacxbschrader@gmail.com or (408) 824-8719.\n\n" +
         "— Jacob Schrader\njacobcschrader.com",
       html: brandedHtml({
+        eyebrowText: "Enquiry received",
         headline: "Thank you for your enquiry.",
         bodyHtml:
           `<p style="margin:0 0 14px;">Hi ${escHtml(name)},</p>` +
           `<p style="margin:0 0 14px;">Your enquiry has been received — I reply personally, usually within 24&nbsp;hours.</p>` +
           `<p style="margin:0;">If it's time-sensitive, reach me directly at <a href="mailto:jacxbschrader@gmail.com" style="color:#0f2240;">jacxbschrader@gmail.com</a> or (408)&nbsp;824-8719.</p>`,
+        cta: { label: "View the work", url: "https://www.jacobcschrader.com/projects" },
       }),
     });
   } catch (e) {
