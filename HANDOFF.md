@@ -323,3 +323,16 @@ project publishing still goes through the normal Claude workflow.
   version of the .ics (no price/notes). Google quick-add links included.
 - Jacob's copy keeps the .ics attachment as a fallback when the direct
   Google Calendar write isn't configured.
+
+### Create-project form (Visaro-style)
+
+Rebuilt to mirror The Visaro's New Project modal, adapted for JCS:
+structured address (street/city/state/zip/sqft — location string is
+derived), client select with inline "+ New" client creation, Service
+dropdown, grouped Addons checkboxes (Photography/Videography/Universal,
+trimmed premium list in admin.html ADDONS) that auto-compose the
+Deliverables text, manual Price + Travel fee/note, twilight slot,
+delivery link, access notes, and a "Show price in confirmation" toggle
+(hides the Total row in the client's confirmation email when off).
+New bookings columns: city, state, zip, sqft, addons(json), travel_fee,
+travel_note, show_price. No pricing engine by choice — price is manual.

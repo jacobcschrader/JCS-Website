@@ -228,6 +228,11 @@ small.mut { color: var(--muted); }
               view: localStorage.getItem('adm-view') || 'pipeline', q: '', clientFilter: '', collapsed: {} };
 var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', delivered:'#7a5fb8', completed:'#3f7a4f', paid:'#1d4d2a' };
   var TYPES = ['Architectural Photography','Film / Videography','Aerial & Drone','Full Campaign (Stills + Film)','Other'];
+  var ADDONS = {
+    'Photography': ['HDR photography','Drone photos','Twilight photos','Vertical / vignette photos','Virtual staging'],
+    'Videography': ['The Signature Cut','Twilight video','Vertical reel'],
+    'Universal':   ['2D floor plan','Dedicated listing website']
+  };
   var STAGES = ['upcoming','editing','revisions','delivered','completed','paid'];   // pipeline order
   var STAGE_LABEL = { upcoming:'Upcoming', editing:'Editing', revisions:'Revisions', delivered:'Delivered', completed:'Completed', paid:'Paid' };
   var STATUSES = STAGES.concat(['canceled']);
@@ -306,7 +311,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
   }
 
   // ================= client form =================
-  function clientModal(c) {
+  function clientModal(c, onSaved) {
     c = c || {};
     openModal(c.id ? 'Edit client' : 'New client',
       fld('f-name', 'Name *', '<input id="f-name" required value="' + esc(c.name || '') + '">') +
@@ -317,58 +322,105 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       async function () {
         var body = { id: c.id, name: $('f-name').value, email: $('f-email').value, phone: $('f-phone').value,
                      brokerage: $('f-brokerage').value, notes: $('f-notes').value };
-        await api('clients', c.id ? 'PUT' : 'POST', body);
-        await reload(); render();
+        var j = await api('clients', c.id ? 'PUT' : 'POST', body);
+        await reload();
+        if (onSaved) onSaved(j.client); else render();
       });
   }
 
   // ================= project (booking) form =================
-  function bookingModal(b, presetClient) {
+  function bookingModal(b, presetClient, draft) {
     b = b || {};
+    var v = draft || b;   // draft = values captured before a quick client-create
+    var checkedAddons = [];
+    try { checkedAddons = JSON.parse(v.addons || '[]'); } catch (e) {}
     var clientOpts = '<option value="">—</option>' + state.clients.map(function (c) {
-      var sel = (b.client_id || presetClient) == c.id ? ' selected' : '';
+      var sel = (v.client_id || presetClient) == c.id ? ' selected' : '';
       return '<option value="' + c.id + '"' + sel + '>' + esc(c.name) + '</option>';
     }).join('');
-    var typeOpts = TYPES.map(function (t) { return '<option' + (b.type === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('');
-    var statusOpts = STATUSES.map(function (s) { return '<option value="' + s + '"' + (b.status === s ? ' selected' : '') + '>' + (STAGE_LABEL[s] || 'Canceled') + '</option>'; }).join('');
+    var typeOpts = TYPES.map(function (t) { return '<option' + (v.type === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('');
+    var statusOpts = STATUSES.map(function (s) { return '<option value="' + s + '"' + (v.status === s ? ' selected' : '') + '>' + (STAGE_LABEL[s] || 'Canceled') + '</option>'; }).join('');
+    var addonsHtml = Object.keys(ADDONS).map(function (group) {
+      return '<div style="margin-top:0.6rem"><div style="font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem">' + group + '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.35rem 1rem">' +
+        ADDONS[group].map(function (label) {
+          var on = checkedAddons.indexOf(label) > -1 ? ' checked' : '';
+          return '<label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--ink);text-transform:none;letter-spacing:0;cursor:pointer">' +
+            '<input type="checkbox" class="f-addon" value="' + esc(label) + '"' + on + ' style="width:auto"> ' + esc(label) + '</label>';
+        }).join('') + '</div></div>';
+    }).join('');
+
     openModal(b.id ? 'Edit project' : 'New project',
-      fld('f-title', 'Property / title *', '<input id="f-title" required placeholder="123 Main St" value="' + esc(b.title || '') + '">') +
-      fld('f-client', 'Client', '<select id="f-client">' + clientOpts + '</select>') +
-      fld('f-location', 'Location', '<input id="f-location" placeholder="Alamo, CA" value="' + esc(b.location || '') + '">') +
-      fld('f-date', 'Shoot date', '<input id="f-date" type="date" value="' + (b.shoot_date ? String(b.shoot_date).slice(0, 10) : '') + '">') +
-      fld('f-time', 'Shoot time', '<input id="f-time" type="time" value="' + esc((b.shoot_time || '').slice(0, 5)) + '">') +
-      fld('f-twidate', 'Twilight <small style="text-transform:none;letter-spacing:0">(optional — date blank = same day)</small>', '<input id="f-twidate" type="date" value="' + (b.twilight_date ? String(b.twilight_date).slice(0, 10) : '') + '">') +
-      fld('f-twitime', 'Twilight time <small style="text-transform:none;letter-spacing:0">(optional)</small>', '<input id="f-twitime" type="time" value="' + esc((b.twilight_time || '').slice(0, 5)) + '">') +
-      fld('f-type', 'Type', '<select id="f-type">' + typeOpts + '</select>') +
-      fld('f-price', 'Price ($)', '<input id="f-price" type="number" min="0" step="1" value="' + (b.price == null ? '' : b.price) + '">') +
+      '<div class="adm-field full"><label for="f-title">Property address *</label><input id="f-title" required placeholder="7750 Lahontan Drive" value="' + esc(v.title || '') + '"></div>' +
+      fld('f-city', 'City', '<input id="f-city" placeholder="Truckee" value="' + esc(v.city || '') + '">') +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.9rem">' +
+        '<div class="adm-field"><label for="f-state">State</label><input id="f-state" value="' + esc(v.state || 'CA') + '"></div>' +
+        '<div class="adm-field"><label for="f-zip">Zip</label><input id="f-zip" value="' + esc(v.zip || '') + '"></div>' +
+        '<div class="adm-field"><label for="f-sqft">Sqft</label><input id="f-sqft" type="number" min="0" value="' + (v.sqft == null ? '' : v.sqft) + '"></div>' +
+      '</div>' +
+      '<div class="adm-field"><label for="f-client">Client</label><div style="display:flex;gap:0.5rem"><select id="f-client" style="flex:1">' + clientOpts + '</select>' +
+        '<button type="button" class="adm-btn adm-btn--ghost" id="f-newclient" style="padding:0.55rem 0.9rem">+ New</button></div></div>' +
+      fld('f-type', 'Service', '<select id="f-type">' + typeOpts + '</select>') +
+      fld('f-date', 'Shoot date', '<input id="f-date" type="date" value="' + (v.shoot_date ? String(v.shoot_date).slice(0, 10) : '') + '">') +
+      fld('f-time', 'Shoot time', '<input id="f-time" type="time" value="' + esc((v.shoot_time || '').slice(0, 5)) + '">') +
+      fld('f-twidate', 'Twilight <small style="text-transform:none;letter-spacing:0">(optional — date blank = same day)</small>', '<input id="f-twidate" type="date" value="' + (v.twilight_date ? String(v.twilight_date).slice(0, 10) : '') + '">') +
+      fld('f-twitime', 'Twilight time <small style="text-transform:none;letter-spacing:0">(optional)</small>', '<input id="f-twitime" type="time" value="' + esc((v.twilight_time || '').slice(0, 5)) + '">') +
+      '<div class="adm-field full"><label>Addons <small style="text-transform:none;letter-spacing:0">(builds the deliverables list)</small></label>' + addonsHtml + '</div>' +
+      '<div class="adm-field full"><label for="f-deliverables">Deliverables <small style="text-transform:none;letter-spacing:0">(shown to client — edit freely)</small></label><textarea id="f-deliverables">' + esc(v.deliverables || '') + '</textarea></div>' +
+      fld('f-price', 'Price ($)', '<input id="f-price" type="number" min="0" step="1" value="' + (v.price == null ? '' : v.price) + '">') +
       fld('f-status', 'Stage', '<select id="f-status">' + statusOpts + '</select>') +
-      fld('f-delivery', 'Delivery link', '<input id="f-delivery" type="url" placeholder="https://…" value="' + esc(b.delivery_url || '') + '">') +
-      fld('f-delivered', 'Delivered on', '<input id="f-delivered" type="date" value="' + (b.delivered_at ? String(b.delivered_at).slice(0, 10) : '') + '">') +
-      '<div class="adm-field full"><label for="f-deliverables">Deliverables <small style="text-transform:none;letter-spacing:0">(shown to client · e.g. HDR photography · Drone photos · Twilight video)</small></label><textarea id="f-deliverables">' + esc(b.deliverables || '') + '</textarea></div>' +
-      '<div class="adm-field full"><label for="f-notes">Access notes <small style="text-transform:none;letter-spacing:0">(internal — goes on your calendar only)</small></label><textarea id="f-notes">' + esc(b.notes || '') + '</textarea></div>',
+      fld('f-travel', 'Travel fee ($)', '<input id="f-travel" type="number" min="0" step="1" placeholder="e.g. 150" value="' + (v.travel_fee == null ? '' : v.travel_fee) + '">') +
+      fld('f-travelnote', 'Travel fee note', '<input id="f-travelnote" placeholder="e.g. Tahoe trip" value="' + esc(v.travel_note || '') + '">') +
+      fld('f-delivery', 'Delivery link', '<input id="f-delivery" type="url" placeholder="https://…" value="' + esc(v.delivery_url || '') + '">') +
+      fld('f-delivered', 'Delivered on', '<input id="f-delivered" type="date" value="' + (v.delivered_at ? String(v.delivered_at).slice(0, 10) : '') + '">') +
+      '<div class="adm-field full"><label for="f-notes">Access notes <small style="text-transform:none;letter-spacing:0">(internal — your calendar only)</small></label><textarea id="f-notes" placeholder="Gate codes, staging, access notes…">' + esc(v.notes || '') + '</textarea></div>' +
+      '<div class="adm-field full"><label style="display:flex;align-items:center;gap:0.5rem;text-transform:none;letter-spacing:0;font-size:0.85rem;color:var(--ink);cursor:pointer">' +
+        '<input type="checkbox" id="f-showprice" style="width:auto"' + (v.show_price === false ? '' : ' checked') + '> Show price in the client\'s booking confirmation</label></div>',
       async function () {
-        var body = { id: b.id, title: $('f-title').value, client_id: $('f-client').value, location: $('f-location').value,
-                     shoot_date: $('f-date').value, shoot_time: $('f-time').value, type: $('f-type').value,
-                     twilight_date: $('f-twidate').value, twilight_time: $('f-twitime').value,
-                     deliverables: $('f-deliverables').value,
-                     price: $('f-price').value, status: $('f-status').value, notes: $('f-notes').value,
-                     delivery_url: $('f-delivery').value, delivered_at: $('f-delivered').value };
+        var body = collectProjectForm(b.id);
         var j = await api('bookings', b.id ? 'PUT' : 'POST', body);
         await reload();
         if (!b.id && j.booking) go('project/' + j.booking.id); else render();
       });
+
+    // addons → deliverables composer
+    function checkedList() {
+      return Array.prototype.map.call(document.querySelectorAll('.f-addon:checked'), function (x) { return x.value; });
+    }
+    document.querySelectorAll('.f-addon').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        $('f-deliverables').value = checkedList().join(' · ');
+      });
+    });
+    // inline new client: stash the draft, create the client, come back
+    $('f-newclient').addEventListener('click', function () {
+      var draftNow = collectProjectForm(b.id);
+      clientModal(null, function (newClient) {
+        bookingModal(b, newClient ? newClient.id : null, draftNow);
+      });
+    });
+
+    function collectProjectForm(id) {
+      return { id: id, title: $('f-title').value, client_id: $('f-client').value,
+               city: $('f-city').value, state: $('f-state').value, zip: $('f-zip').value, sqft: $('f-sqft').value,
+               shoot_date: $('f-date').value, shoot_time: $('f-time').value, type: $('f-type').value,
+               twilight_date: $('f-twidate').value, twilight_time: $('f-twitime').value,
+               addons: JSON.stringify(checkedList()), deliverables: $('f-deliverables').value,
+               price: $('f-price').value, status: $('f-status').value,
+               travel_fee: $('f-travel').value, travel_note: $('f-travelnote').value,
+               delivery_url: $('f-delivery').value, delivered_at: $('f-delivered').value,
+               notes: $('f-notes').value, show_price: $('f-showprice').checked };
+    }
   }
 
   async function setStage(id, status) {
     var b = state.bookings.find(function (x) { return x.id == id; });
     if (!b || b.status === status) return;
-    await api('bookings', 'PUT', {
-      id: b.id, title: b.title, client_id: b.client_id, location: b.location, shoot_date: b.shoot_date,
-      shoot_time: b.shoot_time, type: b.type, price: b.price, status: status, notes: b.notes,
-      twilight_date: b.twilight_date, twilight_time: b.twilight_time, deliverables: b.deliverables,
-      delivery_url: b.delivery_url,
+    var body = Object.assign({}, b, {
+      status: status,
       delivered_at: b.delivered_at || (status === 'delivered' ? new Date().toISOString().slice(0, 10) : null)
     });
+    await api('bookings', 'PUT', body);
     await reload(); render();
   }
 
@@ -611,7 +663,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         '<div class="adm-kv"><label>Client</label><div>' + (b.client_id ? '<a style="cursor:pointer" onclick="ADM.go(\'client/' + b.client_id + '\')">' + esc(b.client_name || '') + '</a>' : '—') + '</div></div>' +
         '<div class="adm-kv"><label>Location</label><div>' + esc(b.location || '—') + '</div></div>' +
         '<div class="adm-kv"><label>Type</label><div>' + esc(b.type || '—') + '</div></div>' +
-        '<div class="adm-kv"><label>Price</label><div>' + money(b.price) + '</div></div>' +
+        '<div class="adm-kv"><label>Sqft</label><div>' + (b.sqft ? Number(b.sqft).toLocaleString() : '—') + '</div></div>' +
+        '<div class="adm-kv"><label>Price</label><div>' + money(b.price) + (b.travel_fee ? ' <small class="mut">+ ' + money(b.travel_fee) + ' travel' + (b.travel_note ? ' (' + esc(b.travel_note) + ')' : '') + '</small>' : '') + '</div></div>' +
         '<div class="adm-kv"><label>Delivered</label><div>' + (b.delivered_at ? dstr(b.delivered_at) : '—') + '</div></div>' +
         '<div class="adm-kv"><label>Delivery link</label><div>' + (b.delivery_url ? '<a href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open &rarr;</a>' : '—') + '</div></div>' +
       '</div>' +
