@@ -8,7 +8,7 @@
 //  Copy the printed hash into Vercel → Settings → Environment
 //  Variables → ADMIN_PASSWORD_HASH, then redeploy.
 // =====================================================================
-import { scryptSync, randomBytes } from "node:crypto";
+import { pbkdf2Sync, randomBytes } from "node:crypto";
 import { createInterface } from "node:readline";
 
 const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -24,8 +24,8 @@ rl.question("", (password) => {
     process.exit(1);
   }
   const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, salt, 64).toString("hex");
+  const hash = pbkdf2Sync(password, salt, 310000, 32, "sha256").toString("hex");
   console.log("\nADMIN_PASSWORD_HASH value (copy everything on the next line):\n");
-  console.log(`${salt}:${hash}`);
+  console.log(`${salt}:310000:${hash}`);
   console.log("\nAdd it in Vercel → Settings → Environment Variables, then redeploy.");
 });

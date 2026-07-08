@@ -280,8 +280,9 @@ gallery delivery emails.
 **One-time setup (Jacob):**
 1. Vercel → project → **Storage → Create Database → Neon** (free) →
    connect to the project. This injects `DATABASE_URL` automatically.
-2. Run `node tools/hash-password.mjs` in Terminal (from the JCS-Website
-   folder), type a password, copy the printed hash.
+2. Double-click `tools/hash-password.html` (opens in the browser, no
+   install needed), type a password, copy the hash. (`tools/hash-password.mjs`
+   does the same from Terminal if Node is installed.)
 3. Vercel env vars (Settings → Environment Variables):
    - `ADMIN_EMAIL` = jacxbschrader@gmail.com
    - `ADMIN_PASSWORD_HASH` = (the hash from step 2 — NOT the password)

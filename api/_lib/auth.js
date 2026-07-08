@@ -16,17 +16,23 @@ const crypto = require("node:crypto");
 const COOKIE = "jcs_session";
 const SESSION_DAYS = 7;
 
-// ---- password hashing (scrypt) --------------------------------------
+// ---- password hashing (PBKDF2-SHA256) --------------------------------
+// Format: salt:iterations:hash — chosen because the hash can also be
+// generated in a browser (tools/hash-password.html) with Web Crypto,
+// so no local Node install is ever needed.
+const PBKDF2_ITER = 310000;
+
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
-  const hash = crypto.scryptSync(password, salt, 64).toString("hex");
-  return `${salt}:${hash}`;
+  const hash = crypto.pbkdf2Sync(password, salt, PBKDF2_ITER, 32, "sha256").toString("hex");
+  return `${salt}:${PBKDF2_ITER}:${hash}`;
 }
 
 function verifyPassword(password, stored) {
-  const [salt, hash] = String(stored || "").split(":");
-  if (!salt || !hash) return false;
-  const candidate = crypto.scryptSync(password, salt, 64);
+  const [salt, iterStr, hash] = String(stored || "").split(":");
+  const iter = parseInt(iterStr, 10);
+  if (!salt || !iter || !hash) return false;
+  const candidate = crypto.pbkdf2Sync(password, salt, iter, 32, "sha256");
   const expected = Buffer.from(hash, "hex");
   return candidate.length === expected.length && crypto.timingSafeEqual(candidate, expected);
 }
