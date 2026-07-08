@@ -4,14 +4,14 @@
 //    POST   {fields}  → create
 //    PUT    {id, ...} → update
 //    DELETE {id}      → delete
-//  Pipeline stages: upcoming | editing | delivered | completed | paid
+//  Pipeline stages: upcoming | editing | revisions | delivered | completed | paid
 //  (+ canceled). Delivery fields: delivery_url, delivered_at.
 // =====================================================================
 const { requireAuth } = require("../_lib/auth.js");
 const { db } = require("../_lib/db.js");
 
 const field = (v, max = 300) => String(v == null ? "" : v).trim().slice(0, max);
-const STATUSES = ["upcoming", "editing", "delivered", "completed", "paid", "canceled"];
+const STATUSES = ["upcoming", "editing", "revisions", "delivered", "completed", "paid", "canceled"];
 
 function parse(b) {
   return {

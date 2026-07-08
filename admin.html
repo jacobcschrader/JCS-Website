@@ -51,6 +51,7 @@ body { background: var(--paper-warm); }
 .adm-badge--draft { background: #f4ede0; color: #8a6d2f; }
 .adm-badge--upcoming { background: #e8edf5; color: var(--navy); }
 .adm-badge--editing { background: #f4ede0; color: #8a6d2f; }
+.adm-badge--revisions { background: #f5ece4; color: #8a4d2f; }
 .adm-badge--delivered { background: #ece8f5; color: #4a3d7a; }
 .adm-badge--completed { background: #e8f0e8; color: #2e5d3a; }
 .adm-badge--paid { background: #dfeee2; color: #1d4d2a; }
@@ -86,7 +87,7 @@ small.mut { color: var(--muted); }
 .adm-feed { margin: 0; padding: 0; }
 
 /* ---- Pipeline (kanban) ---- */
-.adm-pipe { display: grid; grid-template-columns: repeat(5, minmax(215px, 1fr)); gap: 1rem; overflow-x: auto; align-items: start; padding-bottom: 0.5rem; }
+.adm-pipe { display: grid; grid-template-columns: repeat(6, minmax(190px, 1fr)); gap: 1rem; overflow-x: auto; align-items: start; padding-bottom: 0.5rem; }
 @media (max-width: 1200px) { .adm-pipe { display: flex; } .adm-pipe .adm-col { flex: 0 0 240px; } }
 .adm-col { background: rgba(15,34,64,0.045); padding: 0.8rem; min-height: 220px; }
 .adm-col.dragover { outline: 2px dashed var(--navy); outline-offset: -2px; }
@@ -102,6 +103,27 @@ small.mut { color: var(--muted); }
 .adm-cardlet small { display: block; color: var(--muted); font-size: 0.76rem; line-height: 1.5; }
 .adm-cardlet .adv { position: absolute; right: 0.5rem; bottom: 0.45rem; background: none; border: 0; cursor: pointer; color: var(--muted); font-size: 1rem; padding: 0.2rem 0.4rem; }
 .adm-cardlet .adv:hover { color: var(--navy); }
+
+/* ---- Pipeline toolbar + stacked stages ---- */
+.adm-tools { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.4rem; }
+.adm-seg { display: inline-flex; border: 1px solid var(--line); background: #fff; }
+.adm-seg button { background: none; border: 0; cursor: pointer; font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.55rem 1rem; }
+.adm-seg button.on { background: var(--navy); color: #fff; }
+.adm-tools input[type=search], .adm-tools select { font-family: var(--sans); font-size: 0.85rem; color: var(--ink); background: #fff; border: 1px solid var(--line); padding: 0.5rem 0.7rem; outline: none; }
+.adm-tools input[type=search] { min-width: 200px; }
+.adm-tools input[type=search]:focus, .adm-tools select:focus { border-color: var(--navy); }
+
+.adm-stage { background: #fff; border-left: 3px solid var(--navy); margin-bottom: 1.1rem; }
+.adm-stage__head { display: flex; align-items: baseline; gap: 0.7rem; padding: 0.95rem 1.2rem; cursor: pointer; user-select: none; }
+.adm-stage__head b { font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600; }
+.adm-stage__head .n { font-size: 0.74rem; color: var(--muted); }
+.adm-stage__head .s { font-size: 0.74rem; color: var(--muted); margin-left: auto; }
+.adm-stage__head .chev { color: var(--muted); font-size: 0.8rem; transition: transform 0.2s; }
+.adm-stage.closed .chev { transform: rotate(-90deg); }
+.adm-stage__body { padding: 0 1.2rem 1.1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.8rem; }
+.adm-stage.closed .adm-stage__body { display: none; }
+.adm-stage.dragover { outline: 2px dashed var(--navy); outline-offset: -2px; }
+.adm-stage__body .adm-cardlet { margin-bottom: 0; border: 1px solid var(--line-soft); }
 
 /* ---- Deliveries ---- */
 .adm-delgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.2rem; }
@@ -201,10 +223,12 @@ small.mut { color: var(--muted); }
   function money(n){ return n==null||n===''?'—':'$'+Number(n).toLocaleString(); }
   function dstr(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
 
-  var state = { clients: [], bookings: [], loaded: false };
+  var state = { clients: [], bookings: [], loaded: false,
+              view: localStorage.getItem('adm-view') || 'pipeline', q: '', clientFilter: '', collapsed: {} };
+var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', delivered:'#7a5fb8', completed:'#3f7a4f', paid:'#1d4d2a' };
   var TYPES = ['Architectural Photography','Film / Videography','Aerial & Drone','Full Campaign (Stills + Film)','Other'];
-  var STAGES = ['upcoming','editing','delivered','completed','paid'];   // pipeline order
-  var STAGE_LABEL = { upcoming:'Upcoming', editing:'Editing', delivered:'Delivered', completed:'Completed', paid:'Paid' };
+  var STAGES = ['upcoming','editing','revisions','delivered','completed','paid'];   // pipeline order
+  var STAGE_LABEL = { upcoming:'Upcoming', editing:'Editing', revisions:'Revisions', delivered:'Delivered', completed:'Completed', paid:'Paid' };
   var STATUSES = STAGES.concat(['canceled']);
 
   async function api(path, method, body) {
@@ -397,27 +421,72 @@ small.mut { color: var(--muted); }
       '</div></div>';
   }
 
+  function pipeItems() {
+    var q = state.q.toLowerCase();
+    return state.bookings.filter(function (b) {
+      if (state.clientFilter && String(b.client_id) !== state.clientFilter) return false;
+      if (q && (esc(b.title) + ' ' + (b.client_name || '') + ' ' + (b.location || '')).toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+  }
+
+  function cardlet(b, next) {
+    return '<div class="adm-cardlet" draggable="true" data-id="' + b.id + '">' +
+      '<b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) + '</b>' +
+      '<small>' + esc(b.client_name || '') + (b.shoot_date ? (b.client_name ? ' · ' : '') + dstr(b.shoot_date) : '') +
+      (b.price ? '<br>' + money(b.price) : '') + '</small>' +
+      (next ? '<button class="adv" title="Move to ' + STAGE_LABEL[next] + '" onclick="ADM.stage(' + b.id + ',\'' + next + '\')">&rsaquo;</button>' : '') +
+    '</div>';
+  }
+
   function vPipeline() {
-    var cols = STAGES.map(function (stage) {
-      var items = state.bookings.filter(function (b) { return b.status === stage; })
-        .sort(function (a, b) { return new Date(a.shoot_date || 0) - new Date(b.shoot_date || 0); });
-      var sum = items.reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
-      var next = STAGES[STAGES.indexOf(stage) + 1];
-      return '<div class="adm-col" data-stage="' + stage + '">' +
-        '<div class="adm-col__head"><b>' + STAGE_LABEL[stage] + '</b><span>' + items.length + '</span>' +
-        (sum ? '<span class="adm-col__sum">' + money(sum) + '</span>' : '') + '</div>' +
-        items.map(function (b) {
-          return '<div class="adm-cardlet" draggable="true" data-id="' + b.id + '">' +
-            '<b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) + '</b>' +
-            '<small>' + esc(b.client_name || '') + (b.shoot_date ? (b.client_name ? ' · ' : '') + dstr(b.shoot_date) : '') +
-            (b.price ? '<br>' + money(b.price) : '') + '</small>' +
-            (next ? '<button class="adv" title="Move to ' + STAGE_LABEL[next] + '" onclick="ADM.stage(' + b.id + ',\'' + next + '\')">&rsaquo;</button>' : '') +
-          '</div>';
-        }).join('') + '</div>';
-    }).join('');
+    var items = pipeItems();
+    var toolbar = '<div class="adm-tools">' +
+      '<span class="adm-seg">' +
+        '<button class="' + (state.view === 'pipeline' ? 'on' : '') + '" onclick="ADM.view(\'pipeline\')">Pipeline</button>' +
+        '<button class="' + (state.view === 'board' ? 'on' : '') + '" onclick="ADM.view(\'board\')">Board</button>' +
+      '</span>' +
+      '<input type="search" id="pipe-q" placeholder="Search projects…" value="' + esc(state.q) + '" oninput="ADM.search(this.value)">' +
+      '<select onchange="ADM.clientFilter(this.value)"><option value="">All clients</option>' +
+        state.clients.map(function (c) {
+          return '<option value="' + c.id + '"' + (state.clientFilter == c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+        }).join('') + '</select></div>';
+
+    var body;
+    if (state.view === 'board') {
+      body = '<div class="adm-pipe" id="pipe">' + STAGES.map(function (stage) {
+        var list = items.filter(function (b) { return b.status === stage; })
+          .sort(function (x, y) { return new Date(x.shoot_date || 0) - new Date(y.shoot_date || 0); });
+        var sum = list.reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+        var next = STAGES[STAGES.indexOf(stage) + 1];
+        return '<div class="adm-col" data-stage="' + stage + '">' +
+          '<div class="adm-col__head"><b>' + STAGE_LABEL[stage] + '</b><span>' + list.length + '</span>' +
+          (sum ? '<span class="adm-col__sum">' + money(sum) + '</span>' : '') + '</div>' +
+          list.map(function (b) { return cardlet(b, next); }).join('') + '</div>';
+      }).join('') + '</div>';
+    } else {
+      body = '<div id="pipe">' + STAGES.map(function (stage) {
+        var list = items.filter(function (b) { return b.status === stage; })
+          .sort(function (x, y) { return new Date(x.shoot_date || 0) - new Date(y.shoot_date || 0); });
+        var sum = list.reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+        var next = STAGES[STAGES.indexOf(stage) + 1];
+        var closed = state.collapsed[stage] ? ' closed' : '';
+        return '<div class="adm-stage' + closed + '" data-stage="' + stage + '" style="border-left-color:' + STAGE_COLOR[stage] + '">' +
+          '<div class="adm-stage__head" onclick="ADM.fold(\'' + stage + '\')">' +
+            '<span class="chev">&#9662;</span><b style="color:' + STAGE_COLOR[stage] + '">' + STAGE_LABEL[stage] + '</b>' +
+            '<span class="n">' + list.length + ' item' + (list.length === 1 ? '' : 's') + '</span>' +
+            (sum ? '<span class="s">' + money(sum) + '</span>' : '<span class="s"></span>') +
+          '</div>' +
+          '<div class="adm-stage__body">' +
+            (list.length ? list.map(function (b) { return cardlet(b, next); }).join('')
+                         : '<p class="adm-empty" style="grid-column:1/-1;padding:0.2rem 0">Nothing in ' + STAGE_LABEL[stage].toLowerCase() + '.</p>') +
+          '</div></div>';
+      }).join('') + '</div>';
+    }
+
     var canceled = state.bookings.filter(function (b) { return b.status === 'canceled'; }).length;
     return head('Projects', '<button class="adm-btn" onclick="ADM.newBooking()">+ New project</button>') +
-      '<div class="adm-pipe" id="pipe">' + cols + '</div>' +
+      toolbar + body +
       (canceled ? '<p class="adm-empty">' + canceled + ' canceled project' + (canceled > 1 ? 's' : '') + ' hidden — find them via client pages.</p>' : '') +
       '<p class="adm-empty">Drag a card between stages, or use the &rsaquo; button to advance it.</p>';
   }
@@ -425,6 +494,7 @@ small.mut { color: var(--muted); }
   function wirePipeline() {
     var pipe = $('pipe'); if (!pipe) return;
     var draggedId = null;
+    var zone = function (el) { return el.closest ? el.closest('[data-stage]') : null; };
     pipe.addEventListener('dragstart', function (e) {
       var card = e.target.closest('.adm-cardlet'); if (!card) return;
       draggedId = card.dataset.id; card.classList.add('dragging');
@@ -432,15 +502,15 @@ small.mut { color: var(--muted); }
     });
     pipe.addEventListener('dragend', function (e) {
       var card = e.target.closest('.adm-cardlet'); if (card) card.classList.remove('dragging');
-      pipe.querySelectorAll('.adm-col').forEach(function (c) { c.classList.remove('dragover'); });
+      pipe.querySelectorAll('[data-stage]').forEach(function (c) { c.classList.remove('dragover'); });
     });
     pipe.addEventListener('dragover', function (e) {
-      var col = e.target.closest('.adm-col'); if (!col) return;
+      var col = zone(e.target); if (!col) return;
       e.preventDefault();
-      pipe.querySelectorAll('.adm-col').forEach(function (c) { c.classList.toggle('dragover', c === col); });
+      pipe.querySelectorAll('[data-stage]').forEach(function (c) { c.classList.toggle('dragover', c === col); });
     });
     pipe.addEventListener('drop', function (e) {
-      var col = e.target.closest('.adm-col'); if (!col || !draggedId) return;
+      var col = zone(e.target); if (!col || !draggedId) return;
       e.preventDefault();
       ADM.stage(draggedId, col.dataset.stage);
       draggedId = null;
@@ -558,6 +628,13 @@ small.mut { color: var(--muted); }
   // exposed for inline handlers
   window.ADM = {
     go: go,
+    view: function (v) { state.view = v; localStorage.setItem('adm-view', v); render(); },
+    fold: function (s) { state.collapsed[s] = !state.collapsed[s]; render(); },
+    search: function (q) {
+      state.q = q; render();
+      var el = $('pipe-q'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    },
+    clientFilter: function (v) { state.clientFilter = v; render(); },
     stage: function (id, s) { setStage(id, s).catch(function (e) { alert(friendly(e)); }); },
     newClient: function () { clientModal(); },
     editClient: function (id) { clientModal(state.clients.find(function (c) { return c.id == id; })); },
