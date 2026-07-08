@@ -42,10 +42,14 @@ function ensureSchema() {
         shoot_time text DEFAULT '',
         type       text DEFAULT '',
         price      numeric,
-        status     text NOT NULL DEFAULT 'scheduled',
+        status     text NOT NULL DEFAULT 'upcoming',
         notes      text DEFAULT '',
         created_at timestamptz NOT NULL DEFAULT now()
       )`;
+      // Pipeline upgrade: delivery fields + status rename (idempotent).
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_url text DEFAULT ''`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivered_at date`;
+      await s`UPDATE bookings SET status = 'upcoming' WHERE status = 'scheduled'`;
     })();
   }
   return _ready;

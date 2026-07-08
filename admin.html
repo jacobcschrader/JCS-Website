@@ -49,9 +49,11 @@ body { background: var(--paper-warm); }
 .adm-badge { display: inline-block; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.25rem 0.6rem; background: var(--paper-warm); color: var(--muted); }
 .adm-badge--live { background: #e8f0e8; color: #2e5d3a; }
 .adm-badge--draft { background: #f4ede0; color: #8a6d2f; }
-.adm-badge--scheduled { background: #e8edf5; color: var(--navy); }
-.adm-badge--completed { background: #e8f0e8; color: #2e5d3a; }
+.adm-badge--upcoming { background: #e8edf5; color: var(--navy); }
+.adm-badge--editing { background: #f4ede0; color: #8a6d2f; }
 .adm-badge--delivered { background: #ece8f5; color: #4a3d7a; }
+.adm-badge--completed { background: #e8f0e8; color: #2e5d3a; }
+.adm-badge--paid { background: #dfeee2; color: #1d4d2a; }
 .adm-badge--canceled { background: #f5e8e8; color: #7a3d3d; }
 
 .adm-card { background: #fff; padding: clamp(1.2rem, 2.5vw, 1.8rem); }
@@ -83,7 +85,34 @@ small.mut { color: var(--muted); }
 .adm-feed li small { display: block; color: var(--muted); margin-top: 0.15rem; }
 .adm-feed { margin: 0; padding: 0; }
 
-/* ---- Projects grid ---- */
+/* ---- Pipeline (kanban) ---- */
+.adm-pipe { display: grid; grid-template-columns: repeat(5, minmax(215px, 1fr)); gap: 1rem; overflow-x: auto; align-items: start; padding-bottom: 0.5rem; }
+@media (max-width: 1200px) { .adm-pipe { display: flex; } .adm-pipe .adm-col { flex: 0 0 240px; } }
+.adm-col { background: rgba(15,34,64,0.045); padding: 0.8rem; min-height: 220px; }
+.adm-col.dragover { outline: 2px dashed var(--navy); outline-offset: -2px; }
+.adm-col__head { display: flex; align-items: baseline; gap: 0.5rem; padding: 0.2rem 0.3rem 0.8rem; }
+.adm-col__head b { font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--navy); font-weight: 600; }
+.adm-col__head span { font-size: 0.66rem; color: var(--muted); }
+.adm-col__sum { margin-left: auto; font-size: 0.7rem; color: var(--muted); }
+.adm-cardlet { background: #fff; padding: 0.85rem 0.95rem; margin-bottom: 0.7rem; cursor: grab; box-shadow: 0 1px 3px rgba(15,34,64,0.06); position: relative; }
+.adm-cardlet:active { cursor: grabbing; }
+.adm-cardlet.dragging { opacity: 0.4; }
+.adm-cardlet b { display: block; font-family: var(--serif); font-weight: 500; font-size: 0.98rem; color: var(--navy); margin-bottom: 0.2rem; cursor: pointer; }
+.adm-cardlet b:hover { text-decoration: underline; text-underline-offset: 3px; }
+.adm-cardlet small { display: block; color: var(--muted); font-size: 0.76rem; line-height: 1.5; }
+.adm-cardlet .adv { position: absolute; right: 0.5rem; bottom: 0.45rem; background: none; border: 0; cursor: pointer; color: var(--muted); font-size: 1rem; padding: 0.2rem 0.4rem; }
+.adm-cardlet .adv:hover { color: var(--navy); }
+
+/* ---- Deliveries ---- */
+.adm-delgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.2rem; }
+.adm-del { background: #fff; padding: 1.2rem 1.3rem; }
+.adm-del b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.05rem; color: var(--navy); cursor: pointer; }
+.adm-del b:hover { text-decoration: underline; text-underline-offset: 3px; }
+.adm-del small { display: block; color: var(--muted); margin: 0.3rem 0 0.8rem; line-height: 1.6; }
+.adm-del .lnk { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--navy); text-decoration: underline; text-underline-offset: 4px; }
+.adm-del .nolnk { font-size: 0.76rem; color: #8a6d2f; }
+
+/* ---- Portfolio grid ---- */
 .adm-projgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.2rem; }
 .adm-proj { background: #fff; display: block; color: var(--ink); }
 .adm-proj .ph-wrap { aspect-ratio: 3/2; background: var(--navy-deep); overflow: hidden; }
@@ -151,9 +180,10 @@ small.mut { color: var(--muted); }
     <div class="adm-side__brand"><b>JCS</b><span>Studio Admin</span></div>
     <nav id="nav">
       <a data-r="dash" class="on">Dashboard</a>
-      <a data-r="projects">Projects</a>
+      <a data-r="pipeline">Projects</a>
+      <a data-r="deliveries">Deliveries</a>
       <a data-r="clients">Clients</a>
-      <a data-r="bookings">Bookings</a>
+      <a data-r="portfolio">Portfolio</a>
     </nav>
     <div class="adm-side__foot"><a id="logout">Sign out</a></div>
   </aside>
@@ -170,11 +200,12 @@ small.mut { color: var(--muted); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
   function money(n){ return n==null||n===''?'—':'$'+Number(n).toLocaleString(); }
   function dstr(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
-  function dayKey(d){ return new Date(d).toDateString(); }
 
   var state = { clients: [], bookings: [], loaded: false };
   var TYPES = ['Architectural Photography','Film / Videography','Aerial & Drone','Full Campaign (Stills + Film)','Other'];
-  var STATUSES = ['scheduled','completed','delivered','canceled'];
+  var STAGES = ['upcoming','editing','delivered','completed','paid'];   // pipeline order
+  var STAGE_LABEL = { upcoming:'Upcoming', editing:'Editing', delivered:'Delivered', completed:'Completed', paid:'Paid' };
+  var STATUSES = STAGES.concat(['canceled']);
 
   async function api(path, method, body) {
     var r = await fetch('/api/admin/' + path, {
@@ -246,7 +277,7 @@ small.mut { color: var(--muted); }
     });
   }
   function fld(id, label, inner) {
-    return '<div class="adm-field' + (/textarea|full/.test(inner) ? ' full' : '') + '"><label for="' + id + '">' + label + '</label>' + inner + '</div>';
+    return '<div class="adm-field"><label for="' + id + '">' + label + '</label>' + inner + '</div>';
   }
 
   // ================= client form =================
@@ -266,7 +297,7 @@ small.mut { color: var(--muted); }
       });
   }
 
-  // ================= booking form =================
+  // ================= project (booking) form =================
   function bookingModal(b, presetClient) {
     b = b || {};
     var clientOpts = '<option value="">—</option>' + state.clients.map(function (c) {
@@ -274,25 +305,40 @@ small.mut { color: var(--muted); }
       return '<option value="' + c.id + '"' + sel + '>' + esc(c.name) + '</option>';
     }).join('');
     var typeOpts = TYPES.map(function (t) { return '<option' + (b.type === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('');
-    var statusOpts = STATUSES.map(function (s) { return '<option value="' + s + '"' + (b.status === s ? ' selected' : '') + '>' + s + '</option>'; }).join('');
-    openModal(b.id ? 'Edit booking' : 'New booking',
+    var statusOpts = STATUSES.map(function (s) { return '<option value="' + s + '"' + (b.status === s ? ' selected' : '') + '>' + (STAGE_LABEL[s] || 'Canceled') + '</option>'; }).join('');
+    openModal(b.id ? 'Edit project' : 'New project',
       fld('f-title', 'Property / title *', '<input id="f-title" required placeholder="123 Main St" value="' + esc(b.title || '') + '">') +
       fld('f-client', 'Client', '<select id="f-client">' + clientOpts + '</select>') +
       fld('f-location', 'Location', '<input id="f-location" placeholder="Alamo, CA" value="' + esc(b.location || '') + '">') +
-      fld('f-date', 'Date', '<input id="f-date" type="date" value="' + (b.shoot_date ? String(b.shoot_date).slice(0, 10) : '') + '">') +
+      fld('f-date', 'Shoot date', '<input id="f-date" type="date" value="' + (b.shoot_date ? String(b.shoot_date).slice(0, 10) : '') + '">') +
       fld('f-time', 'Time', '<input id="f-time" placeholder="Golden hour" value="' + esc(b.shoot_time || '') + '">') +
       fld('f-type', 'Type', '<select id="f-type">' + typeOpts + '</select>') +
       fld('f-price', 'Price ($)', '<input id="f-price" type="number" min="0" step="1" value="' + (b.price == null ? '' : b.price) + '">') +
-      fld('f-status', 'Status', '<select id="f-status">' + statusOpts + '</select>') +
+      fld('f-status', 'Stage', '<select id="f-status">' + statusOpts + '</select>') +
+      fld('f-delivery', 'Delivery link', '<input id="f-delivery" type="url" placeholder="https://…" value="' + esc(b.delivery_url || '') + '">') +
+      fld('f-delivered', 'Delivered on', '<input id="f-delivered" type="date" value="' + (b.delivered_at ? String(b.delivered_at).slice(0, 10) : '') + '">') +
       '<div class="adm-field full"><label for="f-notes">Notes</label><textarea id="f-notes">' + esc(b.notes || '') + '</textarea></div>',
       async function () {
         var body = { id: b.id, title: $('f-title').value, client_id: $('f-client').value, location: $('f-location').value,
                      shoot_date: $('f-date').value, shoot_time: $('f-time').value, type: $('f-type').value,
-                     price: $('f-price').value, status: $('f-status').value, notes: $('f-notes').value };
+                     price: $('f-price').value, status: $('f-status').value, notes: $('f-notes').value,
+                     delivery_url: $('f-delivery').value, delivered_at: $('f-delivered').value };
         var j = await api('bookings', b.id ? 'PUT' : 'POST', body);
         await reload();
-        if (!b.id && j.booking) go('booking/' + j.booking.id); else render();
+        if (!b.id && j.booking) go('project/' + j.booking.id); else render();
       });
+  }
+
+  async function setStage(id, status) {
+    var b = state.bookings.find(function (x) { return x.id == id; });
+    if (!b || b.status === status) return;
+    await api('bookings', 'PUT', {
+      id: b.id, title: b.title, client_id: b.client_id, location: b.location, shoot_date: b.shoot_date,
+      shoot_time: b.shoot_time, type: b.type, price: b.price, status: status, notes: b.notes,
+      delivery_url: b.delivery_url,
+      delivered_at: b.delivered_at || (status === 'delivered' ? new Date().toISOString().slice(0, 10) : null)
+    });
+    await reload(); render();
   }
 
   // ================= views =================
@@ -306,7 +352,6 @@ small.mut { color: var(--muted); }
     var now = new Date();
     var startToday = new Date(now.toDateString());
     var weekEnd = new Date(startToday.getTime() + 7 * 864e5);
-    var live = (window.PROJECTS_DATA || []).filter(function (p) { return !p.draft; }).length;
     var active = state.bookings.filter(function (b) { return b.status !== 'canceled'; });
     var monthSum = active.filter(function (b) {
       if (!b.shoot_date) return false; var d = new Date(b.shoot_date);
@@ -315,33 +360,32 @@ small.mut { color: var(--muted); }
     var yearSum = active.filter(function (b) {
       return b.shoot_date && new Date(b.shoot_date).getFullYear() === now.getFullYear();
     }).reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
-    var pipeline = state.bookings.filter(function (b) { return b.status === 'scheduled'; })
+    var unpaid = active.filter(function (b) { return b.status !== 'paid'; })
       .reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
 
     var week = state.bookings.filter(function (b) {
-      if (b.status !== 'scheduled' || !b.shoot_date) return false;
+      if (b.status !== 'upcoming' || !b.shoot_date) return false;
       var d = new Date(b.shoot_date); return d >= startToday && d < weekEnd;
     }).sort(function (a, b) { return new Date(a.shoot_date) - new Date(b.shoot_date); });
 
     var activity = []
-      .concat(state.bookings.map(function (b) { return { at: b.created_at, html: 'Booking — ' + esc(b.title) + (b.price ? ' · ' + money(b.price) : ''), r: 'booking/' + b.id }; }))
+      .concat(state.bookings.map(function (b) { return { at: b.created_at, html: 'Project — ' + esc(b.title) + (b.price ? ' · ' + money(b.price) : ''), r: 'project/' + b.id }; }))
       .concat(state.clients.map(function (c) { return { at: c.created_at, html: 'Client — ' + esc(c.name), r: 'client/' + c.id }; }))
       .sort(function (a, b) { return new Date(b.at) - new Date(a.at); }).slice(0, 8);
 
-    return head('Dashboard', '<button class="adm-btn" onclick="ADM.newBooking()">+ New booking</button>') +
+    return head('Dashboard', '<button class="adm-btn" onclick="ADM.newBooking()">+ New project</button>') +
       '<div class="adm-stats">' +
         '<div class="adm-stat"><b>' + money(monthSum) + '</b><span>Booked this month</span></div>' +
         '<div class="adm-stat"><b>' + money(yearSum) + '</b><span>Booked this year</span></div>' +
-        '<div class="adm-stat"><b>' + money(pipeline) + '</b><span>Scheduled pipeline</span></div>' +
+        '<div class="adm-stat"><b>' + money(unpaid) + '</b><span>Awaiting payment</span></div>' +
         '<div class="adm-stat"><b>' + state.clients.length + '</b><span>Clients</span></div>' +
-        '<div class="adm-stat"><b>' + live + '</b><span>Live projects</span></div>' +
       '</div>' +
       '<div class="adm-cols"><div class="adm-card"><h2>This week</h2>' +
         (week.length ? week.map(function (b) {
           var d = new Date(b.shoot_date);
           return '<div class="adm-day"><div class="adm-day__date"><b>' + d.getDate() + '</b><span>' +
             d.toLocaleDateString(undefined, { weekday: 'short' }) + '</span></div>' +
-            '<div class="adm-day__body" onclick="ADM.go(\'booking/' + b.id + '\')"><div class="t">' + esc(b.title) +
+            '<div class="adm-day__body" onclick="ADM.go(\'project/' + b.id + '\')"><div class="t">' + esc(b.title) +
             (b.shoot_time ? ' · ' + esc(b.shoot_time) : '') + '</div><small class="mut">' +
             esc(b.client_name || '') + (b.location ? ' · ' + esc(b.location) : '') + '</small></div>' +
             '<div>' + money(b.price) + '</div></div>';
@@ -349,13 +393,81 @@ small.mut { color: var(--muted); }
       '</div><div class="adm-card"><h2>Recent activity</h2>' +
         (activity.length ? '<ul class="adm-feed">' + activity.map(function (a) {
           return '<li style="cursor:pointer" onclick="ADM.go(\'' + a.r + '\')">' + a.html + '<small>' + dstr(a.at) + '</small></li>';
-        }).join('') + '</ul>' : '<p class="adm-empty">Activity will appear as you add clients and bookings.</p>') +
+        }).join('') + '</ul>' : '<p class="adm-empty">Activity will appear as you add clients and projects.</p>') +
       '</div></div>';
   }
 
-  function vProjects() {
+  function vPipeline() {
+    var cols = STAGES.map(function (stage) {
+      var items = state.bookings.filter(function (b) { return b.status === stage; })
+        .sort(function (a, b) { return new Date(a.shoot_date || 0) - new Date(b.shoot_date || 0); });
+      var sum = items.reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+      var next = STAGES[STAGES.indexOf(stage) + 1];
+      return '<div class="adm-col" data-stage="' + stage + '">' +
+        '<div class="adm-col__head"><b>' + STAGE_LABEL[stage] + '</b><span>' + items.length + '</span>' +
+        (sum ? '<span class="adm-col__sum">' + money(sum) + '</span>' : '') + '</div>' +
+        items.map(function (b) {
+          return '<div class="adm-cardlet" draggable="true" data-id="' + b.id + '">' +
+            '<b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) + '</b>' +
+            '<small>' + esc(b.client_name || '') + (b.shoot_date ? (b.client_name ? ' · ' : '') + dstr(b.shoot_date) : '') +
+            (b.price ? '<br>' + money(b.price) : '') + '</small>' +
+            (next ? '<button class="adv" title="Move to ' + STAGE_LABEL[next] + '" onclick="ADM.stage(' + b.id + ',\'' + next + '\')">&rsaquo;</button>' : '') +
+          '</div>';
+        }).join('') + '</div>';
+    }).join('');
+    var canceled = state.bookings.filter(function (b) { return b.status === 'canceled'; }).length;
+    return head('Projects', '<button class="adm-btn" onclick="ADM.newBooking()">+ New project</button>') +
+      '<div class="adm-pipe" id="pipe">' + cols + '</div>' +
+      (canceled ? '<p class="adm-empty">' + canceled + ' canceled project' + (canceled > 1 ? 's' : '') + ' hidden — find them via client pages.</p>' : '') +
+      '<p class="adm-empty">Drag a card between stages, or use the &rsaquo; button to advance it.</p>';
+  }
+
+  function wirePipeline() {
+    var pipe = $('pipe'); if (!pipe) return;
+    var draggedId = null;
+    pipe.addEventListener('dragstart', function (e) {
+      var card = e.target.closest('.adm-cardlet'); if (!card) return;
+      draggedId = card.dataset.id; card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    pipe.addEventListener('dragend', function (e) {
+      var card = e.target.closest('.adm-cardlet'); if (card) card.classList.remove('dragging');
+      pipe.querySelectorAll('.adm-col').forEach(function (c) { c.classList.remove('dragover'); });
+    });
+    pipe.addEventListener('dragover', function (e) {
+      var col = e.target.closest('.adm-col'); if (!col) return;
+      e.preventDefault();
+      pipe.querySelectorAll('.adm-col').forEach(function (c) { c.classList.toggle('dragover', c === col); });
+    });
+    pipe.addEventListener('drop', function (e) {
+      var col = e.target.closest('.adm-col'); if (!col || !draggedId) return;
+      e.preventDefault();
+      ADM.stage(draggedId, col.dataset.stage);
+      draggedId = null;
+    });
+  }
+
+  function vDeliveries() {
+    var delivered = state.bookings.filter(function (b) {
+      return ['delivered', 'completed', 'paid'].indexOf(b.status) > -1 || b.delivery_url;
+    }).sort(function (a, b) { return new Date(b.delivered_at || b.shoot_date || 0) - new Date(a.delivered_at || a.shoot_date || 0); });
+    return head('Deliveries') +
+      (delivered.length
+        ? '<div class="adm-delgrid">' + delivered.map(function (b) {
+            return '<div class="adm-del"><b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) + '</b>' +
+              '<small>' + esc(b.client_name || '—') + (b.delivered_at ? '<br>Delivered ' + dstr(b.delivered_at) : '') +
+              '<br><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></small>' +
+              (b.delivery_url
+                ? '<a class="lnk" href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open delivery &rarr;</a>'
+                : '<span class="nolnk">No delivery link yet — add one via Edit.</span>') +
+            '</div>';
+          }).join('') + '</div>'
+        : '<div class="adm-card"><p class="adm-empty">Nothing delivered yet — projects appear here once they reach the Delivered stage.</p></div>');
+  }
+
+  function vPortfolio() {
     var projects = (window.PROJECTS_DATA || []);
-    return head('Projects') +
+    return head('Portfolio') +
       '<div class="adm-projgrid">' + projects.map(function (p) {
         var url = p.draft ? '/project?slug=' + encodeURIComponent(p.slug) : '/project/' + p.slug;
         return '<a class="adm-proj" href="' + url + '" target="_blank"><div class="ph-wrap">' +
@@ -364,13 +476,13 @@ small.mut { color: var(--muted); }
           '<span class="adm-badge adm-badge--' + (p.draft ? 'draft">Draft' : 'live">Live') + '</span> ' +
           '<small class="mut">' + esc(p.location || '') + '</small></div></a>';
       }).join('') + '</div>' +
-      '<p class="adm-empty" style="margin-top:1.4rem">To add or edit a project, stage the media and ask Claude in the JCS-Website session.</p>';
+      '<p class="adm-empty" style="margin-top:1.4rem">These are the published website projects. To add or edit one, stage the media and ask Claude in the JCS-Website session.</p>';
   }
 
   function vClients() {
     return head('Clients', '<button class="adm-btn" onclick="ADM.newClient()">+ New client</button>') +
       '<div class="adm-card">' + (state.clients.length
-        ? '<table class="adm-table"><tr><th>Name</th><th class="hide-m">Brokerage</th><th>Contact</th><th class="hide-m">Bookings</th></tr>' +
+        ? '<table class="adm-table"><tr><th>Name</th><th class="hide-m">Brokerage</th><th>Contact</th><th class="hide-m">Projects</th></tr>' +
           state.clients.map(function (c) {
             return '<tr class="click" onclick="ADM.go(\'client/' + c.id + '\')"><td>' + esc(c.name) + '</td><td class="hide-m">' +
               esc(c.brokerage || '—') + '</td><td>' + esc(c.email || c.phone || '—') + '</td><td class="hide-m">' + (c.booking_count || 0) + '</td></tr>';
@@ -393,41 +505,33 @@ small.mut { color: var(--muted); }
         '<div class="adm-kv"><label>Brokerage</label><div>' + esc(c.brokerage || '—') + '</div></div>' +
         '<div class="adm-kv"><label>Lifetime booked</label><div>' + money(total) + '</div></div>' +
       '</div>' + (c.notes ? '<div class="adm-notes">' + esc(c.notes) + '</div>' : '') + '</div>' +
-      '<div class="adm-card"><h2>Bookings</h2>' + (theirs.length
-        ? '<table class="adm-table"><tr><th>Date</th><th>Property</th><th>Price</th><th>Status</th></tr>' +
+      '<div class="adm-card"><h2>Projects</h2>' + (theirs.length
+        ? '<table class="adm-table"><tr><th>Date</th><th>Property</th><th>Price</th><th>Stage</th></tr>' +
           theirs.map(function (b) {
-            return '<tr class="click" onclick="ADM.go(\'booking/' + b.id + '\')"><td>' + dstr(b.shoot_date) + '</td><td>' + esc(b.title) +
+            return '<tr class="click" onclick="ADM.go(\'project/' + b.id + '\')"><td>' + dstr(b.shoot_date) + '</td><td>' + esc(b.title) +
               '</td><td>' + money(b.price) + '</td><td><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></td></tr>';
           }).join('') + '</table>'
-        : '<p class="adm-empty">No bookings for this client yet.</p>') +
-      '<div style="margin-top:1rem"><button class="adm-btn" onclick="ADM.newBooking(' + c.id + ')">+ New booking for ' + esc(c.name) + '</button></div></div>';
-  }
-
-  function vBookings() {
-    return head('Bookings', '<button class="adm-btn" onclick="ADM.newBooking()">+ New booking</button>') +
-      '<div class="adm-card">' + (state.bookings.length
-        ? '<table class="adm-table"><tr><th>Date</th><th>Property</th><th class="hide-m">Client</th><th>Price</th><th>Status</th></tr>' +
-          state.bookings.map(function (b) {
-            return '<tr class="click" onclick="ADM.go(\'booking/' + b.id + '\')"><td>' + dstr(b.shoot_date) + '</td><td>' + esc(b.title) +
-              (b.location ? '<br><small class="mut">' + esc(b.location) + '</small>' : '') + '</td><td class="hide-m">' + esc(b.client_name || '—') +
-              '</td><td>' + money(b.price) + '</td><td><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></td></tr>';
-          }).join('') + '</table>'
-        : '<p class="adm-empty">No bookings yet.</p>') + '</div>';
+        : '<p class="adm-empty">No projects for this client yet.</p>') +
+      '<div style="margin-top:1rem"><button class="adm-btn" onclick="ADM.newBooking(' + c.id + ')">+ New project for ' + esc(c.name) + '</button></div></div>';
   }
 
   function vBookingDetail(id) {
     var b = state.bookings.find(function (x) { return x.id == id; });
-    if (!b) return head('Booking not found', '', true);
+    if (!b) return head('Project not found', '', true);
+    var next = STAGES[STAGES.indexOf(b.status) + 1];
     return head(b.title,
+        (next ? '<button class="adm-btn" onclick="ADM.stage(' + b.id + ',\'' + next + '\')">Move to ' + STAGE_LABEL[next] + ' &rsaquo;</button>' : '') +
         '<button class="adm-btn adm-btn--ghost" onclick="ADM.editBooking(' + b.id + ')">Edit</button>' +
         '<button class="adm-btn--danger adm-btn" onclick="ADM.delBooking(' + b.id + ')">Delete</button>', true) +
       '<div class="adm-card"><div class="adm-detail">' +
-        '<div class="adm-kv"><label>Status</label><div><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></div></div>' +
-        '<div class="adm-kv"><label>Date</label><div>' + dstr(b.shoot_date) + (b.shoot_time ? ' · ' + esc(b.shoot_time) : '') + '</div></div>' +
+        '<div class="adm-kv"><label>Stage</label><div><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></div></div>' +
+        '<div class="adm-kv"><label>Shoot date</label><div>' + dstr(b.shoot_date) + (b.shoot_time ? ' · ' + esc(b.shoot_time) : '') + '</div></div>' +
         '<div class="adm-kv"><label>Client</label><div>' + (b.client_id ? '<a style="cursor:pointer" onclick="ADM.go(\'client/' + b.client_id + '\')">' + esc(b.client_name || '') + '</a>' : '—') + '</div></div>' +
         '<div class="adm-kv"><label>Location</label><div>' + esc(b.location || '—') + '</div></div>' +
         '<div class="adm-kv"><label>Type</label><div>' + esc(b.type || '—') + '</div></div>' +
         '<div class="adm-kv"><label>Price</label><div>' + money(b.price) + '</div></div>' +
+        '<div class="adm-kv"><label>Delivered</label><div>' + (b.delivered_at ? dstr(b.delivered_at) : '—') + '</div></div>' +
+        '<div class="adm-kv"><label>Delivery link</label><div>' + (b.delivery_url ? '<a href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open &rarr;</a>' : '—') + '</div></div>' +
       '</div>' + (b.notes ? '<div class="adm-notes">' + esc(b.notes) + '</div>' : '') + '</div>';
   }
 
@@ -435,19 +539,15 @@ small.mut { color: var(--muted); }
   function render() {
     var r = route(), m = $('main');
     var section = r.split('/')[0];
-    document.querySelectorAll('#nav a').forEach(function (a) {
-      var owns = a.dataset.r === section || (a.dataset.r === 'clients' && section === 'client') || (a.dataset.r === 'bookings' && section === 'booking');
-      a.classList.toggle('on', owns);
-    });
-    if (!state.loaded && section !== 'projects') {
-      m.innerHTML = head(section === 'dash' ? 'Dashboard' : section) + '<div class="adm-card"><p class="adm-empty">Loading…</p></div>';
-    }
-    if (section === 'dash') m.innerHTML = vDash();
-    else if (section === 'projects') m.innerHTML = vProjects();
+    var owns = { dash:'dash', pipeline:'pipeline', project:'pipeline', deliveries:'deliveries',
+                 clients:'clients', client:'clients', portfolio:'portfolio' }[section] || 'dash';
+    document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.r === owns); });
+    if (section === 'pipeline') { m.innerHTML = vPipeline(); wirePipeline(); }
+    else if (section === 'project') m.innerHTML = vBookingDetail(r.split('/')[1]);
+    else if (section === 'deliveries') m.innerHTML = vDeliveries();
     else if (section === 'clients') m.innerHTML = vClients();
     else if (section === 'client') m.innerHTML = vClientDetail(r.split('/')[1]);
-    else if (section === 'bookings') m.innerHTML = vBookings();
-    else if (section === 'booking') m.innerHTML = vBookingDetail(r.split('/')[1]);
+    else if (section === 'portfolio') m.innerHTML = vPortfolio();
     else m.innerHTML = vDash();
   }
 
@@ -458,17 +558,18 @@ small.mut { color: var(--muted); }
   // exposed for inline handlers
   window.ADM = {
     go: go,
+    stage: function (id, s) { setStage(id, s).catch(function (e) { alert(friendly(e)); }); },
     newClient: function () { clientModal(); },
     editClient: function (id) { clientModal(state.clients.find(function (c) { return c.id == id; })); },
     delClient: async function (id) {
-      if (!confirm('Delete this client? Their bookings are kept (unlinked).')) return;
+      if (!confirm('Delete this client? Their projects are kept (unlinked).')) return;
       try { await api('clients', 'DELETE', { id: id }); await reload(); go('clients'); render(); } catch (e) { alert(friendly(e)); }
     },
     newBooking: function (clientId) { bookingModal(null, clientId); },
     editBooking: function (id) { bookingModal(state.bookings.find(function (b) { return b.id == id; })); },
     delBooking: async function (id) {
-      if (!confirm('Delete this booking?')) return;
-      try { await api('bookings', 'DELETE', { id: id }); await reload(); go('bookings'); render(); } catch (e) { alert(friendly(e)); }
+      if (!confirm('Delete this project?')) return;
+      try { await api('bookings', 'DELETE', { id: id }); await reload(); go('pipeline'); render(); } catch (e) { alert(friendly(e)); }
     }
   };
 
