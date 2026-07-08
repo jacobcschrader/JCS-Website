@@ -50,6 +50,11 @@ function ensureSchema() {
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_url text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivered_at date`;
       await s`UPDATE bookings SET status = 'upcoming' WHERE status = 'scheduled'`;
+      // Twilight slot + booking confirmation (idempotent).
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS twilight_date date`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS twilight_time text DEFAULT ''`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS confirmed_at timestamptz`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS deliverables text DEFAULT ''`;
     })();
   }
   return _ready;

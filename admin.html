@@ -221,6 +221,7 @@ small.mut { color: var(--muted); }
   var $ = function (id) { return document.getElementById(id); };
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
   function money(n){ return n==null||n===''?'—':'$'+Number(n).toLocaleString(); }
+  function fmtT(t){ if(!/^\d{2}:\d{2}/.test(String(t||''))) return t||''; var p=t.slice(0,5).split(':'); var h=+p[0], ap=h>=12?'PM':'AM'; h=h%12||12; return h+':'+p[1]+' '+ap; }
   function dstr(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
 
   var state = { clients: [], bookings: [], loaded: false,
@@ -335,16 +336,21 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       fld('f-client', 'Client', '<select id="f-client">' + clientOpts + '</select>') +
       fld('f-location', 'Location', '<input id="f-location" placeholder="Alamo, CA" value="' + esc(b.location || '') + '">') +
       fld('f-date', 'Shoot date', '<input id="f-date" type="date" value="' + (b.shoot_date ? String(b.shoot_date).slice(0, 10) : '') + '">') +
-      fld('f-time', 'Time', '<input id="f-time" placeholder="Golden hour" value="' + esc(b.shoot_time || '') + '">') +
+      fld('f-time', 'Shoot time', '<input id="f-time" type="time" value="' + esc((b.shoot_time || '').slice(0, 5)) + '">') +
+      fld('f-twidate', 'Twilight <small style="text-transform:none;letter-spacing:0">(optional — date blank = same day)</small>', '<input id="f-twidate" type="date" value="' + (b.twilight_date ? String(b.twilight_date).slice(0, 10) : '') + '">') +
+      fld('f-twitime', 'Twilight time <small style="text-transform:none;letter-spacing:0">(optional)</small>', '<input id="f-twitime" type="time" value="' + esc((b.twilight_time || '').slice(0, 5)) + '">') +
       fld('f-type', 'Type', '<select id="f-type">' + typeOpts + '</select>') +
       fld('f-price', 'Price ($)', '<input id="f-price" type="number" min="0" step="1" value="' + (b.price == null ? '' : b.price) + '">') +
       fld('f-status', 'Stage', '<select id="f-status">' + statusOpts + '</select>') +
       fld('f-delivery', 'Delivery link', '<input id="f-delivery" type="url" placeholder="https://…" value="' + esc(b.delivery_url || '') + '">') +
       fld('f-delivered', 'Delivered on', '<input id="f-delivered" type="date" value="' + (b.delivered_at ? String(b.delivered_at).slice(0, 10) : '') + '">') +
-      '<div class="adm-field full"><label for="f-notes">Notes</label><textarea id="f-notes">' + esc(b.notes || '') + '</textarea></div>',
+      '<div class="adm-field full"><label for="f-deliverables">Deliverables <small style="text-transform:none;letter-spacing:0">(shown to client · e.g. HDR photography · Drone photos · Twilight video)</small></label><textarea id="f-deliverables">' + esc(b.deliverables || '') + '</textarea></div>' +
+      '<div class="adm-field full"><label for="f-notes">Access notes <small style="text-transform:none;letter-spacing:0">(internal — goes on your calendar only)</small></label><textarea id="f-notes">' + esc(b.notes || '') + '</textarea></div>',
       async function () {
         var body = { id: b.id, title: $('f-title').value, client_id: $('f-client').value, location: $('f-location').value,
                      shoot_date: $('f-date').value, shoot_time: $('f-time').value, type: $('f-type').value,
+                     twilight_date: $('f-twidate').value, twilight_time: $('f-twitime').value,
+                     deliverables: $('f-deliverables').value,
                      price: $('f-price').value, status: $('f-status').value, notes: $('f-notes').value,
                      delivery_url: $('f-delivery').value, delivered_at: $('f-delivered').value };
         var j = await api('bookings', b.id ? 'PUT' : 'POST', body);
@@ -359,6 +365,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     await api('bookings', 'PUT', {
       id: b.id, title: b.title, client_id: b.client_id, location: b.location, shoot_date: b.shoot_date,
       shoot_time: b.shoot_time, type: b.type, price: b.price, status: status, notes: b.notes,
+      twilight_date: b.twilight_date, twilight_time: b.twilight_time, deliverables: b.deliverables,
       delivery_url: b.delivery_url,
       delivered_at: b.delivered_at || (status === 'delivered' ? new Date().toISOString().slice(0, 10) : null)
     });
@@ -410,7 +417,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
           return '<div class="adm-day"><div class="adm-day__date"><b>' + d.getDate() + '</b><span>' +
             d.toLocaleDateString(undefined, { weekday: 'short' }) + '</span></div>' +
             '<div class="adm-day__body" onclick="ADM.go(\'project/' + b.id + '\')"><div class="t">' + esc(b.title) +
-            (b.shoot_time ? ' · ' + esc(b.shoot_time) : '') + '</div><small class="mut">' +
+            (b.shoot_time ? ' · ' + fmtT(b.shoot_time) : '') + '</div><small class="mut">' +
             esc(b.client_name || '') + (b.location ? ' · ' + esc(b.location) : '') + '</small></div>' +
             '<div>' + money(b.price) + '</div></div>';
         }).join('') : '<p class="adm-empty">Nothing scheduled in the next 7 days.</p>') +
@@ -434,7 +441,9 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     return '<div class="adm-cardlet" draggable="true" data-id="' + b.id + '">' +
       '<b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) + '</b>' +
       '<small>' + esc(b.client_name || '') + (b.shoot_date ? (b.client_name ? ' · ' : '') + dstr(b.shoot_date) : '') +
-      (b.price ? '<br>' + money(b.price) : '') + '</small>' +
+      ((b.twilight_date || b.twilight_time) ? ' · twilight' : '') +
+      (b.price ? '<br>' + money(b.price) : '') +
+      (b.confirmed_at ? '<br><span style="color:#2e5d3a">✓ confirmed</span>' : '') + '</small>' +
       (next ? '<button class="adv" title="Move to ' + STAGE_LABEL[next] + '" onclick="ADM.stage(' + b.id + ',\'' + next + '\')">&rsaquo;</button>' : '') +
     '</div>';
   }
@@ -590,19 +599,24 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     if (!b) return head('Project not found', '', true);
     var next = STAGES[STAGES.indexOf(b.status) + 1];
     return head(b.title,
-        (next ? '<button class="adm-btn" onclick="ADM.stage(' + b.id + ',\'' + next + '\')">Move to ' + STAGE_LABEL[next] + ' &rsaquo;</button>' : '') +
+        '<button class="adm-btn" onclick="ADM.confirm(' + b.id + ')">' + (b.confirmed_at ? 'Resend confirmation' : 'Confirm &amp; send') + '</button>' +
+        (next ? '<button class="adm-btn adm-btn--ghost" onclick="ADM.stage(' + b.id + ',\'' + next + '\')">Move to ' + STAGE_LABEL[next] + ' &rsaquo;</button>' : '') +
         '<button class="adm-btn adm-btn--ghost" onclick="ADM.editBooking(' + b.id + ')">Edit</button>' +
         '<button class="adm-btn--danger adm-btn" onclick="ADM.delBooking(' + b.id + ')">Delete</button>', true) +
       '<div class="adm-card"><div class="adm-detail">' +
         '<div class="adm-kv"><label>Stage</label><div><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></div></div>' +
-        '<div class="adm-kv"><label>Shoot date</label><div>' + dstr(b.shoot_date) + (b.shoot_time ? ' · ' + esc(b.shoot_time) : '') + '</div></div>' +
+        '<div class="adm-kv"><label>Shoot</label><div>' + dstr(b.shoot_date) + (b.shoot_time ? ' · ' + fmtT(b.shoot_time) : '') + '</div></div>' +
+        '<div class="adm-kv"><label>Twilight</label><div>' + ((b.twilight_date || b.twilight_time) ? (dstr(b.twilight_date || b.shoot_date) + (b.twilight_time ? ' · ' + fmtT(b.twilight_time) : '')) : '—') + '</div></div>' +
+        '<div class="adm-kv"><label>Confirmed</label><div>' + (b.confirmed_at ? '✓ ' + dstr(b.confirmed_at) : 'Not yet — use Confirm &amp; send') + '</div></div>' +
         '<div class="adm-kv"><label>Client</label><div>' + (b.client_id ? '<a style="cursor:pointer" onclick="ADM.go(\'client/' + b.client_id + '\')">' + esc(b.client_name || '') + '</a>' : '—') + '</div></div>' +
         '<div class="adm-kv"><label>Location</label><div>' + esc(b.location || '—') + '</div></div>' +
         '<div class="adm-kv"><label>Type</label><div>' + esc(b.type || '—') + '</div></div>' +
         '<div class="adm-kv"><label>Price</label><div>' + money(b.price) + '</div></div>' +
         '<div class="adm-kv"><label>Delivered</label><div>' + (b.delivered_at ? dstr(b.delivered_at) : '—') + '</div></div>' +
         '<div class="adm-kv"><label>Delivery link</label><div>' + (b.delivery_url ? '<a href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open &rarr;</a>' : '—') + '</div></div>' +
-      '</div>' + (b.notes ? '<div class="adm-notes">' + esc(b.notes) + '</div>' : '') + '</div>';
+      '</div>' +
+      (b.deliverables ? '<div class="adm-notes"><b style="font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);font-weight:600">Deliverables</b><br>' + esc(b.deliverables) + '</div>' : '') +
+      (b.notes ? '<div class="adm-notes"><b style="font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);font-weight:600">Access notes</b><br>' + esc(b.notes) + '</div>' : '') + '</div>';
   }
 
   // ================= render =================
@@ -628,6 +642,19 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
   // exposed for inline handlers
   window.ADM = {
     go: go,
+    confirm: async function (id) {
+      var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
+      if (!b.shoot_date) { alert('Set a shoot date first (Edit).'); return; }
+      var who = b.client_name ? b.client_name : 'no client linked';
+      if (!confirm('Send booking confirmation with calendar invite?\n\nClient: ' + who + '\nA copy also goes to you.')) return;
+      try {
+        var j = await api('confirm', 'POST', { id: id });
+        await reload(); render();
+        var msg = j.clientSent ? 'Confirmation sent to client and you.' : 'Confirmed. No client email on file, so only you received it.';
+        msg += j.calendarWritten ? ' Added to your Google Calendar.' : ' Calendar invite attached to the emails.';
+        alert(msg);
+      } catch (e) { alert(friendly(e)); }
+    },
     view: function (v) { state.view = v; localStorage.setItem('adm-view', v); render(); },
     fold: function (s) { state.collapsed[s] = !state.collapsed[s]; render(); },
     search: function (q) {

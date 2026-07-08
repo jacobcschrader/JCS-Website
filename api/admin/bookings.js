@@ -26,6 +26,9 @@ function parse(b) {
     client_id: b.client_id ? parseInt(b.client_id, 10) || null : null,
     delivery_url: field(b.delivery_url, 600),
     delivered_at: field(b.delivered_at, 10) || null,
+    twilight_date: field(b.twilight_date, 10) || null,
+    twilight_time: field(b.twilight_time, 40),
+    deliverables: field(b.deliverables, 2000),
   };
 }
 
@@ -47,8 +50,8 @@ module.exports = async function handler(req, res) {
       const f = parse(b);
       if (!f.title) { res.status(400).json({ error: "title-required" }); return; }
       const [row] = await s`
-        INSERT INTO bookings (client_id, title, location, shoot_date, shoot_time, type, price, status, notes, delivery_url, delivered_at)
-        VALUES (${f.client_id}, ${f.title}, ${f.location}, ${f.shoot_date}, ${f.shoot_time}, ${f.type}, ${f.price}, ${f.status}, ${f.notes}, ${f.delivery_url}, ${f.delivered_at})
+        INSERT INTO bookings (client_id, title, location, shoot_date, shoot_time, type, price, status, notes, delivery_url, delivered_at, twilight_date, twilight_time, deliverables)
+        VALUES (${f.client_id}, ${f.title}, ${f.location}, ${f.shoot_date}, ${f.shoot_time}, ${f.type}, ${f.price}, ${f.status}, ${f.notes}, ${f.delivery_url}, ${f.delivered_at}, ${f.twilight_date}, ${f.twilight_time}, ${f.deliverables})
         RETURNING *`;
       res.status(200).json({ booking: row });
 
@@ -61,7 +64,9 @@ module.exports = async function handler(req, res) {
           client_id = ${f.client_id}, title = ${f.title}, location = ${f.location},
           shoot_date = ${f.shoot_date}, shoot_time = ${f.shoot_time}, type = ${f.type},
           price = ${f.price}, status = ${f.status}, notes = ${f.notes},
-          delivery_url = ${f.delivery_url}, delivered_at = ${f.delivered_at}
+          delivery_url = ${f.delivery_url}, delivered_at = ${f.delivered_at},
+          twilight_date = ${f.twilight_date}, twilight_time = ${f.twilight_time},
+          deliverables = ${f.deliverables}
         WHERE id = ${id} RETURNING *`;
       if (!row) { res.status(404).json({ error: "not-found" }); return; }
       res.status(200).json({ booking: row });

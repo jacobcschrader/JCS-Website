@@ -21,7 +21,7 @@
 const FROM = process.env.CONTACT_FROM || "Jacob Schrader <onboarding@resend.dev>";
 const OWNER = process.env.CONTACT_TO || "jacxbschrader@gmail.com";
 
-async function sendEmail({ to, subject, text, html, replyTo }) {
+async function sendEmail({ to, subject, text, html, replyTo, attachments }) {
   const key = process.env.RESEND_API_KEY;
   if (!key) throw new Error("RESEND_API_KEY is not configured");
 
@@ -29,6 +29,7 @@ async function sendEmail({ to, subject, text, html, replyTo }) {
   if (text) payload.text = text;
   if (html) payload.html = html;
   if (replyTo) payload.reply_to = replyTo;
+  if (attachments) payload.attachments = attachments; // [{ filename, content(base64), content_type }]
 
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",

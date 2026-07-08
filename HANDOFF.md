@@ -293,3 +293,33 @@ gallery delivery emails.
 cookies; changing SESSION_SECRET logs out everywhere. Tables:
 `clients`, `bookings` (see db.js). Projects tab reads projects-data.js —
 project publishing still goes through the normal Claude workflow.
+
+### Admin update: twilight slot, confirm flow, Google Calendar
+
+- Projects have a second time slot: `twilight_date` (blank = same day) +
+  `twilight_time`. Times are real time-pickers now (needed for calendar).
+- **Confirm & send** button on a project detail page: emails a branded
+  confirmation to the client (+ copy to Jacob), both with a .ics invite
+  containing the shoot and twilight events (America/Los_Angeles).
+  Stamps `confirmed_at`; cards show "✓ confirmed". Re-clicking resends
+  and updates (calendar events upsert by stable ID — no duplicates).
+- **Direct Google Calendar write** (api/_lib/gcal.js): if
+  `GOOGLE_SA_KEY` (service-account JSON) + `GCAL_CALENDAR_ID` env vars
+  are set, confirming also writes both events straight onto Jacob's
+  calendar — nothing to accept. Setup steps are documented at the top of
+  gcal.js. Without those vars it silently falls back to invite-only.
+
+### Confirm flow refinements (Visaro-style calendar events)
+
+- New `deliverables` field on projects (client-facing list, e.g. "HDR
+  photography · Drone photos …"); `notes` is now labeled "Access notes"
+  (internal — Jacob's calendar only).
+- Jacob's calendar event: title "Client - Service", location = full
+  property address, description = Package / Property / Client (phone) /
+  Price, then Deliverables and Access notes, plus admin deep link.
+- Clients are NOT sent a calendar invite. Their confirmation email has
+  an "Add to Calendar" button → signed public endpoint
+  `/api/calendar?id&sig` (HMAC via SESSION_SECRET) serving the client
+  version of the .ics (no price/notes). Google quick-add links included.
+- Jacob's copy keeps the .ics attachment as a fallback when the direct
+  Google Calendar write isn't configured.
