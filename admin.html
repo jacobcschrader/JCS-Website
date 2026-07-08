@@ -4,71 +4,130 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Admin — Jacob Schrader</title>
+<title>Studio Admin — Jacob Schrader</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-/* ---------- Admin-only styles (brand tokens come from styles.css) ---------- */
+/* ================= Studio Admin — sidebar app =================
+   Brand tokens come from styles.css (--navy, --serif, --sans, …) */
 body { background: var(--paper-warm); }
 .adm-hidden { display: none !important; }
 
-/* Login */
+/* ---- Login ---- */
 .adm-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
 .adm-login__card { background: #fff; width: min(400px, 100%); padding: clamp(2rem, 5vw, 3rem); box-shadow: 0 20px 60px rgba(15,34,64,0.08); text-align: center; }
 .adm-login__brand { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 2.2rem; color: var(--navy); }
 .adm-login__sub { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin: 0.5rem 0 2rem; }
 
-/* Shell */
-.adm-bar { position: sticky; top: 0; z-index: 50; background: var(--navy); color: #fff; display: flex; align-items: center; gap: 1.5rem; padding: 0.85rem clamp(1rem, 4vw, 2.5rem); }
-.adm-bar__brand { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 1.3rem; color: #fff; }
-.adm-bar__tag { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
-.adm-nav { display: flex; gap: 0.25rem; margin-left: auto; flex-wrap: wrap; }
-.adm-nav button { background: none; border: 0; color: rgba(255,255,255,0.66); font-family: var(--sans); font-size: 0.78rem; letter-spacing: 0.08em; padding: 0.5rem 0.9rem; cursor: pointer; }
-.adm-nav button.on { color: #fff; box-shadow: inset 0 -2px 0 #fff; }
-.adm-out { background: none; border: 1px solid rgba(255,255,255,0.3); color: #fff; font-size: 0.72rem; letter-spacing: 0.1em; padding: 0.45rem 0.9rem; cursor: pointer; }
-.adm-wrap { max-width: 1100px; margin: 0 auto; padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem) 5rem; }
+/* ---- Shell: sidebar + content ---- */
+.adm-app { display: flex; min-height: 100vh; }
+.adm-side { width: 216px; flex: 0 0 216px; background: var(--navy); color: #fff; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+.adm-side__brand { padding: 2rem 1.6rem 1.6rem; }
+.adm-side__brand b { display: block; font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 1.9rem; line-height: 1; }
+.adm-side__brand span { display: block; margin-top: 0.5rem; font-size: 0.58rem; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+.adm-side nav { flex: 1; padding: 0.6rem 0; }
+.adm-side nav a { display: block; padding: 0.72rem 1.6rem; color: rgba(255,255,255,0.62); font-size: 0.84rem; letter-spacing: 0.05em; border-left: 2px solid transparent; cursor: pointer; }
+.adm-side nav a:hover { color: #fff; }
+.adm-side nav a.on { color: #fff; border-left-color: #fff; background: rgba(255,255,255,0.05); }
+.adm-side__foot { padding: 1.4rem 1.6rem; border-top: 1px solid rgba(255,255,255,0.12); }
+.adm-side__foot a { color: rgba(255,255,255,0.55); font-size: 0.74rem; letter-spacing: 0.1em; cursor: pointer; }
+.adm-side__foot a:hover { color: #fff; }
+.adm-main { flex: 1; min-width: 0; padding: clamp(1.4rem, 3vw, 2.6rem) clamp(1.2rem, 3.5vw, 3rem) 5rem; }
 
-/* Cards / tables / forms */
-.adm-h { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.7rem; color: var(--navy); margin: 0 0 1.4rem; }
-.adm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
-.adm-stat { background: #fff; padding: 1.4rem 1.5rem; }
-.adm-stat b { display: block; font-family: var(--serif); font-size: 2rem; font-weight: 500; color: var(--navy); line-height: 1.1; }
-.adm-stat span { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
-.adm-card { background: #fff; padding: clamp(1.2rem, 3vw, 2rem); margin-bottom: 2rem; }
-.adm-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-.adm-table th { text-align: left; font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0.6rem 0.8rem 0.6rem 0; border-bottom: 1px solid var(--line); }
-.adm-table td { padding: 0.75rem 0.8rem 0.75rem 0; border-bottom: 1px solid var(--line-soft); color: var(--ink); vertical-align: top; }
-.adm-table a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
-.adm-badge { display: inline-block; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.25rem 0.6rem; background: var(--paper-warm); color: var(--muted); }
+/* ---- View header ---- */
+.adm-head { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.8rem; flex-wrap: wrap; }
+.adm-head h1 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.8rem; color: var(--navy); margin: 0; }
+.adm-head .grow { flex: 1; }
+.adm-back { font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); cursor: pointer; }
+.adm-back:hover { color: var(--navy); }
+
+/* ---- Buttons / badges / tables ---- */
+.adm-btn { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--navy); color: #fff; border: 0; cursor: pointer; font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.75rem 1.5rem; }
+.adm-btn:hover { background: var(--navy-soft); }
+.adm-btn--ghost { background: none; color: var(--navy); border: 1px solid var(--line); }
+.adm-btn--ghost:hover { background: #fff; }
+.adm-btn--danger { background: none; color: #a33; border: 1px solid #d8c3c3; }
+.adm-badge { display: inline-block; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.25rem 0.6rem; background: var(--paper-warm); color: var(--muted); }
 .adm-badge--live { background: #e8f0e8; color: #2e5d3a; }
 .adm-badge--draft { background: #f4ede0; color: #8a6d2f; }
 .adm-badge--scheduled { background: #e8edf5; color: var(--navy); }
 .adm-badge--completed { background: #e8f0e8; color: #2e5d3a; }
 .adm-badge--delivered { background: #ece8f5; color: #4a3d7a; }
 .adm-badge--canceled { background: #f5e8e8; color: #7a3d3d; }
-.adm-row-act { white-space: nowrap; }
-.adm-row-act button { background: none; border: 0; cursor: pointer; font-size: 0.75rem; color: var(--navy); text-decoration: underline; text-underline-offset: 3px; padding: 0 0.4rem; }
-.adm-row-act button.del { color: #a33; }
 
-.adm-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.9rem; margin-top: 1rem; }
+.adm-card { background: #fff; padding: clamp(1.2rem, 2.5vw, 1.8rem); }
+.adm-card + .adm-card { margin-top: 1.4rem; }
+.adm-card h2 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.15rem; color: var(--navy); margin: 0 0 1rem; }
+.adm-table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+.adm-table th { text-align: left; font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0.55rem 0.8rem 0.55rem 0; border-bottom: 1px solid var(--line); }
+.adm-table td { padding: 0.8rem 0.8rem 0.8rem 0; border-bottom: 1px solid var(--line-soft); color: var(--ink); vertical-align: middle; }
+.adm-table tr.click { cursor: pointer; }
+.adm-table tr.click:hover td { background: var(--paper-warm); }
+.adm-empty { color: var(--muted); font-size: 0.9rem; padding: 1rem 0; }
+small.mut { color: var(--muted); }
+
+/* ---- Dashboard ---- */
+.adm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.4rem; }
+.adm-stat { background: #fff; padding: 1.3rem 1.4rem; }
+.adm-stat b { display: block; font-family: var(--serif); font-size: 1.9rem; font-weight: 500; color: var(--navy); line-height: 1.15; }
+.adm-stat span { font-size: 0.64rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.adm-cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.4rem; align-items: start; }
+@media (max-width: 980px) { .adm-cols { grid-template-columns: 1fr; } }
+.adm-day { display: flex; gap: 1rem; padding: 0.7rem 0; border-bottom: 1px solid var(--line-soft); }
+.adm-day__date { flex: 0 0 74px; text-align: center; }
+.adm-day__date b { display: block; font-family: var(--serif); font-size: 1.35rem; color: var(--navy); line-height: 1.1; }
+.adm-day__date span { font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+.adm-day__body { flex: 1; cursor: pointer; }
+.adm-day__body:hover .t { text-decoration: underline; text-underline-offset: 3px; }
+.adm-day__body .t { color: var(--ink); font-size: 0.92rem; }
+.adm-feed li { list-style: none; padding: 0.65rem 0; border-bottom: 1px solid var(--line-soft); font-size: 0.86rem; color: var(--ink); }
+.adm-feed li small { display: block; color: var(--muted); margin-top: 0.15rem; }
+.adm-feed { margin: 0; padding: 0; }
+
+/* ---- Projects grid ---- */
+.adm-projgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.2rem; }
+.adm-proj { background: #fff; display: block; color: var(--ink); }
+.adm-proj .ph-wrap { aspect-ratio: 3/2; background: var(--navy-deep); overflow: hidden; }
+.adm-proj img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.adm-proj .cap { padding: 0.8rem 0.9rem 0.9rem; }
+.adm-proj .cap b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1rem; color: var(--navy); margin-bottom: 0.3rem; }
+
+/* ---- Detail pages ---- */
+.adm-detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem 2rem; margin-bottom: 0.4rem; }
+.adm-kv label { display: block; font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }
+.adm-kv div { font-size: 0.95rem; color: var(--ink); }
+.adm-kv a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
+.adm-notes { background: var(--paper-warm); padding: 1rem 1.2rem; font-size: 0.9rem; color: var(--ink); white-space: pre-line; margin-top: 1rem; }
+
+/* ---- Modal ---- */
+.adm-modal { position: fixed; inset: 0; z-index: 200; background: rgba(9,22,39,0.55); display: flex; align-items: flex-start; justify-content: center; padding: 4vh 1rem; overflow: auto; }
+.adm-modal__card { background: #fff; width: min(640px, 100%); padding: clamp(1.5rem, 3vw, 2.2rem); }
+.adm-modal__card h2 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.4rem; color: var(--navy); margin: 0 0 1.2rem; }
+.adm-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
 .adm-form .full { grid-column: 1 / -1; }
-.adm-field label { display: block; font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
-.adm-field input, .adm-field select, .adm-field textarea {
-  width: 100%; font-family: var(--sans); font-size: 0.9rem; color: var(--ink);
-  background: var(--paper-warm); border: 1px solid var(--line); padding: 0.6rem 0.7rem; outline: none;
-}
+@media (max-width: 560px) { .adm-form { grid-template-columns: 1fr; } }
+.adm-field label { display: block; font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
+.adm-field input, .adm-field select, .adm-field textarea { width: 100%; box-sizing: border-box; font-family: var(--sans); font-size: 0.9rem; color: var(--ink); background: var(--paper-warm); border: 1px solid var(--line); padding: 0.6rem 0.7rem; outline: none; }
 .adm-field textarea { min-height: 70px; resize: vertical; }
 .adm-field input:focus, .adm-field select:focus, .adm-field textarea:focus { border-color: var(--navy); background: #fff; }
-.adm-btn { display: inline-block; background: var(--navy); color: #fff; border: 0; cursor: pointer; font-family: var(--sans); font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.8rem 1.8rem; }
-.adm-btn--ghost { background: none; color: var(--navy); border: 1px solid var(--line); }
-.adm-msg { font-size: 0.85rem; margin-top: 0.8rem; color: var(--muted); }
-.adm-msg.err { color: #a33; }
-.adm-empty { color: var(--muted); font-size: 0.9rem; padding: 1.2rem 0; }
-@media (max-width: 700px) { .adm-table .hide-m { display: none; } }
+.adm-msg { font-size: 0.85rem; margin-top: 0.8rem; color: #a33; }
+
+/* ---- Mobile shell ---- */
+@media (max-width: 760px) {
+  .adm-app { flex-direction: column; }
+  .adm-side { width: 100%; flex: none; height: auto; position: static; flex-direction: row; align-items: center; }
+  .adm-side__brand { padding: 0.9rem 1rem; }
+  .adm-side__brand span { display: none; }
+  .adm-side nav { display: flex; padding: 0; overflow-x: auto; }
+  .adm-side nav a { padding: 0.9rem 0.8rem; border-left: 0; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .adm-side nav a.on { border-left: 0; border-bottom-color: #fff; background: none; }
+  .adm-side__foot { border: 0; padding: 0.9rem 1rem; }
+  .adm-table .hide-m { display: none; }
+}
 </style>
 </head>
 <body>
 
-<!-- ============ LOGIN ============ -->
+<!-- ================= LOGIN ================= -->
 <div id="login" class="adm-login adm-hidden">
   <form id="login-form" class="adm-login__card">
     <div class="adm-login__brand">JCS</div>
@@ -81,107 +140,28 @@ body { background: var(--paper-warm); }
       <label for="l-pass">Password</label>
       <input id="l-pass" type="password" autocomplete="current-password" required>
     </div>
-    <button class="adm-btn" type="submit" style="width:100%">Sign in</button>
-    <p id="login-msg" class="adm-msg err adm-hidden"></p>
+    <button class="adm-btn" type="submit" style="width:100%;justify-content:center">Sign in</button>
+    <p id="login-msg" class="adm-msg adm-hidden"></p>
   </form>
 </div>
 
-<!-- ============ APP ============ -->
-<div id="app" class="adm-hidden">
-  <div class="adm-bar">
-    <span class="adm-bar__brand">JCS</span>
-    <span class="adm-bar__tag">Studio Admin</span>
-    <nav class="adm-nav" id="nav">
-      <button data-v="dash" class="on">Dashboard</button>
-      <button data-v="projects">Projects</button>
-      <button data-v="clients">Clients</button>
-      <button data-v="bookings">Bookings</button>
+<!-- ================= APP ================= -->
+<div id="app" class="adm-app adm-hidden">
+  <aside class="adm-side">
+    <div class="adm-side__brand"><b>JCS</b><span>Studio Admin</span></div>
+    <nav id="nav">
+      <a data-r="dash" class="on">Dashboard</a>
+      <a data-r="projects">Projects</a>
+      <a data-r="clients">Clients</a>
+      <a data-r="bookings">Bookings</a>
     </nav>
-    <button class="adm-out" id="logout">Sign out</button>
-  </div>
-
-  <div class="adm-wrap">
-    <!-- DASHBOARD -->
-    <section id="v-dash">
-      <h1 class="adm-h">Dashboard</h1>
-      <div class="adm-stats" id="stats"></div>
-      <div class="adm-card">
-        <h2 class="adm-h" style="font-size:1.2rem">Upcoming shoots</h2>
-        <div id="upcoming"></div>
-      </div>
-    </section>
-
-    <!-- PROJECTS -->
-    <section id="v-projects" class="adm-hidden">
-      <h1 class="adm-h">Projects</h1>
-      <div class="adm-card">
-        <div id="projects-list"></div>
-        <p class="adm-msg">Projects are published from the website files — to add or edit one, drop the media in a staging folder and ask Claude in the JCS-Website Cowork session.</p>
-      </div>
-    </section>
-
-    <!-- CLIENTS -->
-    <section id="v-clients" class="adm-hidden">
-      <h1 class="adm-h">Clients</h1>
-      <div class="adm-card">
-        <form id="client-form" class="adm-form">
-          <input type="hidden" id="c-id">
-          <div class="adm-field"><label for="c-name">Name *</label><input id="c-name" required></div>
-          <div class="adm-field"><label for="c-email">Email</label><input id="c-email" type="email"></div>
-          <div class="adm-field"><label for="c-phone">Phone</label><input id="c-phone"></div>
-          <div class="adm-field"><label for="c-brokerage">Brokerage</label><input id="c-brokerage"></div>
-          <div class="adm-field full"><label for="c-notes">Notes</label><textarea id="c-notes"></textarea></div>
-          <div class="full">
-            <button class="adm-btn" type="submit" id="c-submit">Add client</button>
-            <button class="adm-btn adm-btn--ghost adm-hidden" type="button" id="c-cancel">Cancel</button>
-          </div>
-        </form>
-        <p id="c-msg" class="adm-msg adm-hidden"></p>
-      </div>
-      <div class="adm-card"><div id="clients-list"></div></div>
-    </section>
-
-    <!-- BOOKINGS -->
-    <section id="v-bookings" class="adm-hidden">
-      <h1 class="adm-h">Bookings</h1>
-      <div class="adm-card">
-        <form id="booking-form" class="adm-form">
-          <input type="hidden" id="b-id">
-          <div class="adm-field"><label for="b-title">Property / title *</label><input id="b-title" required placeholder="123 Main St"></div>
-          <div class="adm-field"><label for="b-client">Client</label><select id="b-client"><option value="">—</option></select></div>
-          <div class="adm-field"><label for="b-location">Location</label><input id="b-location" placeholder="Alamo, CA"></div>
-          <div class="adm-field"><label for="b-date">Date</label><input id="b-date" type="date"></div>
-          <div class="adm-field"><label for="b-time">Time</label><input id="b-time" placeholder="Golden hour"></div>
-          <div class="adm-field"><label for="b-type">Type</label>
-            <select id="b-type">
-              <option>Architectural Photography</option>
-              <option>Film / Videography</option>
-              <option>Aerial &amp; Drone</option>
-              <option>Full Campaign (Stills + Film)</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="adm-field"><label for="b-price">Price ($)</label><input id="b-price" type="number" min="0" step="1"></div>
-          <div class="adm-field"><label for="b-status">Status</label>
-            <select id="b-status">
-              <option value="scheduled">Scheduled</option>
-              <option value="completed">Completed</option>
-              <option value="delivered">Delivered</option>
-              <option value="canceled">Canceled</option>
-            </select>
-          </div>
-          <div class="adm-field full"><label for="b-notes">Notes</label><textarea id="b-notes"></textarea></div>
-          <div class="full">
-            <button class="adm-btn" type="submit" id="b-submit">Add booking</button>
-            <button class="adm-btn adm-btn--ghost adm-hidden" type="button" id="b-cancel">Cancel</button>
-          </div>
-        </form>
-        <p id="b-msg" class="adm-msg adm-hidden"></p>
-      </div>
-      <div class="adm-card"><div id="bookings-list"></div></div>
-    </section>
-  </div>
+    <div class="adm-side__foot"><a id="logout">Sign out</a></div>
+  </aside>
+  <main class="adm-main" id="main"></main>
 </div>
+
+<!-- Modal root -->
+<div id="modal-root"></div>
 
 <script src="projects-data.js"></script>
 <script>
@@ -190,8 +170,11 @@ body { background: var(--paper-warm); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
   function money(n){ return n==null||n===''?'—':'$'+Number(n).toLocaleString(); }
   function dstr(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
+  function dayKey(d){ return new Date(d).toDateString(); }
 
-  var state = { clients: [], bookings: [] };
+  var state = { clients: [], bookings: [], loaded: false };
+  var TYPES = ['Architectural Photography','Film / Videography','Aerial & Drone','Full Campaign (Stills + Film)','Other'];
+  var STATUSES = ['scheduled','completed','delivered','canceled'];
 
   async function api(path, method, body) {
     var r = await fetch('/api/admin/' + path, {
@@ -204,207 +187,292 @@ body { background: var(--paper-warm); }
     if (!r.ok) throw new Error(j.error || 'error');
     return j;
   }
+  function friendly(err) {
+    return String(err.message) === 'db-not-configured'
+      ? 'Database not connected — check the Neon integration in Vercel.'
+      : 'Something went wrong — try again.';
+  }
 
-  // ---------- login / shell ----------
+  // ================= router =================
+  function go(route) { location.hash = route; }
+  function route() { return (location.hash || '#dash').slice(1); }
+  window.addEventListener('hashchange', render);
+
+  // ================= auth =================
   function showLogin(){ $('login').classList.remove('adm-hidden'); $('app').classList.add('adm-hidden'); }
-  function showApp(){ $('login').classList.add('adm-hidden'); $('app').classList.remove('adm-hidden'); refreshAll(); }
-
+  async function showApp(){
+    $('login').classList.add('adm-hidden'); $('app').classList.remove('adm-hidden');
+    try { await reload(); } catch (e) {}
+    render();
+  }
+  async function reload() {
+    var c = await api('clients'), b = await api('bookings');
+    state.clients = c.clients; state.bookings = b.bookings; state.loaded = true;
+  }
   $('login-form').addEventListener('submit', async function (e) {
     e.preventDefault();
     var msg = $('login-msg'); msg.classList.add('adm-hidden');
-    try {
-      var r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: $('l-email').value, password: $('l-pass').value }) });
-      if (!r.ok) {
-        var j = await r.json().catch(function(){ return {}; });
-        msg.textContent = j.error === 'not-configured'
-          ? 'Admin login is not configured yet (missing env vars — see HANDOFF.md).'
-          : 'Wrong email or password.';
-        msg.classList.remove('adm-hidden');
-        return;
-      }
-      $('l-pass').value = '';
-      showApp();
-    } catch (_) { msg.textContent = 'Network error — try again.'; msg.classList.remove('adm-hidden'); }
+    var r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: $('l-email').value, password: $('l-pass').value }) }).catch(function(){ return null; });
+    if (!r || !r.ok) {
+      msg.textContent = !r ? 'Network error — try again.' : 'Wrong email or password.';
+      msg.classList.remove('adm-hidden'); return;
+    }
+    $('l-pass').value = ''; showApp();
   });
-
   $('logout').addEventListener('click', async function () {
     await fetch('/api/admin/logout', { method: 'POST' }).catch(function(){});
     showLogin();
   });
 
-  $('nav').addEventListener('click', function (e) {
-    var btn = e.target.closest('button'); if (!btn) return;
-    document.querySelectorAll('#nav button').forEach(function (b) { b.classList.toggle('on', b === btn); });
-    ['dash','projects','clients','bookings'].forEach(function (v) {
-      $('v-' + v).classList.toggle('adm-hidden', v !== btn.dataset.v);
-    });
-  });
-
-  // ---------- dashboard ----------
-  function renderDash() {
-    var projects = (window.PROJECTS_DATA || []);
-    var live = projects.filter(function (p) { return !p.draft; }).length;
-    var upcoming = state.bookings.filter(function (b) {
-      return b.status === 'scheduled' && b.shoot_date && new Date(b.shoot_date) >= new Date(new Date().toDateString());
-    }).sort(function (a, b) { return new Date(a.shoot_date) - new Date(b.shoot_date); });
-    var booked = state.bookings.filter(function (b) { return b.status !== 'canceled'; })
-      .reduce(function (sum, b) { return sum + (Number(b.price) || 0); }, 0);
-
-    $('stats').innerHTML =
-      '<div class="adm-stat"><b>' + live + '</b><span>Live projects</span></div>' +
-      '<div class="adm-stat"><b>' + (projects.length - live) + '</b><span>Drafts</span></div>' +
-      '<div class="adm-stat"><b>' + state.clients.length + '</b><span>Clients</span></div>' +
-      '<div class="adm-stat"><b>' + upcoming.length + '</b><span>Upcoming shoots</span></div>' +
-      '<div class="adm-stat"><b>' + money(booked) + '</b><span>Booked (all time)</span></div>';
-
-    $('upcoming').innerHTML = upcoming.length
-      ? '<table class="adm-table"><tr><th>Date</th><th>Property</th><th>Client</th><th class="hide-m">Type</th><th>Price</th></tr>' +
-        upcoming.map(function (b) {
-          return '<tr><td>' + dstr(b.shoot_date) + (b.shoot_time ? ' · ' + esc(b.shoot_time) : '') + '</td><td>' + esc(b.title) +
-            (b.location ? '<br><small style="color:var(--muted)">' + esc(b.location) + '</small>' : '') + '</td><td>' +
-            esc(b.client_name || '—') + '</td><td class="hide-m">' + esc(b.type || '—') + '</td><td>' + money(b.price) + '</td></tr>';
-        }).join('') + '</table>'
-      : '<p class="adm-empty">No upcoming shoots — add one under Bookings.</p>';
-  }
-
-  // ---------- projects ----------
-  function renderProjects() {
-    var projects = (window.PROJECTS_DATA || []);
-    $('projects-list').innerHTML = projects.length
-      ? '<table class="adm-table"><tr><th>Project</th><th class="hide-m">Location</th><th class="hide-m">Photos</th><th>Status</th><th></th></tr>' +
-        projects.map(function (p) {
-          var badge = p.draft ? '<span class="adm-badge adm-badge--draft">Draft</span>' : '<span class="adm-badge adm-badge--live">Live</span>';
-          var url = p.draft ? '/project?slug=' + encodeURIComponent(p.slug) : '/project/' + p.slug;
-          return '<tr><td>' + esc(p.title) + '</td><td class="hide-m">' + esc(p.location || '—') + '</td><td class="hide-m">' +
-            (p.gallery ? p.gallery.length : 0) + '</td><td>' + badge + '</td><td class="adm-row-act"><a href="' + url + '" target="_blank">View</a></td></tr>';
-        }).join('') + '</table>'
-      : '<p class="adm-empty">No projects found.</p>';
-  }
-
-  // ---------- clients ----------
-  function clientFormReset() {
-    $('client-form').reset(); $('c-id').value = '';
-    $('c-submit').textContent = 'Add client'; $('c-cancel').classList.add('adm-hidden');
-  }
-  function renderClients() {
-    $('clients-list').innerHTML = state.clients.length
-      ? '<table class="adm-table"><tr><th>Name</th><th>Contact</th><th class="hide-m">Brokerage</th><th class="hide-m">Bookings</th><th></th></tr>' +
-        state.clients.map(function (c) {
-          return '<tr><td>' + esc(c.name) + (c.notes ? '<br><small style="color:var(--muted)">' + esc(c.notes) + '</small>' : '') + '</td><td>' +
-            (c.email ? '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>' : '') + (c.phone ? '<br>' + esc(c.phone) : (c.email ? '' : '—')) +
-            '</td><td class="hide-m">' + esc(c.brokerage || '—') + '</td><td class="hide-m">' + (c.booking_count || 0) +
-            '</td><td class="adm-row-act"><button data-edit="' + c.id + '">Edit</button><button class="del" data-del="' + c.id + '">Delete</button></td></tr>';
-        }).join('') + '</table>'
-      : '<p class="adm-empty">No clients yet — add your first above.</p>';
-
-    var sel = $('b-client');
-    var current = sel.value;
-    sel.innerHTML = '<option value="">—</option>' + state.clients.map(function (c) {
-      return '<option value="' + c.id + '">' + esc(c.name) + '</option>';
-    }).join('');
-    sel.value = current;
-  }
-
-  $('client-form').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    var body = { id: $('c-id').value, name: $('c-name').value, email: $('c-email').value,
-                 phone: $('c-phone').value, brokerage: $('c-brokerage').value, notes: $('c-notes').value };
-    try {
-      await api('clients', body.id ? 'PUT' : 'POST', body);
-      clientFormReset(); await loadClients(); renderDash();
-    } catch (err) { flash('c-msg', friendly(err), true); }
-  });
-  $('c-cancel').addEventListener('click', clientFormReset);
-
-  $('clients-list').addEventListener('click', async function (e) {
-    var ed = e.target.dataset.edit, del = e.target.dataset.del;
-    if (ed) {
-      var c = state.clients.find(function (x) { return x.id == ed; }); if (!c) return;
-      $('c-id').value = c.id; $('c-name').value = c.name; $('c-email').value = c.email || '';
-      $('c-phone').value = c.phone || ''; $('c-brokerage').value = c.brokerage || ''; $('c-notes').value = c.notes || '';
-      $('c-submit').textContent = 'Save changes'; $('c-cancel').classList.remove('adm-hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (del) {
-      if (!confirm('Delete this client? Their bookings are kept (unlinked).')) return;
-      try { await api('clients', 'DELETE', { id: del }); await loadClients(); renderDash(); }
-      catch (err) { flash('c-msg', friendly(err), true); }
-    }
-  });
-
-  // ---------- bookings ----------
-  function bookingFormReset() {
-    $('booking-form').reset(); $('b-id').value = '';
-    $('b-submit').textContent = 'Add booking'; $('b-cancel').classList.add('adm-hidden');
-  }
-  function renderBookings() {
-    $('bookings-list').innerHTML = state.bookings.length
-      ? '<table class="adm-table"><tr><th>Date</th><th>Property</th><th class="hide-m">Client</th><th>Price</th><th>Status</th><th></th></tr>' +
-        state.bookings.map(function (b) {
-          return '<tr><td>' + dstr(b.shoot_date) + '</td><td>' + esc(b.title) +
-            (b.location ? '<br><small style="color:var(--muted)">' + esc(b.location) + '</small>' : '') +
-            '</td><td class="hide-m">' + esc(b.client_name || '—') + '</td><td>' + money(b.price) +
-            '</td><td><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span>' +
-            '</td><td class="adm-row-act"><button data-edit="' + b.id + '">Edit</button><button class="del" data-del="' + b.id + '">Delete</button></td></tr>';
-        }).join('') + '</table>'
-      : '<p class="adm-empty">No bookings yet — add your first above.</p>';
-  }
-
-  $('booking-form').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    var body = { id: $('b-id').value, title: $('b-title').value, client_id: $('b-client').value,
-                 location: $('b-location').value, shoot_date: $('b-date').value, shoot_time: $('b-time').value,
-                 type: $('b-type').value, price: $('b-price').value, status: $('b-status').value, notes: $('b-notes').value };
-    try {
-      await api('bookings', body.id ? 'PUT' : 'POST', body);
-      bookingFormReset(); await loadBookings(); renderDash();
-    } catch (err) { flash('b-msg', friendly(err), true); }
-  });
-  $('b-cancel').addEventListener('click', bookingFormReset);
-
-  $('bookings-list').addEventListener('click', async function (e) {
-    var ed = e.target.dataset.edit, del = e.target.dataset.del;
-    if (ed) {
-      var b = state.bookings.find(function (x) { return x.id == ed; }); if (!b) return;
-      $('b-id').value = b.id; $('b-title').value = b.title; $('b-client').value = b.client_id || '';
-      $('b-location').value = b.location || ''; $('b-date').value = b.shoot_date ? String(b.shoot_date).slice(0, 10) : '';
-      $('b-time').value = b.shoot_time || ''; $('b-type').value = b.type || 'Architectural Photography';
-      $('b-price').value = b.price == null ? '' : b.price; $('b-status').value = b.status; $('b-notes').value = b.notes || '';
-      $('b-submit').textContent = 'Save changes'; $('b-cancel').classList.remove('adm-hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (del) {
-      if (!confirm('Delete this booking?')) return;
-      try { await api('bookings', 'DELETE', { id: del }); await loadBookings(); renderDash(); }
-      catch (err) { flash('b-msg', friendly(err), true); }
-    }
-  });
-
-  // ---------- shared ----------
-  function friendly(err) {
-    return String(err.message) === 'db-not-configured'
-      ? 'Database not connected yet — create the Neon database in Vercel (see HANDOFF.md).'
-      : 'Something went wrong — try again.';
-  }
-  function flash(id, text, isErr) {
-    var el = $(id); el.textContent = text;
-    el.classList.remove('adm-hidden'); el.classList.toggle('err', !!isErr);
-    setTimeout(function () { el.classList.add('adm-hidden'); }, 6000);
-  }
-  async function loadClients(){ state.clients = (await api('clients')).clients; renderClients(); }
-  async function loadBookings(){ state.bookings = (await api('bookings')).bookings; renderBookings(); }
-  async function refreshAll() {
-    renderProjects();
-    try { await loadClients(); await loadBookings(); }
-    catch (err) {
-      if (String(err.message) !== 'unauthorized') {
-        $('clients-list').innerHTML = '<p class="adm-empty">' + friendly(err) + '</p>';
-        $('bookings-list').innerHTML = '<p class="adm-empty">' + friendly(err) + '</p>';
+  // ================= modal =================
+  function closeModal(){ $('modal-root').innerHTML = ''; }
+  function openModal(title, formHtml, onSubmit) {
+    $('modal-root').innerHTML =
+      '<div class="adm-modal" id="modal-bg"><form class="adm-modal__card" id="modal-form">' +
+      '<h2>' + esc(title) + '</h2><div class="adm-form">' + formHtml + '</div>' +
+      '<div style="margin-top:1.4rem;display:flex;gap:0.8rem">' +
+      '<button class="adm-btn" type="submit">Save</button>' +
+      '<button class="adm-btn adm-btn--ghost" type="button" id="modal-cancel">Cancel</button></div>' +
+      '<p class="adm-msg adm-hidden" id="modal-msg"></p></form></div>';
+    $('modal-cancel').addEventListener('click', closeModal);
+    $('modal-bg').addEventListener('mousedown', function (e) { if (e.target === this) closeModal(); });
+    document.addEventListener('keydown', function onEsc(e) { if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', onEsc); } });
+    $('modal-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      try { await onSubmit(); closeModal(); } catch (err) {
+        var m = $('modal-msg'); m.textContent = friendly(err); m.classList.remove('adm-hidden');
       }
-    }
-    renderDash();
+    });
+  }
+  function fld(id, label, inner) {
+    return '<div class="adm-field' + (/textarea|full/.test(inner) ? ' full' : '') + '"><label for="' + id + '">' + label + '</label>' + inner + '</div>';
   }
 
-  // ---------- boot: session check ----------
+  // ================= client form =================
+  function clientModal(c) {
+    c = c || {};
+    openModal(c.id ? 'Edit client' : 'New client',
+      fld('f-name', 'Name *', '<input id="f-name" required value="' + esc(c.name || '') + '">') +
+      fld('f-brokerage', 'Brokerage', '<input id="f-brokerage" value="' + esc(c.brokerage || '') + '">') +
+      fld('f-email', 'Email', '<input id="f-email" type="email" value="' + esc(c.email || '') + '">') +
+      fld('f-phone', 'Phone', '<input id="f-phone" value="' + esc(c.phone || '') + '">') +
+      '<div class="adm-field full"><label for="f-notes">Notes</label><textarea id="f-notes">' + esc(c.notes || '') + '</textarea></div>',
+      async function () {
+        var body = { id: c.id, name: $('f-name').value, email: $('f-email').value, phone: $('f-phone').value,
+                     brokerage: $('f-brokerage').value, notes: $('f-notes').value };
+        await api('clients', c.id ? 'PUT' : 'POST', body);
+        await reload(); render();
+      });
+  }
+
+  // ================= booking form =================
+  function bookingModal(b, presetClient) {
+    b = b || {};
+    var clientOpts = '<option value="">—</option>' + state.clients.map(function (c) {
+      var sel = (b.client_id || presetClient) == c.id ? ' selected' : '';
+      return '<option value="' + c.id + '"' + sel + '>' + esc(c.name) + '</option>';
+    }).join('');
+    var typeOpts = TYPES.map(function (t) { return '<option' + (b.type === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('');
+    var statusOpts = STATUSES.map(function (s) { return '<option value="' + s + '"' + (b.status === s ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+    openModal(b.id ? 'Edit booking' : 'New booking',
+      fld('f-title', 'Property / title *', '<input id="f-title" required placeholder="123 Main St" value="' + esc(b.title || '') + '">') +
+      fld('f-client', 'Client', '<select id="f-client">' + clientOpts + '</select>') +
+      fld('f-location', 'Location', '<input id="f-location" placeholder="Alamo, CA" value="' + esc(b.location || '') + '">') +
+      fld('f-date', 'Date', '<input id="f-date" type="date" value="' + (b.shoot_date ? String(b.shoot_date).slice(0, 10) : '') + '">') +
+      fld('f-time', 'Time', '<input id="f-time" placeholder="Golden hour" value="' + esc(b.shoot_time || '') + '">') +
+      fld('f-type', 'Type', '<select id="f-type">' + typeOpts + '</select>') +
+      fld('f-price', 'Price ($)', '<input id="f-price" type="number" min="0" step="1" value="' + (b.price == null ? '' : b.price) + '">') +
+      fld('f-status', 'Status', '<select id="f-status">' + statusOpts + '</select>') +
+      '<div class="adm-field full"><label for="f-notes">Notes</label><textarea id="f-notes">' + esc(b.notes || '') + '</textarea></div>',
+      async function () {
+        var body = { id: b.id, title: $('f-title').value, client_id: $('f-client').value, location: $('f-location').value,
+                     shoot_date: $('f-date').value, shoot_time: $('f-time').value, type: $('f-type').value,
+                     price: $('f-price').value, status: $('f-status').value, notes: $('f-notes').value };
+        var j = await api('bookings', b.id ? 'PUT' : 'POST', body);
+        await reload();
+        if (!b.id && j.booking) go('booking/' + j.booking.id); else render();
+      });
+  }
+
+  // ================= views =================
+  function head(title, extra, back) {
+    return '<div class="adm-head">' +
+      (back ? '<span class="adm-back" onclick="history.back()">&larr; Back</span>' : '') +
+      '<h1>' + esc(title) + '</h1><span class="grow"></span>' + (extra || '') + '</div>';
+  }
+
+  function vDash() {
+    var now = new Date();
+    var startToday = new Date(now.toDateString());
+    var weekEnd = new Date(startToday.getTime() + 7 * 864e5);
+    var live = (window.PROJECTS_DATA || []).filter(function (p) { return !p.draft; }).length;
+    var active = state.bookings.filter(function (b) { return b.status !== 'canceled'; });
+    var monthSum = active.filter(function (b) {
+      if (!b.shoot_date) return false; var d = new Date(b.shoot_date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+    var yearSum = active.filter(function (b) {
+      return b.shoot_date && new Date(b.shoot_date).getFullYear() === now.getFullYear();
+    }).reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+    var pipeline = state.bookings.filter(function (b) { return b.status === 'scheduled'; })
+      .reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+
+    var week = state.bookings.filter(function (b) {
+      if (b.status !== 'scheduled' || !b.shoot_date) return false;
+      var d = new Date(b.shoot_date); return d >= startToday && d < weekEnd;
+    }).sort(function (a, b) { return new Date(a.shoot_date) - new Date(b.shoot_date); });
+
+    var activity = []
+      .concat(state.bookings.map(function (b) { return { at: b.created_at, html: 'Booking — ' + esc(b.title) + (b.price ? ' · ' + money(b.price) : ''), r: 'booking/' + b.id }; }))
+      .concat(state.clients.map(function (c) { return { at: c.created_at, html: 'Client — ' + esc(c.name), r: 'client/' + c.id }; }))
+      .sort(function (a, b) { return new Date(b.at) - new Date(a.at); }).slice(0, 8);
+
+    return head('Dashboard', '<button class="adm-btn" onclick="ADM.newBooking()">+ New booking</button>') +
+      '<div class="adm-stats">' +
+        '<div class="adm-stat"><b>' + money(monthSum) + '</b><span>Booked this month</span></div>' +
+        '<div class="adm-stat"><b>' + money(yearSum) + '</b><span>Booked this year</span></div>' +
+        '<div class="adm-stat"><b>' + money(pipeline) + '</b><span>Scheduled pipeline</span></div>' +
+        '<div class="adm-stat"><b>' + state.clients.length + '</b><span>Clients</span></div>' +
+        '<div class="adm-stat"><b>' + live + '</b><span>Live projects</span></div>' +
+      '</div>' +
+      '<div class="adm-cols"><div class="adm-card"><h2>This week</h2>' +
+        (week.length ? week.map(function (b) {
+          var d = new Date(b.shoot_date);
+          return '<div class="adm-day"><div class="adm-day__date"><b>' + d.getDate() + '</b><span>' +
+            d.toLocaleDateString(undefined, { weekday: 'short' }) + '</span></div>' +
+            '<div class="adm-day__body" onclick="ADM.go(\'booking/' + b.id + '\')"><div class="t">' + esc(b.title) +
+            (b.shoot_time ? ' · ' + esc(b.shoot_time) : '') + '</div><small class="mut">' +
+            esc(b.client_name || '') + (b.location ? ' · ' + esc(b.location) : '') + '</small></div>' +
+            '<div>' + money(b.price) + '</div></div>';
+        }).join('') : '<p class="adm-empty">Nothing scheduled in the next 7 days.</p>') +
+      '</div><div class="adm-card"><h2>Recent activity</h2>' +
+        (activity.length ? '<ul class="adm-feed">' + activity.map(function (a) {
+          return '<li style="cursor:pointer" onclick="ADM.go(\'' + a.r + '\')">' + a.html + '<small>' + dstr(a.at) + '</small></li>';
+        }).join('') + '</ul>' : '<p class="adm-empty">Activity will appear as you add clients and bookings.</p>') +
+      '</div></div>';
+  }
+
+  function vProjects() {
+    var projects = (window.PROJECTS_DATA || []);
+    return head('Projects') +
+      '<div class="adm-projgrid">' + projects.map(function (p) {
+        var url = p.draft ? '/project?slug=' + encodeURIComponent(p.slug) : '/project/' + p.slug;
+        return '<a class="adm-proj" href="' + url + '" target="_blank"><div class="ph-wrap">' +
+          (p.cover_url ? '<img src="' + esc(p.cover_url) + '" loading="lazy" alt="">' : '') + '</div>' +
+          '<div class="cap"><b>' + esc(p.title) + '</b>' +
+          '<span class="adm-badge adm-badge--' + (p.draft ? 'draft">Draft' : 'live">Live') + '</span> ' +
+          '<small class="mut">' + esc(p.location || '') + '</small></div></a>';
+      }).join('') + '</div>' +
+      '<p class="adm-empty" style="margin-top:1.4rem">To add or edit a project, stage the media and ask Claude in the JCS-Website session.</p>';
+  }
+
+  function vClients() {
+    return head('Clients', '<button class="adm-btn" onclick="ADM.newClient()">+ New client</button>') +
+      '<div class="adm-card">' + (state.clients.length
+        ? '<table class="adm-table"><tr><th>Name</th><th class="hide-m">Brokerage</th><th>Contact</th><th class="hide-m">Bookings</th></tr>' +
+          state.clients.map(function (c) {
+            return '<tr class="click" onclick="ADM.go(\'client/' + c.id + '\')"><td>' + esc(c.name) + '</td><td class="hide-m">' +
+              esc(c.brokerage || '—') + '</td><td>' + esc(c.email || c.phone || '—') + '</td><td class="hide-m">' + (c.booking_count || 0) + '</td></tr>';
+          }).join('') + '</table>'
+        : '<p class="adm-empty">No clients yet.</p>') + '</div>';
+  }
+
+  function vClientDetail(id) {
+    var c = state.clients.find(function (x) { return x.id == id; });
+    if (!c) return head('Client not found', '', true);
+    var theirs = state.bookings.filter(function (b) { return b.client_id == c.id; });
+    var total = theirs.filter(function (b) { return b.status !== 'canceled'; })
+      .reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+    return head(c.name,
+        '<button class="adm-btn adm-btn--ghost" onclick="ADM.editClient(' + c.id + ')">Edit</button>' +
+        '<button class="adm-btn--danger adm-btn" onclick="ADM.delClient(' + c.id + ')">Delete</button>', true) +
+      '<div class="adm-card"><div class="adm-detail">' +
+        '<div class="adm-kv"><label>Email</label><div>' + (c.email ? '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>' : '—') + '</div></div>' +
+        '<div class="adm-kv"><label>Phone</label><div>' + (c.phone ? '<a href="tel:' + esc(c.phone) + '">' + esc(c.phone) + '</a>' : '—') + '</div></div>' +
+        '<div class="adm-kv"><label>Brokerage</label><div>' + esc(c.brokerage || '—') + '</div></div>' +
+        '<div class="adm-kv"><label>Lifetime booked</label><div>' + money(total) + '</div></div>' +
+      '</div>' + (c.notes ? '<div class="adm-notes">' + esc(c.notes) + '</div>' : '') + '</div>' +
+      '<div class="adm-card"><h2>Bookings</h2>' + (theirs.length
+        ? '<table class="adm-table"><tr><th>Date</th><th>Property</th><th>Price</th><th>Status</th></tr>' +
+          theirs.map(function (b) {
+            return '<tr class="click" onclick="ADM.go(\'booking/' + b.id + '\')"><td>' + dstr(b.shoot_date) + '</td><td>' + esc(b.title) +
+              '</td><td>' + money(b.price) + '</td><td><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></td></tr>';
+          }).join('') + '</table>'
+        : '<p class="adm-empty">No bookings for this client yet.</p>') +
+      '<div style="margin-top:1rem"><button class="adm-btn" onclick="ADM.newBooking(' + c.id + ')">+ New booking for ' + esc(c.name) + '</button></div></div>';
+  }
+
+  function vBookings() {
+    return head('Bookings', '<button class="adm-btn" onclick="ADM.newBooking()">+ New booking</button>') +
+      '<div class="adm-card">' + (state.bookings.length
+        ? '<table class="adm-table"><tr><th>Date</th><th>Property</th><th class="hide-m">Client</th><th>Price</th><th>Status</th></tr>' +
+          state.bookings.map(function (b) {
+            return '<tr class="click" onclick="ADM.go(\'booking/' + b.id + '\')"><td>' + dstr(b.shoot_date) + '</td><td>' + esc(b.title) +
+              (b.location ? '<br><small class="mut">' + esc(b.location) + '</small>' : '') + '</td><td class="hide-m">' + esc(b.client_name || '—') +
+              '</td><td>' + money(b.price) + '</td><td><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></td></tr>';
+          }).join('') + '</table>'
+        : '<p class="adm-empty">No bookings yet.</p>') + '</div>';
+  }
+
+  function vBookingDetail(id) {
+    var b = state.bookings.find(function (x) { return x.id == id; });
+    if (!b) return head('Booking not found', '', true);
+    return head(b.title,
+        '<button class="adm-btn adm-btn--ghost" onclick="ADM.editBooking(' + b.id + ')">Edit</button>' +
+        '<button class="adm-btn--danger adm-btn" onclick="ADM.delBooking(' + b.id + ')">Delete</button>', true) +
+      '<div class="adm-card"><div class="adm-detail">' +
+        '<div class="adm-kv"><label>Status</label><div><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></div></div>' +
+        '<div class="adm-kv"><label>Date</label><div>' + dstr(b.shoot_date) + (b.shoot_time ? ' · ' + esc(b.shoot_time) : '') + '</div></div>' +
+        '<div class="adm-kv"><label>Client</label><div>' + (b.client_id ? '<a style="cursor:pointer" onclick="ADM.go(\'client/' + b.client_id + '\')">' + esc(b.client_name || '') + '</a>' : '—') + '</div></div>' +
+        '<div class="adm-kv"><label>Location</label><div>' + esc(b.location || '—') + '</div></div>' +
+        '<div class="adm-kv"><label>Type</label><div>' + esc(b.type || '—') + '</div></div>' +
+        '<div class="adm-kv"><label>Price</label><div>' + money(b.price) + '</div></div>' +
+      '</div>' + (b.notes ? '<div class="adm-notes">' + esc(b.notes) + '</div>' : '') + '</div>';
+  }
+
+  // ================= render =================
+  function render() {
+    var r = route(), m = $('main');
+    var section = r.split('/')[0];
+    document.querySelectorAll('#nav a').forEach(function (a) {
+      var owns = a.dataset.r === section || (a.dataset.r === 'clients' && section === 'client') || (a.dataset.r === 'bookings' && section === 'booking');
+      a.classList.toggle('on', owns);
+    });
+    if (!state.loaded && section !== 'projects') {
+      m.innerHTML = head(section === 'dash' ? 'Dashboard' : section) + '<div class="adm-card"><p class="adm-empty">Loading…</p></div>';
+    }
+    if (section === 'dash') m.innerHTML = vDash();
+    else if (section === 'projects') m.innerHTML = vProjects();
+    else if (section === 'clients') m.innerHTML = vClients();
+    else if (section === 'client') m.innerHTML = vClientDetail(r.split('/')[1]);
+    else if (section === 'bookings') m.innerHTML = vBookings();
+    else if (section === 'booking') m.innerHTML = vBookingDetail(r.split('/')[1]);
+    else m.innerHTML = vDash();
+  }
+
+  $('nav').addEventListener('click', function (e) {
+    var a = e.target.closest('a'); if (a) go(a.dataset.r);
+  });
+
+  // exposed for inline handlers
+  window.ADM = {
+    go: go,
+    newClient: function () { clientModal(); },
+    editClient: function (id) { clientModal(state.clients.find(function (c) { return c.id == id; })); },
+    delClient: async function (id) {
+      if (!confirm('Delete this client? Their bookings are kept (unlinked).')) return;
+      try { await api('clients', 'DELETE', { id: id }); await reload(); go('clients'); render(); } catch (e) { alert(friendly(e)); }
+    },
+    newBooking: function (clientId) { bookingModal(null, clientId); },
+    editBooking: function (id) { bookingModal(state.bookings.find(function (b) { return b.id == id; })); },
+    delBooking: async function (id) {
+      if (!confirm('Delete this booking?')) return;
+      try { await api('bookings', 'DELETE', { id: id }); await reload(); go('bookings'); render(); } catch (e) { alert(friendly(e)); }
+    }
+  };
+
+  // boot
   fetch('/api/admin/me').then(function (r) { r.ok ? showApp() : showLogin(); }).catch(showLogin);
 })();
 </script>
