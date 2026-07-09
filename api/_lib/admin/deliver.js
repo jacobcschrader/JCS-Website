@@ -69,6 +69,7 @@ module.exports = async function handler(req, res) {
     const [updated] = await s`
       UPDATE bookings SET
         delivery_token = ${token},
+        delivery_created_at = COALESCE(delivery_created_at, now()),
         delivery_sent_at = now(),
         delivery_sends = COALESCE(delivery_sends, 0) + 1,
         delivered_at = COALESCE(delivered_at, CURRENT_DATE),

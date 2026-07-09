@@ -461,3 +461,26 @@ of a modal (Create/Open delivery from the project page or Deliveries):
   now goes to all addresses on the profile (shared recipientsOf() in
   api/_lib/links.js; confirm.js + deliver.js select extra_emails).
 - Client Edit modal preserves extras (passes extra_emails through).
+
+### Draft deliveries + invoices
+
+**Draft deliveries.** Hitting Create delivery now stamps
+delivery_created_at, so the draft appears on the Deliveries page
+immediately with a Draft badge (Sent badge once published). The project
+Delivery card shows the same badge, and its send button is "Publish &
+send" (only enabled once links exist).
+
+**Invoices.** Payment card on the project page:
+- **Generate invoice** (needs a price) issues a token → "View
+  invoice →" opens the branded public page at `/invoice?t=…`
+  (print-friendly — client can Print / Save as PDF).
+- **Send invoice to client** emails every address on the client
+  profile: branded email, total + View Invoice button; stamps
+  invoice_sent_at / invoice_sends ("✓ Invoice JCS-0007 sent Jul 9").
+- Invoice number = JCS-<project id> (JCS-0007). Line items: service
+  (+deliverables), travel (+note), discount (code). Paid/Due badge
+  follows the project's Paid stage; Payment card header now shows
+  Paid/Unpaid too.
+- Files: api/_lib/admin/invoice.js (router action 'invoice'),
+  api/invoice.js (public, token-gated, client-safe), invoice.html.
+  Function count: 5 of 12.

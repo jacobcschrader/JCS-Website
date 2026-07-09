@@ -77,6 +77,13 @@ function ensureSchema() {
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_message text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_cc text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_links text DEFAULT ''`;
+      // Draft deliveries: stamped when "Create delivery" is first hit,
+      // so the Deliveries page shows the draft before anything is sent.
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_created_at timestamptz`;
+      // Invoices: token powers the public /invoice?t=… page.
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS invoice_token text DEFAULT ''`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS invoice_sent_at timestamptz`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS invoice_sends integer DEFAULT 0`;
       // Discount codes (Settings) + per-project application snapshot.
       await s`CREATE TABLE IF NOT EXISTS discounts (
         id         serial PRIMARY KEY,

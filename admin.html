@@ -780,21 +780,28 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
 
   function vDeliveries() {
     var delivered = state.bookings.filter(function (b) {
-      return ['delivered', 'completed', 'paid'].indexOf(b.status) > -1 || dvLinks(b).length;
-    }).sort(function (a, b) { return new Date(b.delivered_at || b.shoot_date || 0) - new Date(a.delivered_at || a.shoot_date || 0); });
+      return b.delivery_created_at || ['delivered', 'completed', 'paid'].indexOf(b.status) > -1 || dvLinks(b).length;
+    }).sort(function (a, b) {
+      return new Date(b.delivery_created_at || b.delivered_at || b.shoot_date || 0) -
+             new Date(a.delivery_created_at || a.delivered_at || a.shoot_date || 0);
+    });
     return head('Deliveries') +
       (delivered.length
         ? '<div class="adm-delgrid">' + delivered.map(function (b) {
             var n = dvLinks(b).length;
+            var isDraft = !!(b.delivery_created_at || n) && !b.delivery_sent_at;
             var sent = b.delivery_sent_at
               ? 'Sent to client ' + dstr(b.delivery_sent_at) + (b.delivery_sends > 1 ? ' · ' + b.delivery_sends + '&times;' : '')
-              : (n ? 'Draft — not sent yet' : '');
-            return '<div class="adm-del"><b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) + '</b>' +
+              : '';
+            return '<div class="adm-del"><b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) +
+              (b.delivery_sent_at
+                ? ' <span class="adm-badge adm-badge--delivered">Sent</span>'
+                : (isDraft ? ' <span class="adm-badge adm-badge--draft">Draft</span>' : '')) + '</b>' +
               '<small>' + esc(b.client_name || '—') + (b.delivered_at ? '<br>Delivered ' + dstr(b.delivered_at) : '') +
               (sent ? '<br>' + sent : '') +
               (n ? '<br>' + n + ' link' + (n > 1 ? 's' : '') : '') +
               '<br><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></small>' +
-              (n
+              ((b.delivery_created_at || n)
                 ? '<a class="lnk" style="cursor:pointer" onclick="ADM.delEdit(' + b.id + ')">Open delivery &rarr;</a>' +
                   (b.delivery_token
                     ? ' <a class="lnk" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Preview as client &rarr;</a>'
@@ -802,7 +809,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
                 : '<a class="lnk" style="cursor:pointer" onclick="ADM.delEdit(' + b.id + ')">Create delivery &rarr;</a>') +
             '</div>';
           }).join('') + '</div>'
-        : '<div class="adm-card"><p class="adm-empty">Nothing delivered yet — projects appear here once they reach the Delivered stage.</p></div>');
+        : '<div class="adm-card"><p class="adm-empty">Nothing here yet — hit Create delivery on a project to start a draft.</p></div>');
   }
 
   function vPortfolio() {
@@ -989,7 +996,9 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       '</div></div>';
 
     // ---- rail ----
-    var moneyCard = '<div class="adm-card"><h2>Payment</h2>' +
+    var invNum = 'JCS-' + String(b.id).padStart(4, '0');
+    var moneyCard = '<div class="adm-card"><h2>Payment' +
+      ' <span class="adm-badge adm-badge--' + (b.status === 'paid' ? 'paid">Paid' : 'unpaid">Unpaid') + '</span></h2>' +
       (b.price
         ? '<div class="adm-money__total">' + money(total) + '</div>' +
           '<div style="margin-top:1rem">' +
@@ -997,6 +1006,17 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
           (travel ? '<div class="adm-mrow"><span>Travel' + (b.travel_note ? ' <small>(' + esc(b.travel_note) + ')</small>' : '') + '</span><span>' + money(travel) + '</span></div>' : '') +
           (b.discount_value ? '<div class="adm-mrow"><span>Discount <small>(' + esc(b.discount_code || '') + ')</small></span><span>&minus;' + money(b.discount_value) + '</span></div>' : '') +
           '</div>' +
+          (b.invoice_token
+            ? (b.client_id
+                ? '<button class="adm-btn" style="margin-top:0.9rem" onclick="ADM.invSend(' + b.id + ')">' +
+                  (b.invoice_sent_at ? 'Resend invoice' : 'Send invoice to client') + '</button>'
+                : '') +
+              '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="/invoice?t=' + esc(b.invoice_token) + '" target="_blank" rel="noopener">View invoice &rarr;</a>' +
+              '<div class="adm-confnote' + (b.invoice_sent_at ? ' ok' : '') + '">' +
+                (b.invoice_sent_at
+                  ? '&#10003; Invoice ' + invNum + ' sent ' + dstr(b.invoice_sent_at) + (b.invoice_sends > 1 ? ' &middot; ' + b.invoice_sends + '&times;' : '')
+                  : 'Invoice ' + invNum + ' — not sent yet.') + '</div>'
+            : '<button class="adm-btn adm-btn--ghost" style="margin-top:0.9rem" onclick="ADM.invMake(' + b.id + ')">Generate invoice</button>') +
           '<div class="adm-confnote">' + (b.show_price === false ? 'Price hidden in client confirmation.' : 'Price shown in client confirmation.') + '</div>'
         : '<p class="adm-empty">No price set — Edit to add the quote.</p>') +
       '</div>';
@@ -1015,13 +1035,15 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       '</div></div>';
 
     var dlinks = dvLinks(b);
-    var delivery = '<div class="adm-card"><h2>Delivery</h2>' +
-      (dlinks.length
+    var delivery = '<div class="adm-card"><h2>Delivery' +
+      (b.delivery_sent_at ? ' <span class="adm-badge adm-badge--delivered">Sent</span>'
+        : (b.delivery_created_at || dlinks.length) ? ' <span class="adm-badge adm-badge--draft">Draft</span>' : '') + '</h2>' +
+      ((dlinks.length || b.delivery_created_at)
         ? (b.delivered_at ? '<div class="adm-mrow"><span>Delivered</span><span>' + dstr(b.delivered_at) + '</span></div>' : '') +
           '<div class="adm-mrow"><span>Links</span><span>' + dlinks.length + '</span></div>' +
-          (b.client_id
+          (b.client_id && dlinks.length
             ? '<button class="adm-btn" style="margin-top:0.6rem" onclick="ADM.deliver(' + b.id + ')">' +
-              (b.delivery_sent_at ? 'Resend delivery' : 'Send delivery to client') + '</button>'
+              (b.delivery_sent_at ? 'Resend delivery' : 'Publish &amp; send') + '</button>'
             : '') +
           '<button class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" onclick="ADM.delEdit(' + b.id + ')">Open delivery &rarr;</button>' +
           (b.delivery_token
@@ -1079,6 +1101,28 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         alert(msg);
       } catch (e) { alert(friendly(e)); }
     },
+    invMake: async function (id) {
+      try {
+        await api('invoice', 'POST', { id: id });
+        await reload(); render();
+      } catch (e) {
+        alert(String(e.message) === 'no-price' ? 'Set a price first (Edit).' : friendly(e));
+      }
+    },
+    invSend: async function (id) {
+      var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
+      var again = b.invoice_sent_at ? 'Resend' : 'Send';
+      if (!confirm(again + ' invoice JCS-' + String(b.id).padStart(4, '0') + '?\n\nClient: ' + (b.client_name || '—') +
+        '\nGoes to every email on the client profile.')) return;
+      try {
+        var j = await api('invoice', 'POST', { id: id, send: true });
+        await reload(); render();
+        alert('Invoice sent to ' + j.sentTo.join(', ') + '.\n\nInvoice page: ' + j.pageUrl);
+      } catch (e) {
+        alert(String(e.message) === 'no-client-email' ? 'The client has no email on file — add one first.'
+          : String(e.message) === 'no-price' ? 'Set a price first (Edit).' : friendly(e));
+      }
+    },
     cliAddEmail: async function (id) {
       var c = state.clients.find(function (x) { return x.id == id; }); if (!c) return;
       var v = ($('cli-newemail').value || '').trim().toLowerCase();
@@ -1102,7 +1146,17 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         await reload(); render();
       } catch (e) { alert(friendly(e)); }
     },
-    delEdit: function (id) { go('delivery/' + id); },
+    delEdit: async function (id) {
+      var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
+      // first open = create the draft so it shows on the Deliveries page
+      if (!b.delivery_created_at) {
+        try {
+          await api('bookings', 'PUT', Object.assign({}, b, { delivery_created_at: new Date().toISOString() }));
+          await reload();
+        } catch (e) { alert(friendly(e)); return; }
+      }
+      go('delivery/' + id);
+    },
     delAddLink: function () {
       var box = $('dv-links'); if (!box) return;
       box.insertAdjacentHTML('beforeend', dvRow());
