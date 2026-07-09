@@ -9,9 +9,9 @@
 //  Requires a client with an email and a gallery link on the project.
 // =====================================================================
 const crypto = require("node:crypto");
-const { requireAuth } = require("../_lib/auth.js");
-const { db } = require("../_lib/db.js");
-const { sendEmail, brandedHtml, OWNER } = require("../_lib/email.js");
+const { requireAuth } = require("../auth.js");
+const { db } = require("../db.js");
+const { sendEmail, brandedHtml, OWNER } = require("../email.js");
 
 const escHtml = (s) =>
   String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>

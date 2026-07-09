@@ -398,3 +398,17 @@ branding first; JCS front door always.
   preview-page links, "✓ Sent Jul 10 · 2×" state.
 - Deliveries page cards show sent status + a Delivery page link.
 - Guards: needs a gallery link and a client with an email.
+
+### Serverless function consolidation (Vercel Hobby 12-function cap)
+
+The delivery deploy failed: Hobby allows max 12 serverless functions and
+we hit 13. Fixed by consolidating:
+
+- All nine admin endpoints moved to `api/_lib/admin/` (Vercel ignores
+  `_lib`) behind ONE dynamic route: `api/admin/[action].js`. URLs are
+  unchanged (`/api/admin/bookings` etc. — `[action]` catches them), so
+  no front-end changes were needed.
+- Deleted `api/contact.js` — dead since /contact became the application
+  wizard posting to `/api/book`.
+- Function count is now 4 (`admin/[action]`, `book`, `calendar`,
+  `delivery`) — lots of headroom for Stripe etc.

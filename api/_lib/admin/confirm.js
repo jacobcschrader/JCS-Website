@@ -6,12 +6,12 @@
 //    2. Stamps confirmed_at on the booking.
 //  Safe to call again — resends the confirmation.
 // =====================================================================
-const { requireAuth } = require("../_lib/auth.js");
-const { db } = require("../_lib/db.js");
-const { sendEmail, brandedHtml, detailRow, OWNER } = require("../_lib/email.js");
-const { buildIcs, fmtTime, gcalLink } = require("../_lib/ics.js");
-const gcal = require("../_lib/gcal.js");
-const { sigFor } = require("../calendar.js");
+const { requireAuth } = require("../auth.js");
+const { db } = require("../db.js");
+const { sendEmail, brandedHtml, detailRow, OWNER } = require("../email.js");
+const { buildIcs, fmtTime, gcalLink } = require("../ics.js");
+const gcal = require("../gcal.js");
+const { sigFor } = require("../../calendar.js");
 
 const escHtml = (s) =>
   String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>

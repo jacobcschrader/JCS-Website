@@ -6,9 +6,9 @@
 //    POST {id, action:"decline"} → branded decline email + mark declined
 //    DELETE {id}               → remove a request
 // =====================================================================
-const { requireAuth } = require("../_lib/auth.js");
-const { db } = require("../_lib/db.js");
-const { sendEmail, brandedHtml, OWNER } = require("../_lib/email.js");
+const { requireAuth } = require("../auth.js");
+const { db } = require("../db.js");
+const { sendEmail, brandedHtml, OWNER } = require("../email.js");
 
 const escHtml = (s) =>
   String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>

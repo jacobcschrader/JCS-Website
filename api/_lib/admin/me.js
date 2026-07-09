@@ -1,5 +1,5 @@
 // GET /api/admin/me → 200 if the session is valid, else 401.
-const { verifySessionToken, readCookie } = require("../_lib/auth.js");
+const { verifySessionToken, readCookie } = require("../auth.js");
 
 module.exports = function handler(req, res) {
   if (verifySessionToken(readCookie(req))) {

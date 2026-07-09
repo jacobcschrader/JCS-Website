@@ -5,8 +5,8 @@
 //    PUT    {id, ...} → update (incl. active toggle)
 //    DELETE {id}      → delete
 // =====================================================================
-const { requireAuth } = require("../_lib/auth.js");
-const { db } = require("../_lib/db.js");
+const { requireAuth } = require("../auth.js");
+const { db } = require("../db.js");
 
 const field = (v, max = 300) => String(v == null ? "" : v).trim().slice(0, max);
 

@@ -1,5 +1,5 @@
 // POST /api/admin/login  { email, password } → sets session cookie.
-const { verifyPassword, createSessionToken, sessionCookie } = require("../_lib/auth.js");
+const { verifyPassword, createSessionToken, sessionCookie } = require("../auth.js");
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
