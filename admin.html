@@ -211,6 +211,7 @@ small.mut { color: var(--muted); }
       <a data-r="deliveries">Deliveries</a>
       <a data-r="clients">Clients</a>
       <a data-r="portfolio">Portfolio</a>
+      <a data-r="settings">Settings</a>
     </nav>
     <div class="adm-side__foot"><a id="logout">Sign out</a></div>
   </aside>
@@ -227,9 +228,11 @@ small.mut { color: var(--muted); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
   function money(n){ return n==null||n===''?'—':'$'+Number(n).toLocaleString(); }
   function fmtT(t){ if(!/^\d{2}:\d{2}/.test(String(t||''))) return t||''; var p=t.slice(0,5).split(':'); var h=+p[0], ap=h>=12?'PM':'AM'; h=h%12||12; return h+':'+p[1]+' '+ap; }
+  function discLabel(d){ return d.code + ' — ' + (d.kind === 'percent' ? Number(d.value) + '%' : '$' + Number(d.value).toLocaleString()) + (d.note ? ' · ' + d.note : ''); }
+  function net(b){ return (Number(b.price) || 0) - (Number(b.discount_value) || 0); }
   function dstr(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
 
-  var state = { clients: [], bookings: [], requests: [], reqTab: 'pending', loaded: false,
+  var state = { clients: [], bookings: [], requests: [], discounts: [], reqTab: 'pending', loaded: false,
               view: localStorage.getItem('adm-view') || 'pipeline', q: '', clientFilter: '', collapsed: {} };
 var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', delivered:'#7a5fb8', completed:'#3f7a4f', paid:'#1d4d2a' };
   var TYPES = ['Architectural Photography','Film / Videography','Aerial & Drone','Full Campaign (Stills + Film)','Other'];
@@ -272,8 +275,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     render();
   }
   async function reload() {
-    var c = await api('clients'), b = await api('bookings'), r = await api('requests');
-    state.clients = c.clients; state.bookings = b.bookings; state.requests = r.requests; state.loaded = true;
+    var c = await api('clients'), b = await api('bookings'), r = await api('requests'), d = await api('discounts');
+    state.clients = c.clients; state.bookings = b.bookings; state.requests = r.requests; state.discounts = d.discounts; state.loaded = true;
     var pending = state.requests.filter(function (x) { return x.status === 'pending'; }).length;
     var badge = $('req-badge');
     if (badge) { badge.textContent = pending; badge.classList.toggle('adm-hidden', !pending); }
@@ -389,6 +392,10 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       fld('f-status', 'Stage', '<select id="f-status">' + statusOpts + '</select>') +
       fld('f-travel', 'Travel fee ($)', '<input id="f-travel" type="number" min="0" step="1" placeholder="e.g. 150" value="' + (v.travel_fee == null ? '' : v.travel_fee) + '">') +
       fld('f-travelnote', 'Travel fee note', '<input id="f-travelnote" placeholder="e.g. Tahoe trip" value="' + esc(v.travel_note || '') + '">') +
+      fld('f-discount', 'Discount code', '<select id="f-discount"><option value="">No discount</option>' +
+        state.discounts.filter(function (d) { return d.active || d.code === v.discount_code; }).map(function (d) {
+          return '<option value="' + esc(d.code) + '"' + (v.discount_code === d.code ? ' selected' : '') + '>' + esc(discLabel(d)) + '</option>';
+        }).join('') + '</select>') +
       fld('f-delivery', 'Delivery link', '<input id="f-delivery" type="url" placeholder="https://…" value="' + esc(v.delivery_url || '') + '">') +
       fld('f-delivered', 'Delivered on', '<input id="f-delivered" type="date" value="' + (v.delivered_at ? String(v.delivered_at).slice(0, 10) : '') + '">') +
       '<div class="adm-field full"><label for="f-notes">Access notes <small style="text-transform:none;letter-spacing:0">(internal — your calendar only)</small></label><textarea id="f-notes" placeholder="Gate codes, staging, access notes…">' + esc(v.notes || '') + '</textarea></div>' +
@@ -445,6 +452,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
                addons: JSON.stringify(checkedList()), deliverables: $('f-deliverables').value,
                price: $('f-price').value, status: $('f-status').value,
                travel_fee: $('f-travel').value, travel_note: $('f-travelnote').value,
+               discount_code: $('f-discount').value,
                delivery_url: $('f-delivery').value, delivered_at: $('f-delivered').value,
                notes: $('f-notes').value, show_price: $('f-showprice').checked };
     }
@@ -476,12 +484,12 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     var monthSum = active.filter(function (b) {
       if (!b.shoot_date) return false; var d = new Date(b.shoot_date);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    }).reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+    }).reduce(function (s, b) { return s + net(b); }, 0);
     var yearSum = active.filter(function (b) {
       return b.shoot_date && new Date(b.shoot_date).getFullYear() === now.getFullYear();
-    }).reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+    }).reduce(function (s, b) { return s + net(b); }, 0);
     var unpaid = active.filter(function (b) { return b.status !== 'paid'; })
-      .reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+      .reduce(function (s, b) { return s + net(b); }, 0);
 
     var week = state.bookings.filter(function (b) {
       if (b.status !== 'upcoming' || !b.shoot_date) return false;
@@ -685,6 +693,34 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       '<p class="adm-empty" style="margin-top:1.4rem">These are the published website projects. To add or edit one, stage the media and ask Claude in the JCS-Website session.</p>';
   }
 
+  function vSettings() {
+    var list = state.discounts;
+    return head('Settings') +
+      '<div class="adm-card"><h2>Discount codes</h2>' +
+      '<form class="adm-form" onsubmit="ADM.discCreate(event)" style="margin-bottom:1.4rem">' +
+        fld('d-code', 'Code *', '<input id="d-code" required placeholder="SPRING10" style="text-transform:uppercase">') +
+        fld('d-kind', 'Type', '<select id="d-kind"><option value="percent">Percent off</option><option value="amount">Dollar amount off</option></select>') +
+        fld('d-value', 'Value *', '<input id="d-value" type="number" min="1" step="0.01" required placeholder="10">') +
+        fld('d-note', 'Note', '<input id="d-note" placeholder="e.g. Returning client">') +
+        '<div class="full"><button class="adm-btn" type="submit">Create code</button></div>' +
+      '</form>' +
+      (list.length
+        ? '<table class="adm-table"><tr><th>Code</th><th>Discount</th><th class="hide-m">Note</th><th>Status</th><th></th></tr>' +
+          list.map(function (d) {
+            return '<tr><td style="letter-spacing:0.08em;font-weight:600">' + esc(d.code) + '</td>' +
+              '<td>' + (d.kind === 'percent' ? Number(d.value) + '%' : '$' + Number(d.value).toLocaleString()) + '</td>' +
+              '<td class="hide-m">' + esc(d.note || '—') + '</td>' +
+              '<td><span class="adm-badge adm-badge--' + (d.active ? 'live">Active' : 'canceled">Inactive') + '</span></td>' +
+              '<td class="adm-row-act" style="white-space:nowrap">' +
+                '<button style="background:none;border:0;cursor:pointer;font-size:0.75rem;color:var(--navy);text-decoration:underline;text-underline-offset:3px;padding:0 0.4rem" onclick="ADM.discToggle(' + d.id + ')">' + (d.active ? 'Deactivate' : 'Activate') + '</button>' +
+                '<button style="background:none;border:0;cursor:pointer;font-size:0.75rem;color:#a33;text-decoration:underline;text-underline-offset:3px;padding:0 0.4rem" onclick="ADM.discDelete(' + d.id + ')">Delete</button>' +
+              '</td></tr>';
+          }).join('') + '</table>'
+        : '<p class="adm-empty">No discount codes yet.</p>') +
+      '<p class="adm-msg" style="color:var(--muted)">Applying a code to a project locks in the dollar amount at save time — editing a code later never changes existing projects.</p>' +
+      '</div>';
+  }
+
   function vClients() {
     return head('Clients', '<button class="adm-btn" onclick="ADM.newClient()">+ New client</button>') +
       '<div class="adm-card">' + (state.clients.length
@@ -740,6 +776,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         '<div class="adm-kv"><label>Type</label><div>' + esc(b.type || '—') + '</div></div>' +
         '<div class="adm-kv"><label>Sqft</label><div>' + (b.sqft ? Number(b.sqft).toLocaleString() : '—') + '</div></div>' +
         '<div class="adm-kv"><label>Price</label><div>' + money(b.price) + (b.travel_fee ? ' <small class="mut">+ ' + money(b.travel_fee) + ' travel' + (b.travel_note ? ' (' + esc(b.travel_note) + ')' : '') + '</small>' : '') + '</div></div>' +
+        '<div class="adm-kv"><label>Discount</label><div>' + (b.discount_value ? '&minus;' + money(b.discount_value) + ' <small class="mut">(' + esc(b.discount_code || '') + ')</small>' : '—') + '</div></div>' +
+        '<div class="adm-kv"><label>Total</label><div>' + (b.price ? money(net(b) + (Number(b.travel_fee) || 0)) : '—') + '</div></div>' +
         '<div class="adm-kv"><label>Delivered</label><div>' + (b.delivered_at ? dstr(b.delivered_at) : '—') + '</div></div>' +
         '<div class="adm-kv"><label>Delivery link</label><div>' + (b.delivery_url ? '<a href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open &rarr;</a>' : '—') + '</div></div>' +
       '</div>' +
@@ -752,7 +790,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     var r = route(), m = $('main');
     var section = r.split('/')[0];
     var owns = { dash:'dash', requests:'requests', pipeline:'pipeline', project:'pipeline', deliveries:'deliveries',
-                 clients:'clients', client:'clients', portfolio:'portfolio' }[section] || 'dash';
+                 clients:'clients', client:'clients', portfolio:'portfolio', settings:'settings' }[section] || 'dash';
     document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.r === owns); });
     if (section === 'requests') m.innerHTML = vRequests();
     else if (section === 'pipeline') { m.innerHTML = vPipeline(); wirePipeline(); }
@@ -761,6 +799,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     else if (section === 'clients') m.innerHTML = vClients();
     else if (section === 'client') m.innerHTML = vClientDetail(r.split('/')[1]);
     else if (section === 'portfolio') m.innerHTML = vPortfolio();
+    else if (section === 'settings') m.innerHTML = vSettings();
     else m.innerHTML = vDash();
   }
 
@@ -793,6 +832,23 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     clientFilter: function (v) { state.clientFilter = v; render(); },
     stage: function (id, s) { setStage(id, s).catch(function (e) { alert(friendly(e)); }); },
     reqTab: function (t) { state.reqTab = t; render(); },
+    discCreate: async function (e) {
+      e.preventDefault();
+      try {
+        await api('discounts', 'POST', { code: $('d-code').value, kind: $('d-kind').value, value: $('d-value').value, note: $('d-note').value });
+        await reload(); render();
+      } catch (err) { alert(String(err.message) === 'duplicate-code' ? 'That code already exists.' : friendly(err)); }
+    },
+    discToggle: async function (id) {
+      var d = state.discounts.find(function (x) { return x.id == id; }); if (!d) return;
+      try { await api('discounts', 'PUT', { id: d.id, code: d.code, kind: d.kind, value: d.value, note: d.note, active: !d.active }); await reload(); render(); }
+      catch (e) { alert(friendly(e)); }
+    },
+    discDelete: async function (id) {
+      if (!confirm('Delete this code? Projects that already used it keep their locked-in discount.')) return;
+      try { await api('discounts', 'DELETE', { id: id }); await reload(); render(); }
+      catch (e) { alert(friendly(e)); }
+    },
     reqAccept: async function (id) {
       if (!confirm('Accept this request? A client + project are created (no email is sent yet — you set the quote, then Confirm & send).')) return;
       try {

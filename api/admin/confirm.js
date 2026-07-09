@@ -50,7 +50,7 @@ module.exports = async function handler(req, res) {
       `Property: ${fullAddress}`,
       b.client_name ? `Client: ${b.client_name}${b.client_phone ? " (" + b.client_phone.replace(/[^0-9+]/g, "") + ")" : ""}` : null,
       b.sqft ? `Sqft: ${Number(b.sqft).toLocaleString()}` : null,
-      b.price ? `Price: $${Number(b.price).toLocaleString()}${b.travel_fee ? " + $" + Number(b.travel_fee).toLocaleString() + " travel" + (b.travel_note ? " (" + b.travel_note + ")" : "") : ""}` : null,
+      b.price ? `Price: $${Number(b.price).toLocaleString()}${b.travel_fee ? " + $" + Number(b.travel_fee).toLocaleString() + " travel" + (b.travel_note ? " (" + b.travel_note + ")" : "") : ""}${b.discount_value ? " - $" + Number(b.discount_value).toLocaleString() + " discount (" + b.discount_code + ")" : ""}` : null,
       b.deliverables ? `\nDeliverables:\n• ${b.deliverables}` : null,
       b.notes ? `\nAccess notes:\n${b.notes}` : null,
       `\nhttps://www.jacobcschrader.com/admin#project/${b.id}`,
@@ -100,8 +100,12 @@ module.exports = async function handler(req, res) {
       (whenTwi ? detailRow("Twilight", escHtml(whenTwi)) : "") +
       (b.type ? detailRow("Type", escHtml(b.type)) : "") +
       (b.deliverables ? detailRow("Deliverables", escHtml(b.deliverables)) : "") +
+      (b.show_price !== false && b.price && b.discount_value
+        ? detailRow("Discount", "&minus;$" + Number(b.discount_value).toLocaleString() +
+            (b.discount_code ? ' <span style="color:#8a94a6;">(' + escHtml(b.discount_code) + ")</span>" : ""))
+        : "") +
       (b.show_price !== false && b.price
-        ? detailRow("Total", "$" + (Number(b.price) + Number(b.travel_fee || 0)).toLocaleString() +
+        ? detailRow("Total", "$" + (Number(b.price) + Number(b.travel_fee || 0) - Number(b.discount_value || 0)).toLocaleString() +
             (b.travel_fee ? ' <span style="color:#8a94a6;">(incl. $' + Number(b.travel_fee).toLocaleString() + " travel)</span>" : ""))
         : "") +
       `</table>`;

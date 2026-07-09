@@ -357,3 +357,20 @@ wizard, /book is an "apply to work with me" flow:
 - No pricing engine anywhere, by design (custom quotes only).
 
 Site CTAs still point at /contact — link /book from the site when ready.
+
+### Settings tab + discount codes
+
+- Admin sidebar gained **Settings** with a Discount Codes card: create
+  (code, percent-off or dollar-off, value, note), activate/deactivate,
+  delete. `api/admin/discounts.js`, `discounts` table.
+- Project form has a **Discount code** select (active codes only; an
+  inactive code already on a project stays selectable there). Works on
+  new AND existing projects.
+- The discount is snapshotted in dollars at save time
+  (`discount_code` + `discount_value` on bookings) — editing or deleting
+  a code later never changes past projects. Dollar-off is capped at the
+  project price; percent computed server-side.
+- Where it shows: project detail (Discount + Total rows), client
+  confirmation email (Discount line + reduced Total, respecting the
+  show-price toggle), Jacob's calendar description, and dashboard
+  revenue stats (now net of discounts).

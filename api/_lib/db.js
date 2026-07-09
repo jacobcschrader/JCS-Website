@@ -64,6 +64,18 @@ function ensureSchema() {
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travel_fee numeric`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travel_note text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS show_price boolean DEFAULT true`;
+      // Discount codes (Settings) + per-project application snapshot.
+      await s`CREATE TABLE IF NOT EXISTS discounts (
+        id         serial PRIMARY KEY,
+        code       text NOT NULL,
+        kind       text NOT NULL DEFAULT 'percent',
+        value      numeric NOT NULL,
+        note       text DEFAULT '',
+        active     boolean NOT NULL DEFAULT true,
+        created_at timestamptz NOT NULL DEFAULT now()
+      )`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount_code text DEFAULT ''`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount_value numeric`;
       // Work-with-me applications (public /book form).
       await s`CREATE TABLE IF NOT EXISTS requests (
         id          serial PRIMARY KEY,

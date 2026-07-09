@@ -37,7 +37,21 @@ function parse(b) {
     travel_fee: b.travel_fee === "" || b.travel_fee == null ? null : Number(b.travel_fee) || null,
     travel_note: field(b.travel_note, 300),
     show_price: b.show_price !== false && b.show_price !== "false",
+    discount_code: field(b.discount_code, 40).toUpperCase().replace(/\s+/g, ""),
   };
+}
+
+// Snapshot the discount in dollars at save time (so later edits to the
+// code definition never change past projects).
+async function applyDiscount(s, f) {
+  if (!f.discount_code) { f.discount_value = null; return; }
+  const [d] = await s`SELECT * FROM discounts WHERE upper(code) = ${f.discount_code} AND active = true`;
+  if (!d) { f.discount_code = ""; f.discount_value = null; return; }
+  f.discount_code = d.code;
+  const price = Number(f.price) || 0;
+  f.discount_value = d.kind === "percent"
+    ? Math.round(price * Number(d.value)) / 100
+    : Math.min(Number(d.value), price);
 }
 
 // location is derived: "City, ST 96145" (falls back to a raw location string)
@@ -63,10 +77,11 @@ module.exports = async function handler(req, res) {
     } else if (req.method === "POST") {
       const f = parse(b);
       f.location = makeLocation(f, b.location);
+      await applyDiscount(s, f);
       if (!f.title) { res.status(400).json({ error: "title-required" }); return; }
       const [row] = await s`
-        INSERT INTO bookings (client_id, title, location, shoot_date, shoot_time, type, price, status, notes, delivery_url, delivered_at, twilight_date, twilight_time, deliverables, city, state, zip, sqft, addons, travel_fee, travel_note, show_price)
-        VALUES (${f.client_id}, ${f.title}, ${f.location}, ${f.shoot_date}, ${f.shoot_time}, ${f.type}, ${f.price}, ${f.status}, ${f.notes}, ${f.delivery_url}, ${f.delivered_at}, ${f.twilight_date}, ${f.twilight_time}, ${f.deliverables}, ${f.city}, ${f.state}, ${f.zip}, ${f.sqft}, ${f.addons}, ${f.travel_fee}, ${f.travel_note}, ${f.show_price})
+        INSERT INTO bookings (client_id, title, location, shoot_date, shoot_time, type, price, status, notes, delivery_url, delivered_at, twilight_date, twilight_time, deliverables, city, state, zip, sqft, addons, travel_fee, travel_note, show_price, discount_code, discount_value)
+        VALUES (${f.client_id}, ${f.title}, ${f.location}, ${f.shoot_date}, ${f.shoot_time}, ${f.type}, ${f.price}, ${f.status}, ${f.notes}, ${f.delivery_url}, ${f.delivered_at}, ${f.twilight_date}, ${f.twilight_time}, ${f.deliverables}, ${f.city}, ${f.state}, ${f.zip}, ${f.sqft}, ${f.addons}, ${f.travel_fee}, ${f.travel_note}, ${f.show_price}, ${f.discount_code}, ${f.discount_value})
         RETURNING *`;
       res.status(200).json({ booking: row });
 
@@ -74,6 +89,7 @@ module.exports = async function handler(req, res) {
       const id = parseInt(b.id, 10);
       const f = parse(b);
       f.location = makeLocation(f, b.location);
+      await applyDiscount(s, f);
       if (!id || !f.title) { res.status(400).json({ error: "invalid" }); return; }
       const [row] = await s`
         UPDATE bookings SET
@@ -84,7 +100,8 @@ module.exports = async function handler(req, res) {
           twilight_date = ${f.twilight_date}, twilight_time = ${f.twilight_time},
           deliverables = ${f.deliverables}, city = ${f.city}, state = ${f.state}, zip = ${f.zip},
           sqft = ${f.sqft}, addons = ${f.addons}, travel_fee = ${f.travel_fee},
-          travel_note = ${f.travel_note}, show_price = ${f.show_price}
+          travel_note = ${f.travel_note}, show_price = ${f.show_price},
+          discount_code = ${f.discount_code}, discount_value = ${f.discount_value}
         WHERE id = ${id} RETURNING *`;
       if (!row) { res.status(404).json({ error: "not-found" }); return; }
       res.status(200).json({ booking: row });
