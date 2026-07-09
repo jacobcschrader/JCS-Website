@@ -499,6 +499,23 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     }
   }
 
+  // ================= delivery form =================
+  function deliveryModal(b) {
+    openModal(b.delivery_url ? 'Edit delivery' : 'Create delivery',
+      fld('f-dv-gallery', 'Gallery link (Pixieset…) *', '<input id="f-dv-gallery" type="url" required placeholder="https://…" value="' + esc(b.delivery_url || '') + '">') +
+      fld('f-dv-download', 'Download link (films / zip)', '<input id="f-dv-download" type="url" placeholder="https://…" value="' + esc(b.download_url || '') + '">') +
+      fld('f-dv-date', 'Delivered on', '<input id="f-dv-date" type="date" value="' + (b.delivered_at ? String(b.delivered_at).slice(0, 10) : new Date().toISOString().slice(0, 10)) + '">'),
+      async function () {
+        var body = Object.assign({}, b, {
+          delivery_url: $('f-dv-gallery').value,
+          download_url: $('f-dv-download').value,
+          delivered_at: $('f-dv-date').value
+        });
+        await api('bookings', 'PUT', body);
+        await reload(); render();
+      });
+  }
+
   async function setStage(id, status) {
     var b = state.bookings.find(function (x) { return x.id == id; });
     if (!b || b.status === status) return;
@@ -733,7 +750,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
                   (b.delivery_token
                     ? ' <a class="lnk" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Delivery page &rarr;</a>'
                     : '')
-                : '<span class="nolnk">No gallery link yet — add one via Edit.</span>') +
+                : '<a class="lnk" style="cursor:pointer" onclick="ADM.delEdit(' + b.id + ')">Create delivery &rarr;</a>') +
             '</div>';
           }).join('') + '</div>'
         : '<div class="adm-card"><p class="adm-empty">Nothing delivered yet — projects appear here once they reach the Delivered stage.</p></div>');
@@ -892,15 +909,14 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
 
     var canSend = !!(b.delivery_url && b.client_id);
     var delivery = '<div class="adm-card"><h2>Delivery</h2>' +
-      (b.delivery_url || b.delivered_at
+      (b.delivery_url
         ? (b.delivered_at ? '<div class="adm-mrow"><span>Delivered</span><span>' + dstr(b.delivered_at) + '</span></div>' : '') +
           (canSend
             ? '<button class="adm-btn" style="margin-top:0.6rem" onclick="ADM.deliver(' + b.id + ')">' +
               (b.delivery_sent_at ? 'Resend delivery' : 'Send delivery to client') + '</button>'
             : '') +
-          (b.delivery_url
-            ? '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open gallery &rarr;</a>'
-            : '<div class="adm-confnote">No gallery link yet — add one via Edit.</div>') +
+          '<button class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" onclick="ADM.delEdit(' + b.id + ')">Edit delivery</button>' +
+          '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open gallery &rarr;</a>' +
           (b.download_url
             ? '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="' + esc(b.download_url) + '" target="_blank" rel="noopener">Open download &rarr;</a>'
             : '') +
@@ -910,11 +926,10 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
           '<div class="adm-confnote' + (b.delivery_sent_at ? ' ok' : '') + '">' +
             (b.delivery_sent_at
               ? '&#10003; Sent ' + dstr(b.delivery_sent_at) + (b.delivery_sends > 1 ? ' &middot; ' + b.delivery_sends + '&times;' : '')
-              : (b.delivery_url
-                  ? (b.client_id ? 'Not sent to client yet.' : 'Add a client to send the delivery.')
-                  : '')) +
+              : (b.client_id ? 'Not sent to client yet.' : 'Add a client to send the delivery.')) +
           '</div>'
-        : '<p class="adm-empty">Paste the gallery link via Edit, then send the client their branded delivery page.</p>') +
+        : '<button class="adm-btn" onclick="ADM.delEdit(' + b.id + ')">Create delivery</button>' +
+          '<p class="adm-empty" style="margin-top:0.8rem">Add the gallery and download links, then send the client their branded delivery page.</p>') +
       '</div>';
 
     return html + '<div class="adm-detail2">' + main +
@@ -958,6 +973,10 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         msg += j.calendarWritten ? ' Added to your Google Calendar.' : ' Calendar invite attached to the emails.';
         alert(msg);
       } catch (e) { alert(friendly(e)); }
+    },
+    delEdit: function (id) {
+      var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
+      deliveryModal(b);
     },
     deliver: async function (id) {
       var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
