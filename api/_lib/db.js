@@ -33,6 +33,9 @@ function ensureSchema() {
         notes      text DEFAULT '',
         created_at timestamptz NOT NULL DEFAULT now()
       )`;
+      // Co-recipient emails (JSON array) — every notification goes to
+      // the primary email plus all of these.
+      await s`ALTER TABLE clients ADD COLUMN IF NOT EXISTS extra_emails text DEFAULT ''`;
       await s`CREATE TABLE IF NOT EXISTS bookings (
         id         serial PRIMARY KEY,
         client_id  integer REFERENCES clients(id) ON DELETE SET NULL,
@@ -69,6 +72,11 @@ function ensureSchema() {
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_token text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_sent_at timestamptz`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_sends integer DEFAULT 0`;
+      // Delivery editor: personal note, CC list, named links (JSON array
+      // of { label, url } — replaces the fixed gallery/download pair).
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_message text DEFAULT ''`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_cc text DEFAULT ''`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_links text DEFAULT ''`;
       // Discount codes (Settings) + per-project application snapshot.
       await s`CREATE TABLE IF NOT EXISTS discounts (
         id         serial PRIMARY KEY,

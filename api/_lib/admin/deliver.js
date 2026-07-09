@@ -11,6 +11,7 @@
 const crypto = require("node:crypto");
 const { requireAuth } = require("../auth.js");
 const { db } = require("../db.js");
+const { linksOf, recipientsOf } = require("../links.js");
 const { sendEmail, brandedHtml, OWNER } = require("../email.js");
 
 const escHtml = (s) =>
@@ -27,30 +28,37 @@ module.exports = async function handler(req, res) {
     if (!id) { res.status(400).json({ error: "invalid" }); return; }
 
     const [b] = await s`
-      SELECT bk.*, c.name AS client_name, c.email AS client_email
+      SELECT bk.*, c.name AS client_name, c.email AS client_email,
+             c.extra_emails AS client_extra_emails
       FROM bookings bk LEFT JOIN clients c ON c.id = bk.client_id
       WHERE bk.id = ${id}`;
     if (!b) { res.status(404).json({ error: "not-found" }); return; }
-    if (!b.delivery_url) { res.status(400).json({ error: "no-gallery" }); return; }
-    if (!b.client_email) { res.status(400).json({ error: "no-client-email" }); return; }
+    const links = linksOf(b);
+    if (!links.length) { res.status(400).json({ error: "no-links" }); return; }
+    const clientTo = recipientsOf(b.client_email, b.client_extra_emails);
+    if (!clientTo.length) { res.status(400).json({ error: "no-client-email" }); return; }
 
     const token = b.delivery_token || crypto.randomBytes(12).toString("base64url");
     const pageUrl = `https://www.jacobcschrader.com/delivery?t=${token}`;
     const first = (b.client_name || "").split(" ")[0] || "there";
+    const cc = String(b.delivery_cc || "").split(/[,;\s]+/).filter((e) => /.+@.+\..+/.test(e)).slice(0, 10);
+    const note = String(b.delivery_message || "").trim();
 
     await sendEmail({
-      to: b.client_email,
+      to: clientTo,
+      cc,
       replyTo: OWNER,
       subject: `Your delivery is ready — ${b.title}`,
-      text: `Hi ${first},\n\n${b.title} is ready. View and download everything here:\n${pageUrl}\n\n` +
+      text: `Hi ${first},\n\n${note ? note + "\n\n" : ""}${b.title} is ready. View and download everything here:\n${pageUrl}\n\n` +
         `— Jacob Schrader · jacobcschrader.com`,
       html: brandedHtml({
         eyebrowText: "Your delivery",
         headline: `${escHtml(b.title)} is ready.`,
         bodyHtml:
           `<p style="margin:0 0 14px;">Hi ${escHtml(first)},</p>` +
+          (note ? `<p style="margin:0 0 14px;">${escHtml(note)}</p>` : "") +
           `<p style="margin:0 0 14px;">Your full delivery for <b>${escHtml(b.title)}</b> is ready — ` +
-          `photos${b.download_url ? ", films," : ""} and everything included with your shoot.</p>` +
+          `everything included with your shoot.</p>` +
           (b.deliverables ? `<p style="margin:0;color:#5d6a7e;font-size:13px;">Included: ${escHtml(b.deliverables)}</p>` : ""),
         cta: { label: "View Your Delivery", url: pageUrl },
       }),

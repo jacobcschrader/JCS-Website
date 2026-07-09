@@ -424,3 +424,40 @@ we hit 13. Fixed by consolidating:
 - Delivery card: "Create delivery" opens a small modal (gallery link,
   download link, delivered-on) instead of the full Edit form; after
   creation it becomes Send/Resend + Edit delivery + links.
+
+### Delivery editor (Visaro-style page, no uploads)
+
+Creating a delivery now opens a full editor at `#delivery/:id` instead
+of a modal (Create/Open delivery from the project page or Deliveries):
+
+- Header: property title, Draft/Sent badge, client + email, and
+  Preview as client / Save / Publish & send.
+- **Delivery settings**: message to client (goes in the email), CC
+  recipients (comma-separated, validated server-side, max 10),
+  delivered-on date.
+- **Links**: named link rows — title + URL — with "+ Add link" for as
+  many as needed (Gallery, Cinematic Film, Zillow 3D Tour, whatever).
+  Each becomes a button on the client's delivery page and replaces the
+  old fixed gallery/download pair (legacy fields still fall back).
+- Publish & send saves first, then emails client + CCs.
+- New booking columns: delivery_message, delivery_cc, delivery_links
+  (validated JSON). Tokens now issue when a delivery is saved, so
+  Preview as client works before sending.
+- Delivery fields were removed from the project Edit modal (project
+  edits merge over the booking so delivery data survives).
+
+### Client page (Visaro-style) + multiple emails per profile
+
+- Client detail rebuilt like Visaro's: avatar initials + name header
+  (brokerage, email · phone), Edit client/Delete; left = Projects card
+  with count and Visaro-style rows (property/location · date, Paid or
+  Unpaid badge, total, stage badge) + Notes card; right rail = Emails
+  card and Contact info (phone, brokerage, date added, total revenue —
+  net of discounts, incl. travel).
+- **Emails card**: primary address (Primary chip) plus co-recipient
+  emails — add with the input + Add (or Enter), remove with ×. Stored
+  as validated JSON in clients.extra_emails (deduped vs primary, max
+  10). EVERY client notification — booking confirmation and delivery —
+  now goes to all addresses on the profile (shared recipientsOf() in
+  api/_lib/links.js; confirm.js + deliver.js select extra_emails).
+- Client Edit modal preserves extras (passes extra_emails through).

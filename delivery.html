@@ -109,8 +109,7 @@
       a.textContent = label;
       acts.appendChild(a);
     }
-    if (d.gallery_url) btn('View Gallery', d.gallery_url, true);
-    if (d.download_url) btn('Download Films & Files', d.download_url, !d.gallery_url);
+    (d.links || []).forEach(function (l, i) { btn(l.label || 'View', l.url, i === 0); });
     $('dv-card').hidden = false;
   } catch (e) { missing(); }
 })();

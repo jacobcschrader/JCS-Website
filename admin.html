@@ -203,6 +203,15 @@ small.mut { color: var(--muted); }
 .adm-field input, .adm-field select, .adm-field textarea { width: 100%; box-sizing: border-box; font-family: var(--sans); font-size: 0.9rem; color: var(--ink); background: var(--paper-warm); border: 1px solid var(--line); padding: 0.6rem 0.7rem; outline: none; }
 .adm-field textarea { min-height: 70px; resize: vertical; }
 .adm-field input:focus, .adm-field select:focus, .adm-field textarea:focus { border-color: var(--navy); background: #fff; }
+.adm-avatar { flex: 0 0 54px; width: 54px; height: 54px; border-radius: 50%; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 1.25rem; letter-spacing: 0.04em; }
+.dv-lrow { display: flex; gap: 0.6rem; margin-bottom: 0.6rem; }
+.dv-lrow input { box-sizing: border-box; font-family: var(--sans); font-size: 0.9rem; color: var(--ink); background: var(--paper-warm); border: 1px solid var(--line); padding: 0.6rem 0.7rem; outline: none; }
+.dv-lrow input:focus { border-color: var(--navy); background: #fff; }
+.dv-lrow .dv-lbl { flex: 0 0 240px; }
+.dv-lrow .dv-url { flex: 1; }
+.dv-x { flex: 0 0 38px; background: none; border: 1px solid var(--line); color: var(--muted); font-size: 1.1rem; cursor: pointer; }
+.dv-x:hover { color: #a03a3a; border-color: #a03a3a; }
+@media (max-width: 700px) { .dv-lrow { flex-wrap: wrap; } .dv-lrow .dv-lbl { flex: 1 1 100%; } }
 .adm-msg { font-size: 0.85rem; margin-top: 0.8rem; color: #a33; }
 
 /* ---- Mobile shell ---- */
@@ -371,7 +380,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       '<div class="adm-field full"><label for="f-notes">Notes</label><textarea id="f-notes">' + esc(c.notes || '') + '</textarea></div>',
       async function () {
         var body = { id: c.id, name: $('f-name').value, email: $('f-email').value, phone: $('f-phone').value,
-                     brokerage: $('f-brokerage').value, notes: $('f-notes').value };
+                     brokerage: $('f-brokerage').value, notes: $('f-notes').value,
+                     extra_emails: c.extra_emails || '' };
         var j = await api('clients', c.id ? 'PUT' : 'POST', body);
         await reload();
         if (onSaved) onSaved(j.client); else render();
@@ -435,14 +445,13 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         state.discounts.filter(function (d) { return d.active || d.code === v.discount_code; }).map(function (d) {
           return '<option value="' + esc(d.code) + '"' + (v.discount_code === d.code ? ' selected' : '') + '>' + esc(discLabel(d)) + '</option>';
         }).join('') + '</select>') +
-      fld('f-delivery', 'Gallery link (Pixieset…)', '<input id="f-delivery" type="url" placeholder="https://…" value="' + esc(v.delivery_url || '') + '">') +
-      fld('f-download', 'Download link (films / zip)', '<input id="f-download" type="url" placeholder="https://…" value="' + esc(v.download_url || '') + '">') +
-      fld('f-delivered', 'Delivered on', '<input id="f-delivered" type="date" value="' + (v.delivered_at ? String(v.delivered_at).slice(0, 10) : '') + '">') +
       '<div class="adm-field full"><label for="f-notes">Access notes <small style="text-transform:none;letter-spacing:0">(internal — your calendar only)</small></label><textarea id="f-notes" placeholder="Gate codes, staging, access notes…">' + esc(v.notes || '') + '</textarea></div>' +
       '<div class="adm-field full"><label style="display:flex;align-items:center;gap:0.5rem;text-transform:none;letter-spacing:0;font-size:0.85rem;color:var(--ink);cursor:pointer">' +
         '<input type="checkbox" id="f-showprice" style="width:auto"' + (v.show_price === false ? '' : ' checked') + '> Show price in the client\'s booking confirmation</label></div>',
       async function () {
-        var body = collectProjectForm(b.id);
+        // merge over the existing booking so delivery fields (managed in
+        // the delivery editor) survive a project edit
+        var body = Object.assign({}, b.id ? b : {}, collectProjectForm(b.id));
         var j = await api('bookings', b.id ? 'PUT' : 'POST', body);
         await reload();
         if (!b.id && j.booking) go('project/' + j.booking.id); else render();
@@ -493,27 +502,65 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
                price: $('f-price').value, status: $('f-status').value,
                travel_fee: $('f-travel').value, travel_note: $('f-travelnote').value,
                discount_code: $('f-discount').value,
-               delivery_url: $('f-delivery').value, download_url: $('f-download').value,
-               delivered_at: $('f-delivered').value,
                notes: $('f-notes').value, show_price: $('f-showprice').checked };
     }
   }
 
-  // ================= delivery form =================
-  function deliveryModal(b) {
-    openModal(b.delivery_url ? 'Edit delivery' : 'Create delivery',
-      fld('f-dv-gallery', 'Gallery link (Pixieset…) *', '<input id="f-dv-gallery" type="url" required placeholder="https://…" value="' + esc(b.delivery_url || '') + '">') +
-      fld('f-dv-download', 'Download link (films / zip)', '<input id="f-dv-download" type="url" placeholder="https://…" value="' + esc(b.download_url || '') + '">') +
-      fld('f-dv-date', 'Delivered on', '<input id="f-dv-date" type="date" value="' + (b.delivered_at ? String(b.delivered_at).slice(0, 10) : new Date().toISOString().slice(0, 10)) + '">'),
-      async function () {
-        var body = Object.assign({}, b, {
-          delivery_url: $('f-dv-gallery').value,
-          download_url: $('f-dv-download').value,
-          delivered_at: $('f-dv-date').value
-        });
-        await api('bookings', 'PUT', body);
-        await reload(); render();
-      });
+  // ================= delivery editor (#delivery/:id) =================
+  // Named links (JSON on the booking); legacy gallery/download fall back.
+  function dvLinks(b) {
+    try {
+      var arr = JSON.parse(b.delivery_links || '[]');
+      if (arr.length) return arr;
+    } catch (e) {}
+    var legacy = [];
+    if (b.delivery_url) legacy.push({ label: 'View Gallery', url: b.delivery_url });
+    if (b.download_url) legacy.push({ label: 'Download Films & Files', url: b.download_url });
+    return legacy;
+  }
+  function dvRow(l) {
+    l = l || {};
+    return '<div class="dv-lrow">' +
+      '<input class="dv-lbl" placeholder="Title — e.g. Gallery" value="' + esc(l.label || '') + '">' +
+      '<input class="dv-url" type="url" placeholder="https://…" value="' + esc(l.url || '') + '">' +
+      '<button type="button" class="dv-x" title="Remove link" onclick="this.parentNode.remove()">&times;</button>' +
+    '</div>';
+  }
+
+  function vDeliveryEdit(id) {
+    var b = state.bookings.find(function (x) { return x.id == id; });
+    if (!b) return head('Project not found', '', true);
+    var cl = b.client_id ? state.clients.find(function (c) { return c.id == b.client_id; }) : null;
+    var links = dvLinks(b);
+    if (!links.length) links = [{ label: 'Gallery', url: '' }];
+    var sent = !!b.delivery_sent_at;
+
+    return '<span class="adm-back" onclick="ADM.go(\'project/' + b.id + '\')">&larr; Back to project</span>' +
+      '<div class="adm-phead"><div>' +
+        '<h1>' + esc(b.title) + '</h1>' +
+        '<div class="sub"><span class="adm-badge adm-badge--' + (sent ? 'delivered">Sent' : 'draft">Draft') + '</span>&ensp;' +
+          (b.client_id ? esc(b.client_name || '') : 'No client') +
+          (cl && cl.email ? ' · ' + esc(cl.email) : '') +
+          (sent ? ' · Sent ' + dstr(b.delivery_sent_at) + (b.delivery_sends > 1 ? ' · ' + b.delivery_sends + '&times;' : '') : '') +
+        '</div></div>' +
+        '<div class="acts">' +
+          (b.delivery_token ? '<a class="adm-btn adm-btn--ghost" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Preview as client</a>' : '') +
+          '<button class="adm-btn adm-btn--ghost" onclick="ADM.delSave(' + b.id + ')">Save</button>' +
+          '<button class="adm-btn" onclick="ADM.delSend(' + b.id + ')">' + (sent ? 'Resend delivery' : 'Publish &amp; send') + '</button>' +
+        '</div></div>' +
+
+      '<div class="adm-card"><h2>Delivery settings</h2><div class="adm-form">' +
+        '<div class="adm-field full"><label for="dv-msg">Message to client <small style="text-transform:none;letter-spacing:0">(goes in the delivery email)</small></label>' +
+          '<textarea id="dv-msg" placeholder="Add a note — e.g. Fixed the TVs!">' + esc(b.delivery_message || '') + '</textarea></div>' +
+        fld('dv-cc', 'CC recipients', '<input id="dv-cc" placeholder="Buyer\'s agent, spouse… — comma-separated emails" value="' + esc(b.delivery_cc || '') + '">') +
+        fld('dv-date', 'Delivered on', '<input id="dv-date" type="date" value="' + (b.delivered_at ? String(b.delivered_at).slice(0, 10) : new Date().toISOString().slice(0, 10)) + '">') +
+      '</div></div>' +
+
+      '<div class="adm-card"><h2>Links</h2>' +
+        '<div class="adm-confnote" style="margin:0 0 0.9rem">Each link becomes a button on the client\'s delivery page — name them whatever you like.</div>' +
+        '<div id="dv-links">' + links.map(dvRow).join('') + '</div>' +
+        '<button type="button" class="adm-btn adm-btn--ghost" onclick="ADM.delAddLink()">+ Add link</button>' +
+      '</div>';
   }
 
   async function setStage(id, status) {
@@ -733,22 +780,24 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
 
   function vDeliveries() {
     var delivered = state.bookings.filter(function (b) {
-      return ['delivered', 'completed', 'paid'].indexOf(b.status) > -1 || b.delivery_url;
+      return ['delivered', 'completed', 'paid'].indexOf(b.status) > -1 || dvLinks(b).length;
     }).sort(function (a, b) { return new Date(b.delivered_at || b.shoot_date || 0) - new Date(a.delivered_at || a.shoot_date || 0); });
     return head('Deliveries') +
       (delivered.length
         ? '<div class="adm-delgrid">' + delivered.map(function (b) {
+            var n = dvLinks(b).length;
             var sent = b.delivery_sent_at
               ? 'Sent to client ' + dstr(b.delivery_sent_at) + (b.delivery_sends > 1 ? ' · ' + b.delivery_sends + '&times;' : '')
-              : (b.delivery_url ? 'Not sent to client yet' : '');
+              : (n ? 'Draft — not sent yet' : '');
             return '<div class="adm-del"><b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) + '</b>' +
               '<small>' + esc(b.client_name || '—') + (b.delivered_at ? '<br>Delivered ' + dstr(b.delivered_at) : '') +
               (sent ? '<br>' + sent : '') +
+              (n ? '<br>' + n + ' link' + (n > 1 ? 's' : '') : '') +
               '<br><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></small>' +
-              (b.delivery_url
-                ? '<a class="lnk" href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open gallery &rarr;</a>' +
+              (n
+                ? '<a class="lnk" style="cursor:pointer" onclick="ADM.delEdit(' + b.id + ')">Open delivery &rarr;</a>' +
                   (b.delivery_token
-                    ? ' <a class="lnk" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Delivery page &rarr;</a>'
+                    ? ' <a class="lnk" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Preview as client &rarr;</a>'
                     : '')
                 : '<a class="lnk" style="cursor:pointer" onclick="ADM.delEdit(' + b.id + ')">Create delivery &rarr;</a>') +
             '</div>';
@@ -809,29 +858,80 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         : '<p class="adm-empty">No clients yet.</p>') + '</div>';
   }
 
+  // Extra (co-recipient) emails on a client — stored as a JSON array.
+  function cliExtras(c) {
+    try { var a = JSON.parse(c.extra_emails || '[]'); return Array.isArray(a) ? a : []; }
+    catch (e) { return []; }
+  }
+
   function vClientDetail(id) {
     var c = state.clients.find(function (x) { return x.id == id; });
     if (!c) return head('Client not found', '', true);
-    var theirs = state.bookings.filter(function (b) { return b.client_id == c.id; });
+    var theirs = state.bookings.filter(function (b) { return b.client_id == c.id; })
+      .sort(function (a, b) { return new Date(b.shoot_date || 0) - new Date(a.shoot_date || 0); });
     var total = theirs.filter(function (b) { return b.status !== 'canceled'; })
-      .reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
-    return head(c.name,
-        '<button class="adm-btn adm-btn--ghost" onclick="ADM.editClient(' + c.id + ')">Edit</button>' +
-        '<button class="adm-btn--danger adm-btn" onclick="ADM.delClient(' + c.id + ')">Delete</button>', true) +
-      '<div class="adm-card"><div class="adm-detail">' +
-        '<div class="adm-kv"><label>Email</label><div>' + (c.email ? '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>' : '—') + '</div></div>' +
-        '<div class="adm-kv"><label>Phone</label><div>' + (c.phone ? '<a href="tel:' + esc(c.phone) + '">' + esc(c.phone) + '</a>' : '—') + '</div></div>' +
-        '<div class="adm-kv"><label>Brokerage</label><div>' + esc(c.brokerage || '—') + '</div></div>' +
-        '<div class="adm-kv"><label>Lifetime booked</label><div>' + money(total) + '</div></div>' +
-      '</div>' + (c.notes ? '<div class="adm-notes">' + esc(c.notes) + '</div>' : '') + '</div>' +
-      '<div class="adm-card"><h2>Projects</h2>' + (theirs.length
-        ? '<table class="adm-table"><tr><th>Date</th><th>Property</th><th>Price</th><th>Stage</th></tr>' +
-          theirs.map(function (b) {
-            return '<tr class="click" onclick="ADM.go(\'project/' + b.id + '\')"><td>' + dstr(b.shoot_date) + '</td><td>' + esc(b.title) +
-              '</td><td>' + money(b.price) + '</td><td><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></td></tr>';
-          }).join('') + '</table>'
+      .reduce(function (s, b) { return s + net(b) + (Number(b.travel_fee) || 0); }, 0);
+    var extras = cliExtras(c);
+    var initials = c.name.split(/\s+/).map(function (w) { return w[0] || ''; }).join('').slice(0, 2).toUpperCase();
+
+    // ---- header ----
+    var html = '<span class="adm-back" onclick="ADM.go(\'clients\')">&larr; Back to clients</span>' +
+      '<div class="adm-phead"><div style="display:flex;gap:1.1rem;align-items:center">' +
+        '<div class="adm-avatar">' + esc(initials) + '</div><div>' +
+        '<h1>' + esc(c.name) + '</h1>' +
+        '<div class="sub">' + esc(c.brokerage || '') +
+          (c.brokerage && (c.email || c.phone) ? '<br>' : '') +
+          esc(c.email || '') + (c.email && c.phone ? ' · ' : '') + esc(c.phone || '') +
+        '</div></div></div>' +
+        '<div class="acts">' +
+          '<button class="adm-btn adm-btn--ghost" onclick="ADM.editClient(' + c.id + ')">Edit client</button>' +
+          '<button class="adm-btn--danger adm-btn" onclick="ADM.delClient(' + c.id + ')">Delete</button>' +
+        '</div></div>';
+
+    // ---- main: projects ----
+    var main = '<div><div class="adm-card">' +
+      '<div style="display:flex;justify-content:space-between;align-items:baseline"><h2>Projects</h2>' +
+        '<small class="mut">' + theirs.length + ' project' + (theirs.length === 1 ? '' : 's') + '</small></div>' +
+      (theirs.length
+        ? theirs.map(function (b) {
+            var t = b.price ? net(b) + (Number(b.travel_fee) || 0) : null;
+            return '<div class="adm-prow" style="grid-template-columns:2.2fr 1fr auto auto 96px" onclick="ADM.go(\'project/' + b.id + '\')">' +
+              '<div class="adm-prow__t"><b>' + esc(b.title) + '</b>' +
+                '<small>' + esc(b.location || '') + (b.shoot_date ? (b.location ? ' · ' : '') + dstr(b.shoot_date) : '') + '</small></div>' +
+              '<div></div>' +
+              '<span class="adm-badge adm-badge--' + (b.status === 'paid' ? 'paid">Paid' : 'unpaid">Unpaid') + '</span>' +
+              '<div class="adm-prow__p">' + (t == null ? '—' : money(t)) + '</div>' +
+              '<span class="adm-badge adm-badge--' + esc(b.status) + '" style="justify-self:end">' + esc(b.status) + '</span>' +
+            '</div>';
+          }).join('')
         : '<p class="adm-empty">No projects for this client yet.</p>') +
-      '<div style="margin-top:1rem"><button class="adm-btn" onclick="ADM.newBooking(' + c.id + ')">+ New project for ' + esc(c.name) + '</button></div></div>';
+      '<div style="margin-top:1rem"><button class="adm-btn" onclick="ADM.newBooking(' + c.id + ')">+ New project</button></div></div>' +
+      (c.notes ? '<div class="adm-card"><h2>Notes</h2><div class="adm-notes">' + esc(c.notes) + '</div></div>' : '') +
+      '</div>';
+
+    // ---- rail: emails + contact info ----
+    var emails = '<div class="adm-card"><h2>Emails</h2>' +
+      '<div class="adm-confnote" style="margin:0 0 0.9rem">Every confirmation and delivery email goes to all addresses on this profile.</div>' +
+      '<div class="adm-mrow" style="align-items:center"><span>' + esc(c.email || '—') + '</span>' +
+        '<span class="adm-badge adm-badge--live">Primary</span></div>' +
+      extras.map(function (e, i) {
+        return '<div class="adm-mrow" style="align-items:center"><span>' + esc(e) + '</span>' +
+          '<button class="dv-x" style="flex:0 0 30px;height:30px;font-size:0.95rem" title="Remove" onclick="ADM.cliDelEmail(' + c.id + ',' + i + ')">&times;</button></div>';
+      }).join('') +
+      '<div style="display:flex;gap:0.6rem;margin-top:0.9rem">' +
+        '<input id="cli-newemail" type="email" placeholder="assistant@brokerage.com" onkeydown="if(event.key===\'Enter\')ADM.cliAddEmail(' + c.id + ')" style="flex:1;box-sizing:border-box;font-family:var(--sans);font-size:0.9rem;color:var(--ink);background:var(--paper-warm);border:1px solid var(--line);padding:0.6rem 0.7rem;outline:none">' +
+        '<button class="adm-btn adm-btn--ghost" onclick="ADM.cliAddEmail(' + c.id + ')">+ Add</button>' +
+      '</div></div>';
+
+    var info = '<div class="adm-card"><h2>Contact info</h2><div class="adm-kvgrid" style="grid-template-columns:1fr">' +
+      '<div class="adm-kv"><label>Phone</label><div>' + (c.phone ? '<a href="tel:' + esc(c.phone) + '">' + esc(c.phone) + '</a>' : '—') + '</div></div>' +
+      '<div class="adm-kv"><label>Brokerage</label><div>' + esc(c.brokerage || '—') + '</div></div>' +
+      '<div class="adm-kv"><label>Date added</label><div>' + (c.created_at ? dstr(c.created_at) : '—') + '</div></div>' +
+      '<div class="adm-kv"><label>Total revenue</label><div style="font-family:var(--serif);font-size:1.4rem;color:var(--navy)">' + money(total) + '</div></div>' +
+    '</div></div>';
+
+    return html + '<div class="adm-detail2">' + main +
+      '<div class="adm-rail">' + emails + info + '</div></div>';
   }
 
   function vBookingDetail(id) {
@@ -914,21 +1014,18 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         (b.confirmed_at ? '&#10003; Confirmed ' + dstr(b.confirmed_at) : 'Not confirmed yet — client hasn\'t been notified.') +
       '</div></div>';
 
-    var canSend = !!(b.delivery_url && b.client_id);
+    var dlinks = dvLinks(b);
     var delivery = '<div class="adm-card"><h2>Delivery</h2>' +
-      (b.delivery_url
+      (dlinks.length
         ? (b.delivered_at ? '<div class="adm-mrow"><span>Delivered</span><span>' + dstr(b.delivered_at) + '</span></div>' : '') +
-          (canSend
+          '<div class="adm-mrow"><span>Links</span><span>' + dlinks.length + '</span></div>' +
+          (b.client_id
             ? '<button class="adm-btn" style="margin-top:0.6rem" onclick="ADM.deliver(' + b.id + ')">' +
               (b.delivery_sent_at ? 'Resend delivery' : 'Send delivery to client') + '</button>'
             : '') +
-          '<button class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" onclick="ADM.delEdit(' + b.id + ')">Edit delivery</button>' +
-          '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open gallery &rarr;</a>' +
-          (b.download_url
-            ? '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="' + esc(b.download_url) + '" target="_blank" rel="noopener">Open download &rarr;</a>'
-            : '') +
+          '<button class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" onclick="ADM.delEdit(' + b.id + ')">Open delivery &rarr;</button>' +
           (b.delivery_token
-            ? '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Preview client page &rarr;</a>'
+            ? '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Preview as client &rarr;</a>'
             : '') +
           '<div class="adm-confnote' + (b.delivery_sent_at ? ' ok' : '') + '">' +
             (b.delivery_sent_at
@@ -936,7 +1033,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
               : (b.client_id ? 'Not sent to client yet.' : 'Add a client to send the delivery.')) +
           '</div>'
         : '<button class="adm-btn" onclick="ADM.delEdit(' + b.id + ')">Create delivery</button>' +
-          '<p class="adm-empty" style="margin-top:0.8rem">Add the gallery and download links, then send the client their branded delivery page.</p>') +
+          '<p class="adm-empty" style="margin-top:0.8rem">Add named links (gallery, films, floor plans…), a note, and CC — then send the client their branded delivery page.</p>') +
       '</div>';
 
     return html + '<div class="adm-detail2">' + main +
@@ -947,13 +1044,14 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
   function render() {
     var r = route(), m = $('main');
     var section = r.split('/')[0];
-    var owns = { dash:'dash', requests:'requests', pipeline:'pipeline', project:'pipeline', deliveries:'deliveries',
+    var owns = { dash:'dash', requests:'requests', pipeline:'pipeline', project:'pipeline', deliveries:'deliveries', delivery:'deliveries',
                  clients:'clients', client:'clients', portfolio:'portfolio', settings:'settings' }[section] || 'dash';
     document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.r === owns); });
     if (section === 'requests') m.innerHTML = vRequests();
     else if (section === 'pipeline') { m.innerHTML = vPipeline(); wirePipeline(); }
     else if (section === 'project') m.innerHTML = vBookingDetail(r.split('/')[1]);
     else if (section === 'deliveries') m.innerHTML = vDeliveries();
+    else if (section === 'delivery') m.innerHTML = vDeliveryEdit(r.split('/')[1]);
     else if (section === 'clients') m.innerHTML = vClients();
     else if (section === 'client') m.innerHTML = vClientDetail(r.split('/')[1]);
     else if (section === 'portfolio') m.innerHTML = vPortfolio();
@@ -981,25 +1079,75 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         alert(msg);
       } catch (e) { alert(friendly(e)); }
     },
-    delEdit: function (id) {
-      var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
-      deliveryModal(b);
+    cliAddEmail: async function (id) {
+      var c = state.clients.find(function (x) { return x.id == id; }); if (!c) return;
+      var v = ($('cli-newemail').value || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { alert('Enter a valid email address.'); return; }
+      var extras = cliExtras(c);
+      if (v === (c.email || '').toLowerCase() || extras.indexOf(v) > -1) { alert('That email is already on the profile.'); return; }
+      extras.push(v);
+      try {
+        await api('clients', 'PUT', { id: c.id, name: c.name, email: c.email, phone: c.phone,
+          brokerage: c.brokerage, notes: c.notes, extra_emails: JSON.stringify(extras) });
+        await reload(); render();
+      } catch (e) { alert(friendly(e)); }
     },
-    deliver: async function (id) {
-      var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
-      if (!b.delivery_url) { alert('Add the gallery link first (Edit).'); return; }
+    cliDelEmail: async function (id, idx) {
+      var c = state.clients.find(function (x) { return x.id == id; }); if (!c) return;
+      var extras = cliExtras(c);
+      extras.splice(idx, 1);
+      try {
+        await api('clients', 'PUT', { id: c.id, name: c.name, email: c.email, phone: c.phone,
+          brokerage: c.brokerage, notes: c.notes, extra_emails: JSON.stringify(extras) });
+        await reload(); render();
+      } catch (e) { alert(friendly(e)); }
+    },
+    delEdit: function (id) { go('delivery/' + id); },
+    delAddLink: function () {
+      var box = $('dv-links'); if (!box) return;
+      box.insertAdjacentHTML('beforeend', dvRow());
+      var rows = box.querySelectorAll('.dv-lrow');
+      rows[rows.length - 1].querySelector('.dv-lbl').focus();
+    },
+    delSave: async function (id, quiet) {
+      var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return false;
+      if (!$('dv-links')) return true; // not on the editor page — nothing to save
+      var links = Array.prototype.map.call(document.querySelectorAll('#dv-links .dv-lrow'), function (r) {
+        return { label: r.querySelector('.dv-lbl').value.trim(), url: r.querySelector('.dv-url').value.trim() };
+      }).filter(function (l) { return l.url; });
+      var body = Object.assign({}, b, {
+        delivery_message: $('dv-msg').value,
+        delivery_cc: $('dv-cc').value,
+        delivered_at: $('dv-date').value,
+        delivery_links: JSON.stringify(links)
+      });
+      try {
+        await api('bookings', 'PUT', body);
+        await reload();
+        if (!quiet) render();
+        return true;
+      } catch (e) { alert(friendly(e)); return false; }
+    },
+    delSend: async function (id) {
+      if (!(await ADM.delSave(id, true))) { render(); return; }
+      var b = state.bookings.find(function (x) { return x.id == id; });
+      if (!b || !dvLinks(b).length) { render(); alert('Add at least one link before sending.'); return; }
       var again = b.delivery_sent_at ? 'Resend' : 'Send';
+      var cc = (b.delivery_cc || '').trim();
       if (!confirm(again + ' the delivery email?\n\nClient: ' + (b.client_name || '—') +
-        '\nThey get a branded email linking to their JCS delivery page.')) return;
+        (cc ? '\nCC: ' + cc : '') +
+        '\nThey get a branded email linking to their JCS delivery page.')) { render(); return; }
       try {
         var j = await api('deliver', 'POST', { id: id });
         await reload(); render();
         alert('Delivery sent.\n\nClient page: ' + j.pageUrl);
       } catch (e) {
+        render();
         alert(String(e.message) === 'no-client-email' ? 'The client has no email on file — add one first.'
-          : String(e.message) === 'no-gallery' ? 'Add the gallery link first (Edit).' : friendly(e));
+          : String(e.message) === 'no-links' ? 'Add at least one link before sending.' : friendly(e));
       }
     },
+    deliver: function (id) { ADM.delSend(id); },
     view: function (v) { state.view = v; localStorage.setItem('adm-view', v); render(); },
     fold: function (s) { state.collapsed[s] = !state.collapsed[s]; render(); },
     search: function (q) {

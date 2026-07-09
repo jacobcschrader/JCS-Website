@@ -7,6 +7,7 @@
 //  Pipeline stages: upcoming | editing | revisions | delivered | completed | paid
 //  (+ canceled). Delivery fields: delivery_url, delivered_at.
 // =====================================================================
+const crypto = require("node:crypto");
 const { requireAuth } = require("../auth.js");
 const { db } = require("../db.js");
 
@@ -39,7 +40,23 @@ function parse(b) {
     show_price: b.show_price !== false && b.show_price !== "false",
     discount_code: field(b.discount_code, 40).toUpperCase().replace(/\s+/g, ""),
     download_url: field(b.download_url, 600),
+    delivery_message: field(b.delivery_message, 2000),
+    delivery_cc: field(b.delivery_cc, 600),
+    delivery_links: parseLinks(b.delivery_links),
   };
+}
+
+// Named delivery links: JSON array of { label, url }. Validated and
+// re-stringified so the DB only ever holds clean JSON (or '').
+function parseLinks(raw) {
+  try {
+    const arr = typeof raw === "string" ? JSON.parse(raw || "[]") : raw || [];
+    const clean = (Array.isArray(arr) ? arr : [])
+      .map((l) => ({ label: field(l && l.label, 80), url: field(l && l.url, 600) }))
+      .filter((l) => l.url)
+      .slice(0, 12);
+    return clean.length ? JSON.stringify(clean) : "";
+  } catch (e) { return ""; }
 }
 
 // Snapshot the discount in dollars at save time (so later edits to the
@@ -80,9 +97,10 @@ module.exports = async function handler(req, res) {
       f.location = makeLocation(f, b.location);
       await applyDiscount(s, f);
       if (!f.title) { res.status(400).json({ error: "title-required" }); return; }
+      const token = (f.delivery_links || f.delivery_url) ? crypto.randomBytes(12).toString("base64url") : "";
       const [row] = await s`
-        INSERT INTO bookings (client_id, title, location, shoot_date, shoot_time, type, price, status, notes, delivery_url, delivered_at, twilight_date, twilight_time, deliverables, city, state, zip, sqft, addons, travel_fee, travel_note, show_price, discount_code, discount_value, download_url)
-        VALUES (${f.client_id}, ${f.title}, ${f.location}, ${f.shoot_date}, ${f.shoot_time}, ${f.type}, ${f.price}, ${f.status}, ${f.notes}, ${f.delivery_url}, ${f.delivered_at}, ${f.twilight_date}, ${f.twilight_time}, ${f.deliverables}, ${f.city}, ${f.state}, ${f.zip}, ${f.sqft}, ${f.addons}, ${f.travel_fee}, ${f.travel_note}, ${f.show_price}, ${f.discount_code}, ${f.discount_value}, ${f.download_url})
+        INSERT INTO bookings (client_id, title, location, shoot_date, shoot_time, type, price, status, notes, delivery_url, delivered_at, twilight_date, twilight_time, deliverables, city, state, zip, sqft, addons, travel_fee, travel_note, show_price, discount_code, discount_value, download_url, delivery_message, delivery_cc, delivery_links, delivery_token)
+        VALUES (${f.client_id}, ${f.title}, ${f.location}, ${f.shoot_date}, ${f.shoot_time}, ${f.type}, ${f.price}, ${f.status}, ${f.notes}, ${f.delivery_url}, ${f.delivered_at}, ${f.twilight_date}, ${f.twilight_time}, ${f.deliverables}, ${f.city}, ${f.state}, ${f.zip}, ${f.sqft}, ${f.addons}, ${f.travel_fee}, ${f.travel_note}, ${f.show_price}, ${f.discount_code}, ${f.discount_value}, ${f.download_url}, ${f.delivery_message}, ${f.delivery_cc}, ${f.delivery_links}, ${token})
         RETURNING *`;
       res.status(200).json({ booking: row });
 
@@ -103,7 +121,10 @@ module.exports = async function handler(req, res) {
           sqft = ${f.sqft}, addons = ${f.addons}, travel_fee = ${f.travel_fee},
           travel_note = ${f.travel_note}, show_price = ${f.show_price},
           discount_code = ${f.discount_code}, discount_value = ${f.discount_value},
-          download_url = ${f.download_url}
+          download_url = ${f.download_url},
+          delivery_message = ${f.delivery_message}, delivery_cc = ${f.delivery_cc},
+          delivery_links = ${f.delivery_links},
+          delivery_token = COALESCE(NULLIF(delivery_token, ''), ${(f.delivery_links || f.delivery_url) ? crypto.randomBytes(12).toString("base64url") : null})
         WHERE id = ${id} RETURNING *`;
       if (!row) { res.status(404).json({ error: "not-found" }); return; }
       res.status(200).json({ booking: row });

@@ -11,6 +11,7 @@ const { db } = require("../db.js");
 const { sendEmail, brandedHtml, detailRow, OWNER } = require("../email.js");
 const { buildIcs, fmtTime, gcalLink } = require("../ics.js");
 const gcal = require("../gcal.js");
+const { recipientsOf } = require("../links.js");
 const { sigFor } = require("../../calendar.js");
 
 const escHtml = (s) =>
@@ -27,7 +28,8 @@ module.exports = async function handler(req, res) {
     if (!id) { res.status(400).json({ error: "invalid" }); return; }
 
     const [b] = await s`
-      SELECT bk.*, c.name AS client_name, c.email AS client_email, c.phone AS client_phone
+      SELECT bk.*, c.name AS client_name, c.email AS client_email, c.phone AS client_phone,
+             c.extra_emails AS client_extra_emails
       FROM bookings bk LEFT JOIN clients c ON c.id = bk.client_id
       WHERE bk.id = ${id}`;
     if (!b) { res.status(404).json({ error: "not-found" }); return; }
@@ -115,10 +117,12 @@ module.exports = async function handler(req, res) {
       `</p>`;
 
     // ---- 1) client confirmation (skipped gracefully if no email) -----
+    // Goes to every address on the client profile (primary + extras).
+    const clientTo = recipientsOf(b.client_email, b.client_extra_emails);
     let clientSent = false;
-    if (b.client_email) {
+    if (clientTo.length) {
       await sendEmail({
-        to: b.client_email,
+        to: clientTo,
         replyTo: OWNER,
         subject: `Booking confirmed — ${b.title}`,
         text: `Your shoot is confirmed.\n\nProperty: ${b.title}\nShoot: ${whenMain}` +
@@ -150,7 +154,7 @@ module.exports = async function handler(req, res) {
           (b.client_name ? detailRow("Client", escHtml(b.client_name)) : "") +
           (b.price ? detailRow("Price", "$" + Number(b.price).toLocaleString()) : "") + "</table>") +
           (clientSent
-            ? `<p style="margin:0;">The client confirmation went to ${escHtml(b.client_email)}.</p>`
+            ? `<p style="margin:0;">The client confirmation went to ${escHtml(clientTo.join(", "))}.</p>`
             : `<p style="margin:0;color:#8a4d2f;">No client email on file — only you received this.</p>`) + calLinks,
       }),
       attachments: [ownerIcs],
