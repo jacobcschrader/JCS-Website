@@ -374,3 +374,27 @@ Site CTAs still point at /contact — link /book from the site when ready.
   confirmation email (Discount line + reduced Total, respecting the
   show-price toggle), Jacob's calendar description, and dashboard
   revenue stats (now net of discounts).
+
+### Branded delivery flow (A+)
+
+How it works: paste the Pixieset gallery link (and optionally a
+Dropbox/Drive download link for films) into the project via Edit, then
+hit **Send delivery to client** on the project page. The client gets a
+branded "Your delivery is ready" email whose button opens a JCS-branded
+delivery page at `/delivery?t=<token>` — property title, deliverables,
+View Gallery + Download Films & Files buttons. No invite to Pixieset's
+branding first; JCS front door always.
+
+- `delivery.html` — the public page (noindex; fetches `/api/delivery`).
+- `api/delivery.js` — public, token-gated; returns client-safe fields
+  only (no price, no access notes). Tokens are random, issued on first
+  send, stable across resends.
+- `api/admin/deliver.js` — sends the email, stamps
+  `delivery_sent_at`/`delivery_sends`/`delivered_at`, and auto-advances
+  the stage to Delivered if the project was still Upcoming/Editing/
+  Revisions (later stages untouched).
+- Project form gained a **Download link (films / zip)** field.
+- Project detail Delivery card: Send/Resend button, gallery/download/
+  preview-page links, "✓ Sent Jul 10 · 2×" state.
+- Deliveries page cards show sent status + a Delivery page link.
+- Guards: needs a gallery link and a client with an email.

@@ -435,7 +435,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         state.discounts.filter(function (d) { return d.active || d.code === v.discount_code; }).map(function (d) {
           return '<option value="' + esc(d.code) + '"' + (v.discount_code === d.code ? ' selected' : '') + '>' + esc(discLabel(d)) + '</option>';
         }).join('') + '</select>') +
-      fld('f-delivery', 'Delivery link', '<input id="f-delivery" type="url" placeholder="https://…" value="' + esc(v.delivery_url || '') + '">') +
+      fld('f-delivery', 'Gallery link (Pixieset…)', '<input id="f-delivery" type="url" placeholder="https://…" value="' + esc(v.delivery_url || '') + '">') +
+      fld('f-download', 'Download link (films / zip)', '<input id="f-download" type="url" placeholder="https://…" value="' + esc(v.download_url || '') + '">') +
       fld('f-delivered', 'Delivered on', '<input id="f-delivered" type="date" value="' + (v.delivered_at ? String(v.delivered_at).slice(0, 10) : '') + '">') +
       '<div class="adm-field full"><label for="f-notes">Access notes <small style="text-transform:none;letter-spacing:0">(internal — your calendar only)</small></label><textarea id="f-notes" placeholder="Gate codes, staging, access notes…">' + esc(v.notes || '') + '</textarea></div>' +
       '<div class="adm-field full"><label style="display:flex;align-items:center;gap:0.5rem;text-transform:none;letter-spacing:0;font-size:0.85rem;color:var(--ink);cursor:pointer">' +
@@ -492,7 +493,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
                price: $('f-price').value, status: $('f-status').value,
                travel_fee: $('f-travel').value, travel_note: $('f-travelnote').value,
                discount_code: $('f-discount').value,
-               delivery_url: $('f-delivery').value, delivered_at: $('f-delivered').value,
+               delivery_url: $('f-delivery').value, download_url: $('f-download').value,
+               delivered_at: $('f-delivered').value,
                notes: $('f-notes').value, show_price: $('f-showprice').checked };
     }
   }
@@ -719,12 +721,19 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     return head('Deliveries') +
       (delivered.length
         ? '<div class="adm-delgrid">' + delivered.map(function (b) {
+            var sent = b.delivery_sent_at
+              ? 'Sent to client ' + dstr(b.delivery_sent_at) + (b.delivery_sends > 1 ? ' · ' + b.delivery_sends + '&times;' : '')
+              : (b.delivery_url ? 'Not sent to client yet' : '');
             return '<div class="adm-del"><b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) + '</b>' +
               '<small>' + esc(b.client_name || '—') + (b.delivered_at ? '<br>Delivered ' + dstr(b.delivered_at) : '') +
+              (sent ? '<br>' + sent : '') +
               '<br><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></small>' +
               (b.delivery_url
-                ? '<a class="lnk" href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open delivery &rarr;</a>'
-                : '<span class="nolnk">No delivery link yet — add one via Edit.</span>') +
+                ? '<a class="lnk" href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open gallery &rarr;</a>' +
+                  (b.delivery_token
+                    ? ' <a class="lnk" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Delivery page &rarr;</a>'
+                    : '')
+                : '<span class="nolnk">No gallery link yet — add one via Edit.</span>') +
             '</div>';
           }).join('') + '</div>'
         : '<div class="adm-card"><p class="adm-empty">Nothing delivered yet — projects appear here once they reach the Delivered stage.</p></div>');
@@ -881,13 +890,31 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         (b.confirmed_at ? '&#10003; Confirmed ' + dstr(b.confirmed_at) : 'Not confirmed yet — client hasn\'t been notified.') +
       '</div></div>';
 
+    var canSend = !!(b.delivery_url && b.client_id);
     var delivery = '<div class="adm-card"><h2>Delivery</h2>' +
       (b.delivery_url || b.delivered_at
         ? (b.delivered_at ? '<div class="adm-mrow"><span>Delivered</span><span>' + dstr(b.delivered_at) + '</span></div>' : '') +
+          (canSend
+            ? '<button class="adm-btn" style="margin-top:0.6rem" onclick="ADM.deliver(' + b.id + ')">' +
+              (b.delivery_sent_at ? 'Resend delivery' : 'Send delivery to client') + '</button>'
+            : '') +
           (b.delivery_url
-            ? '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open delivery &rarr;</a>'
-            : '<div class="adm-confnote">No link yet — add one via Edit.</div>')
-        : '<p class="adm-empty">Nothing delivered yet. Add the link via Edit when it ships.</p>') +
+            ? '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="' + esc(b.delivery_url) + '" target="_blank" rel="noopener">Open gallery &rarr;</a>'
+            : '<div class="adm-confnote">No gallery link yet — add one via Edit.</div>') +
+          (b.download_url
+            ? '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="' + esc(b.download_url) + '" target="_blank" rel="noopener">Open download &rarr;</a>'
+            : '') +
+          (b.delivery_token
+            ? '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Preview client page &rarr;</a>'
+            : '') +
+          '<div class="adm-confnote' + (b.delivery_sent_at ? ' ok' : '') + '">' +
+            (b.delivery_sent_at
+              ? '&#10003; Sent ' + dstr(b.delivery_sent_at) + (b.delivery_sends > 1 ? ' &middot; ' + b.delivery_sends + '&times;' : '')
+              : (b.delivery_url
+                  ? (b.client_id ? 'Not sent to client yet.' : 'Add a client to send the delivery.')
+                  : '')) +
+          '</div>'
+        : '<p class="adm-empty">Paste the gallery link via Edit, then send the client their branded delivery page.</p>') +
       '</div>';
 
     return html + '<div class="adm-detail2">' + main +
@@ -931,6 +958,21 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         msg += j.calendarWritten ? ' Added to your Google Calendar.' : ' Calendar invite attached to the emails.';
         alert(msg);
       } catch (e) { alert(friendly(e)); }
+    },
+    deliver: async function (id) {
+      var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
+      if (!b.delivery_url) { alert('Add the gallery link first (Edit).'); return; }
+      var again = b.delivery_sent_at ? 'Resend' : 'Send';
+      if (!confirm(again + ' the delivery email?\n\nClient: ' + (b.client_name || '—') +
+        '\nThey get a branded email linking to their JCS delivery page.')) return;
+      try {
+        var j = await api('deliver', 'POST', { id: id });
+        await reload(); render();
+        alert('Delivery sent.\n\nClient page: ' + j.pageUrl);
+      } catch (e) {
+        alert(String(e.message) === 'no-client-email' ? 'The client has no email on file — add one first.'
+          : String(e.message) === 'no-gallery' ? 'Add the gallery link first (Edit).' : friendly(e));
+      }
     },
     view: function (v) { state.view = v; localStorage.setItem('adm-view', v); render(); },
     fold: function (s) { state.collapsed[s] = !state.collapsed[s]; render(); },

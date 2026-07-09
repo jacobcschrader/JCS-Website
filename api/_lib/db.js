@@ -64,6 +64,11 @@ function ensureSchema() {
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travel_fee numeric`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travel_note text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS show_price boolean DEFAULT true`;
+      // Branded delivery flow (gallery + download links, send tracking).
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS download_url text DEFAULT ''`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_token text DEFAULT ''`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_sent_at timestamptz`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_sends integer DEFAULT 0`;
       // Discount codes (Settings) + per-project application snapshot.
       await s`CREATE TABLE IF NOT EXISTS discounts (
         id         serial PRIMARY KEY,
