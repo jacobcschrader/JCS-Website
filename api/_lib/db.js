@@ -64,6 +64,25 @@ function ensureSchema() {
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travel_fee numeric`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travel_note text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS show_price boolean DEFAULT true`;
+      // Work-with-me applications (public /book form).
+      await s`CREATE TABLE IF NOT EXISTS requests (
+        id          serial PRIMARY KEY,
+        name        text NOT NULL,
+        email       text NOT NULL,
+        phone       text DEFAULT '',
+        brokerage   text DEFAULT '',
+        title       text NOT NULL,
+        city        text DEFAULT '',
+        state       text DEFAULT '',
+        zip         text DEFAULT '',
+        sqft        integer,
+        target_date date,
+        services    text DEFAULT '',
+        message     text DEFAULT '',
+        status      text NOT NULL DEFAULT 'pending',
+        project_id  integer,
+        created_at  timestamptz NOT NULL DEFAULT now()
+      )`;
     })();
   }
   return _ready;

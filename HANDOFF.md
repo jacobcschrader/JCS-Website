@@ -336,3 +336,24 @@ delivery link, access notes, and a "Show price in confirmation" toggle
 (hides the Total row in the client's confirmation email when off).
 New bookings columns: city, state, zip, sqft, addons(json), travel_fee,
 travel_note, show_price. No pricing engine by choice — price is manual.
+
+### Work-with-me application flow (/book)
+
+JCS takes custom quotes — so instead of Visaro's self-serve booking
+wizard, /book is an "apply to work with me" flow:
+
+- `book.html` — public, JCS-branded 3-step wizard (You → The property →
+  The work): contact, address/sqft, target date, services of interest,
+  message. Honeypot included. Submits to `api/book.js`, which stores a
+  pending request, emails Jacob (with "Review in admin" button) and a
+  branded "Application received" note to the applicant.
+- Admin → **Requests** (sidebar, with red pending-count badge; also a
+  Pending Requests stat on the dashboard): tabs Pending/Accepted/
+  Declined/All. **Accept** matches-or-creates the client by email and
+  creates a prefilled project (services → deliverables, target date →
+  shoot date, status upcoming) then opens it — Jacob sets the custom
+  quote and uses Confirm & send. **Decline** sends a graceful branded
+  "fully committed" email. `api/admin/requests.js`, `requests` table.
+- No pricing engine anywhere, by design (custom quotes only).
+
+Site CTAs still point at /contact — link /book from the site when ready.

@@ -4,22 +4,50 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Contact — Jacob Schrader</title>
-<meta name="description" content="Get in touch with Jacob Schrader to commission architectural photography or film.">
+<meta name="description" content="Apply to work with Jacob Schrader — real estate, architecture & design photography and film for exceptional properties.">
 <!-- Social link previews (Open Graph + Twitter) -->
 <link rel="canonical" href="https://www.jacobcschrader.com/contact">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Jacob Schrader">
 <meta property="og:title" content="Contact — Jacob Schrader">
-<meta property="og:description" content="Get in touch with Jacob Schrader to commission architectural photography or film.">
+<meta property="og:description" content="Apply to work with Jacob Schrader — real estate, architecture & design photography and film for exceptional properties.">
 <meta property="og:url" content="https://www.jacobcschrader.com/contact">
 <meta property="og:image" content="https://www.jacobcschrader.com/images/og/og-default.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Contact — Jacob Schrader">
-<meta name="twitter:description" content="Get in touch with Jacob Schrader to commission architectural photography or film.">
+<meta name="twitter:description" content="Apply to work with Jacob Schrader — real estate, architecture & design photography and film for exceptional properties.">
 <meta name="twitter:image" content="https://www.jacobcschrader.com/images/og/og-default.jpg">
 <link rel="stylesheet" href="styles.css">
+<style>
+.bk-wrap { max-width: 640px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2rem) 6rem; }
+.bk-steps { display: flex; justify-content: center; gap: clamp(1.5rem, 6vw, 4rem); margin: 2.2rem 0 3rem; }
+.bk-step { text-align: center; font-size: 0.64rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+.bk-step::before { content: ""; display: block; width: 9px; height: 9px; border: 1px solid var(--line); border-radius: 50%; margin: 0 auto 0.55rem; background: #fff; }
+.bk-step.on { color: var(--navy); }
+.bk-step.on::before { background: var(--navy); border-color: var(--navy); }
+.bk-step.done::before { background: var(--line); border-color: var(--line); }
+.bk-card { background: #fff; padding: clamp(1.6rem, 4vw, 2.6rem); box-shadow: 0 16px 50px rgba(15,34,64,0.06); }
+.bk-h { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.5rem; color: var(--navy); margin: 0 0 0.4rem; }
+.bk-sub { font-size: 0.88rem; color: var(--muted); margin: 0 0 1.6rem; }
+.bk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.bk-grid .full { grid-column: 1 / -1; }
+@media (max-width: 540px) { .bk-grid { grid-template-columns: 1fr; } }
+.bk-field label { display: block; font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+.bk-field input, .bk-field select, .bk-field textarea {
+  width: 100%; box-sizing: border-box; font-family: var(--sans); font-size: 0.95rem; color: var(--ink);
+  background: var(--paper-warm); border: 1px solid var(--line); padding: 0.75rem 0.8rem; outline: none;
+}
+.bk-field textarea { min-height: 110px; resize: vertical; }
+.bk-field input:focus, .bk-field textarea:focus { border-color: var(--navy); background: #fff; }
+.bk-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.45rem 1rem; }
+.bk-checks label { display: flex; align-items: center; gap: 0.55rem; font-size: 0.9rem; color: var(--ink); cursor: pointer; }
+.bk-group { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin: 1.1rem 0 0.5rem; }
+.bk-nav { display: flex; gap: 0.9rem; margin-top: 1.8rem; }
+.bk-msg { font-size: 0.88rem; color: #a33; margin-top: 0.9rem; display: none; }
+.bk-done { text-align: center; padding: clamp(2rem, 6vw, 3.5rem) 0; }
+</style>
 </head>
 <body>
 
@@ -37,62 +65,94 @@
   </div>
 </nav>
 
-<section class="csection">
-  <div class="wrap">
-    <div class="csplit">
-      <!-- INTRO + DETAILS -->
-      <div class="csplit__intro hero-in">
-        <span class="eyebrow">Contact</span>
-        <h1 class="display" style="font-size:clamp(1.7rem,3vw,2.5rem)">Let's begin<br>a conversation.</h1>
-        <p class="lead">Tell me about your project — the space, the timeline, and what you're hoping to capture. I reply to every enquiry personally, usually within 24 hours.</p>
-        <div class="cdetails">
-          <div class="cdetail"><span class="k">Email</span><a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a></div>
-          <div class="cdetail"><span class="k">Phone</span><a href="tel:+14088248719">(408) 824-8719</a></div>
-          <div class="cdetail"><span class="k">Based in</span><span class="v">Diablo, CA — serving worldwide</span></div>
-          <div class="cdetail"><span class="k">Follow</span><a href="#">Instagram</a></div>
-        </div>
-      </div>
-
-      <!-- FORM CARD -->
-      <form class="cform reveal" id="enquiry" method="POST" action="/api/contact">
-        <div class="cform__head">Send an enquiry</div>
-        <div class="cform__sub">Fields marked * are required.</div>
-        <div class="crow">
-          <div class="cfield">
-            <label for="name">Name *</label>
-            <input id="name" name="name" type="text" placeholder="Your full name" required>
-          </div>
-          <div class="cfield">
-            <label for="phone">Phone <span class="opt">(optional)</span></label>
-            <input id="phone" name="phone" type="tel" placeholder="(000) 000-0000">
-          </div>
-        </div>
-        <div class="cfield">
-          <label for="email">Email *</label>
-          <input id="email" name="email" type="email" placeholder="you@email.com" required>
-        </div>
-        <div class="cfield">
-          <label for="type">Project type</label>
-          <select id="type" name="type">
-            <option>Architectural Photography</option>
-            <option>Film / Videography</option>
-            <option>Aerial &amp; Drone</option>
-            <option>Full Campaign (Stills + Film)</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="cfield">
-          <label for="message">About the project *</label>
-          <textarea id="message" name="message" placeholder="Location, scope, timeline, and anything else worth knowing…" required></textarea>
-        </div>
-        <!-- Honeypot spam trap (invisible to humans; bots fill it and get dropped) -->
-        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
-        <button class="btn btn--solid" type="submit">Send enquiry</button>
-        <p class="form-msg muted" style="display:none"></p>
-      </form>
-    </div>
+<header class="page-head">
+  <div class="wrap hero-in" style="text-align:center">
+    <span class="eyebrow" style="display:inline-flex">Work with me</span>
+    <h1 class="display" style="font-size:clamp(1.7rem,3vw,2.5rem)"><em>Apply</em> for a shoot.</h1>
+    <p class="lead" style="max-width:52ch;margin-inline:auto">I take on a select number of projects each season. Tell me about the property, and I'll reply personally within 24 hours with availability and a custom quote.</p>
+    <p style="margin-top:1.2rem;font-size:0.85rem;color:var(--muted)">Prefer to talk first? <a href="mailto:jacxbschrader@gmail.com" style="color:var(--navy);text-decoration:underline;text-underline-offset:4px">jacxbschrader@gmail.com</a> &nbsp;·&nbsp; <a href="tel:+14088248719" style="color:var(--navy);text-decoration:underline;text-underline-offset:4px">(408) 824-8719</a></p>
   </div>
-</section>
+</header>
+
+<div class="bk-wrap">
+  <div class="bk-steps">
+    <div class="bk-step on" data-s="1">You</div>
+    <div class="bk-step" data-s="2">The property</div>
+    <div class="bk-step" data-s="3">The work</div>
+  </div>
+
+  <form class="bk-card" id="bk-form">
+    <!-- STEP 1 -->
+    <section data-step="1">
+      <h2 class="bk-h">First, you.</h2>
+      <p class="bk-sub">Who am I working with?</p>
+      <div class="bk-grid">
+        <div class="bk-field"><label for="b-name">Name *</label><input id="b-name" required autocomplete="name"></div>
+        <div class="bk-field"><label for="b-brokerage">Brokerage / company</label><input id="b-brokerage" autocomplete="organization"></div>
+        <div class="bk-field"><label for="b-email">Email *</label><input id="b-email" type="email" required autocomplete="email"></div>
+        <div class="bk-field"><label for="b-phone">Phone</label><input id="b-phone" type="tel" autocomplete="tel"></div>
+      </div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section data-step="2" hidden>
+      <h2 class="bk-h">The property.</h2>
+      <p class="bk-sub">Where are we shooting?</p>
+      <div class="bk-grid">
+        <div class="bk-field full"><label for="b-address">Street address *</label><input id="b-address" required placeholder="7750 Lahontan Drive"></div>
+        <div class="bk-field"><label for="b-city">City</label><input id="b-city"></div>
+        <div class="bk-field"><label for="b-state">State</label><input id="b-state" value="CA"></div>
+        <div class="bk-field"><label for="b-zip">Zip</label><input id="b-zip"></div>
+        <div class="bk-field"><label for="b-sqft">Approx. sqft</label><input id="b-sqft" type="number" min="0"></div>
+        <div class="bk-field full"><label for="b-target">When do you need this shot by?</label><input id="b-target" type="date"></div>
+      </div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section data-step="3" hidden>
+      <h2 class="bk-h">The work.</h2>
+      <p class="bk-sub">What does this property need? Select everything of interest — we'll refine together.</p>
+      <div class="bk-group">Photography</div>
+      <div class="bk-checks">
+        <label><input type="checkbox" class="b-svc" value="HDR photography"> HDR photography</label>
+        <label><input type="checkbox" class="b-svc" value="Drone photos"> Drone photos</label>
+        <label><input type="checkbox" class="b-svc" value="Twilight photos"> Twilight photos</label>
+        <label><input type="checkbox" class="b-svc" value="Vertical / vignette photos"> Vertical / vignette photos</label>
+      </div>
+      <div class="bk-group">Film</div>
+      <div class="bk-checks">
+        <label><input type="checkbox" class="b-svc" value="Cinematic film"> Cinematic film</label>
+        <label><input type="checkbox" class="b-svc" value="Twilight video"> Twilight video</label>
+        <label><input type="checkbox" class="b-svc" value="Vertical reel"> Vertical reel</label>
+      </div>
+      <div class="bk-group">Beyond</div>
+      <div class="bk-checks">
+        <label><input type="checkbox" class="b-svc" value="2D floor plan"> 2D floor plan</label>
+        <label><input type="checkbox" class="b-svc" value="Dedicated listing website"> Dedicated listing website</label>
+      </div>
+      <div class="bk-field full" style="margin-top:1.3rem">
+        <label for="b-message">About the property &amp; the vision</label>
+        <textarea id="b-message" placeholder="Anything that helps me see it — the listing story, timeline, what matters most…"></textarea>
+      </div>
+      <input type="text" id="b-honey" style="display:none" tabindex="-1" autocomplete="off">
+    </section>
+
+    <div class="bk-nav">
+      <button type="button" class="btn" id="bk-back" style="display:none">Back</button>
+      <button type="button" class="btn btn--solid" id="bk-next">Continue</button>
+      <button type="submit" class="btn btn--solid" id="bk-submit" style="display:none">Submit application</button>
+    </div>
+    <p class="bk-msg" id="bk-msg"></p>
+  </form>
+
+  <!-- SUCCESS -->
+  <div class="bk-card bk-done" id="bk-done" hidden>
+    <span class="eyebrow" style="display:inline-flex;margin-bottom:1.2rem">Application received</span>
+    <h2 class="bk-h" style="font-size:1.7rem">Thank you.</h2>
+    <p class="bk-sub" style="max-width:44ch;margin:0.4rem auto 1.8rem">I review every request personally — you'll hear from me within 24 hours with availability and a custom quote. A confirmation is on its way to your inbox.</p>
+    <a class="btn btn--solid" href="/projects">View recent work</a>
+  </div>
+</div>
 
 <footer class="footer footer--min">
   <div class="wrap footer__center">
@@ -118,39 +178,62 @@
 
 <script src="site.js"></script>
 <script>
-// Form delivery via Resend (/api/contact). The enquirer also receives a
-// branded confirmation email automatically.
 (function () {
-  var form = document.getElementById('enquiry');
-  if (!form) return;
-  var btn = form.querySelector('button[type="submit"]');
-  var msg = form.querySelector('.form-msg');
-  function show(text, ok) {
-    msg.textContent = text;
-    msg.style.display = 'block';
-    msg.style.color = ok ? '' : '#a33';
-  }
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    btn.disabled = true;
-    btn.textContent = 'Sending…';
-    var payload = {};
-    new FormData(form).forEach(function (v, k) { payload[k] = v; });
-    fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).then(function (r) {
-      if (r.ok) {
-        form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(function (f) { f.value = ''; });
-        btn.textContent = 'Sent';
-        show('Thank you — your enquiry has been sent. I reply personally, usually within 24 hours.', true);
-      } else { throw new Error(); }
-    }).catch(function () {
-      btn.disabled = false;
-      btn.textContent = 'Send enquiry';
-      show('Something went wrong sending the form — please email jacxbschrader@gmail.com directly.', false);
+  var $ = function (id) { return document.getElementById(id); };
+  var step = 1, MAX = 3;
+
+  function show(n) {
+    step = n;
+    document.querySelectorAll('[data-step]').forEach(function (s) { s.hidden = +s.dataset.step !== n; });
+    document.querySelectorAll('.bk-step').forEach(function (el) {
+      var i = +el.dataset.s;
+      el.classList.toggle('on', i === n);
+      el.classList.toggle('done', i < n);
     });
+    $('bk-back').style.display = n > 1 ? '' : 'none';
+    $('bk-next').style.display = n < MAX ? '' : 'none';
+    $('bk-submit').style.display = n === MAX ? '' : 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function validStep(n) {
+    var ok = true;
+    document.querySelectorAll('[data-step="' + n + '"] input[required]').forEach(function (i) {
+      if (!i.reportValidity()) ok = false;
+    });
+    return ok;
+  }
+
+  $('bk-next').addEventListener('click', function () { if (validStep(step)) show(step + 1); });
+  $('bk-back').addEventListener('click', function () { show(step - 1); });
+
+  $('bk-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var msg = $('bk-msg'); msg.style.display = 'none';
+    var btn = $('bk-submit'); btn.disabled = true; btn.textContent = 'Sending…';
+    var services = Array.prototype.map.call(document.querySelectorAll('.b-svc:checked'), function (c) { return c.value; }).join(' · ');
+    try {
+      var r = await fetch('/api/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: $('b-name').value, email: $('b-email').value, phone: $('b-phone').value,
+          brokerage: $('b-brokerage').value, address: $('b-address').value, city: $('b-city').value,
+          state: $('b-state').value, zip: $('b-zip').value, sqft: $('b-sqft').value,
+          target_date: $('b-target').value, services: services, message: $('b-message').value,
+          _honey: $('b-honey').value
+        })
+      });
+      if (!r.ok) throw new Error();
+      $('bk-form').hidden = true;
+      document.querySelector('.bk-steps').hidden = true;
+      $('bk-done').hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      btn.disabled = false; btn.textContent = 'Submit application';
+      msg.textContent = 'Something went wrong — please try again, or email jacxbschrader@gmail.com directly.';
+      msg.style.display = 'block';
+    }
   });
 })();
 </script>
