@@ -484,3 +484,37 @@ send" (only enabled once links exist).
 - Files: api/_lib/admin/invoice.js (router action 'invoice'),
   api/invoice.js (public, token-gated, client-safe), invoice.html.
   Function count: 5 of 12.
+
+### Client portal (/portal)
+
+Simplified Luma-style portal, no logins — each client gets one private
+tokenized link (clients.portal_token, issued automatically with their
+first delivery):
+
+- **"View Your Delivery" in the delivery email now lands here** —
+  `/portal?c=<token>&p=<project>` — with that delivery as a navy hero
+  card up top (its link buttons inline).
+- Below: welcome header, stats strip (In production / Delivered /
+  $ Outstanding — unpaid sent invoices only), then projects grouped
+  In production / Booked / Delivered. Delivered rows link to their
+  delivery page; invoiced rows show "Invoice JCS-0007" + Due/Paid chip
+  linking to the invoice page.
+- Client-facing stages are simplified: upcoming→Booked,
+  editing/revisions→In production, delivered/completed/paid→Delivered.
+- Files: api/portal.js (public, token-gated, client-safe — prices only
+  appear once an invoice was actually sent), portal.html. Admin client
+  page → Contact info shows "Open portal →" once the token exists.
+  Function count: 6 of 12.
+
+### Client login (magic link, no passwords) + Visaro-style header
+
+- **Header**: every site page now matches The Visaro's layout — brand
+  left, nav links centered, muted "CLIENT LOGIN" top-right (→ /portal).
+  On mobile it sits beside the hamburger. Verified visually at desktop
+  and 390px widths.
+- **Login**: /portal without a token shows an email-only sign-in card.
+  POST /api/portal { email } → if it matches a client profile (primary
+  OR co-recipient email), their portal link is emailed ("Open Your
+  Portal"). No accounts, no passwords. Always responds ok — never
+  reveals whether an email exists; honeypot field included. Token is
+  issued on first login request if the client doesn't have one yet.

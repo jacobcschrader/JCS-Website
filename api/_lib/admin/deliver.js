@@ -29,7 +29,7 @@ module.exports = async function handler(req, res) {
 
     const [b] = await s`
       SELECT bk.*, c.name AS client_name, c.email AS client_email,
-             c.extra_emails AS client_extra_emails
+             c.extra_emails AS client_extra_emails, c.portal_token AS client_portal_token
       FROM bookings bk LEFT JOIN clients c ON c.id = bk.client_id
       WHERE bk.id = ${id}`;
     if (!b) { res.status(404).json({ error: "not-found" }); return; }
@@ -38,8 +38,16 @@ module.exports = async function handler(req, res) {
     const clientTo = recipientsOf(b.client_email, b.client_extra_emails);
     if (!clientTo.length) { res.status(400).json({ error: "no-client-email" }); return; }
 
+    // ensure the client has a portal token — the email button lands on
+    // their portal with this delivery front and center
+    let portalToken = b.client_portal_token;
+    if (!portalToken) {
+      portalToken = crypto.randomBytes(12).toString("base64url");
+      await s`UPDATE clients SET portal_token = ${portalToken} WHERE id = ${b.client_id}`;
+    }
+
     const token = b.delivery_token || crypto.randomBytes(12).toString("base64url");
-    const pageUrl = `https://www.jacobcschrader.com/delivery?t=${token}`;
+    const pageUrl = `https://www.jacobcschrader.com/portal?c=${portalToken}&p=${b.id}`;
     const first = (b.client_name || "").split(" ")[0] || "there";
     const cc = String(b.delivery_cc || "").split(/[,;\s]+/).filter((e) => /.+@.+\..+/.test(e)).slice(0, 10);
     const note = String(b.delivery_message || "").trim();

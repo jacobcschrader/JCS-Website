@@ -935,6 +935,10 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       '<div class="adm-kv"><label>Brokerage</label><div>' + esc(c.brokerage || '—') + '</div></div>' +
       '<div class="adm-kv"><label>Date added</label><div>' + (c.created_at ? dstr(c.created_at) : '—') + '</div></div>' +
       '<div class="adm-kv"><label>Total revenue</label><div style="font-family:var(--serif);font-size:1.4rem;color:var(--navy)">' + money(total) + '</div></div>' +
+      '<div class="adm-kv"><label>Client portal</label><div>' +
+        (c.portal_token
+          ? '<a href="/portal?c=' + esc(c.portal_token) + '" target="_blank" rel="noopener">Open portal &rarr;</a>'
+          : '<span class="mut">Created with their first delivery.</span>') + '</div></div>' +
     '</div></div>';
 
     return html + '<div class="adm-detail2">' + main +

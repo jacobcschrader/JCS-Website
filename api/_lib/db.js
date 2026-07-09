@@ -36,6 +36,8 @@ function ensureSchema() {
       // Co-recipient emails (JSON array) — every notification goes to
       // the primary email plus all of these.
       await s`ALTER TABLE clients ADD COLUMN IF NOT EXISTS extra_emails text DEFAULT ''`;
+      // Client portal: one private token per client → /portal?c=…
+      await s`ALTER TABLE clients ADD COLUMN IF NOT EXISTS portal_token text DEFAULT ''`;
       await s`CREATE TABLE IF NOT EXISTS bookings (
         id         serial PRIMARY KEY,
         client_id  integer REFERENCES clients(id) ON DELETE SET NULL,
