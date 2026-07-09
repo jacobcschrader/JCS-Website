@@ -837,19 +837,9 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
   function vBookingDetail(id) {
     var b = state.bookings.find(function (x) { return x.id == id; });
     if (!b) return head('Project not found', '', true);
-    var next = STAGES[STAGES.indexOf(b.status) + 1];
     var travel = Number(b.travel_fee) || 0;
     var total = b.price ? net(b) + travel : null;
     var fullLoc = [b.location].filter(Boolean).join('');
-
-    function schedRow(dateStr, timeStr, label, sub) {
-      var d = new Date(String(dateStr).slice(0, 10) + 'T12:00:00');
-      return '<div class="adm-sched"><div class="adm-sched__date"><b>' + d.getDate() + '</b><span>' +
-        d.toLocaleDateString(undefined, { month: 'short' }) + '</span></div>' +
-        '<div class="adm-sched__body"><b>' + label + (timeStr ? ' · ' + fmtT(timeStr) : '') + '</b>' +
-        '<small>' + d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) +
-        (sub ? ' · ' + sub : '') + '</small></div></div>';
-    }
 
     // ---- header ----
     var html = '<span class="adm-back" onclick="history.back()">&larr; Back to projects</span>' +
@@ -864,20 +854,31 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
           '<button class="adm-btn--danger adm-btn" onclick="ADM.delBooking(' + b.id + ')">Delete</button>' +
         '</div></div>';
 
-    // ---- main column ----
-    var main = '<div><div class="adm-card"><h2>Schedule</h2>' +
-      (b.shoot_date
-        ? schedRow(b.shoot_date, b.shoot_time, 'Shoot', b.type || '') +
-          ((b.twilight_date || b.twilight_time)
-            ? schedRow(b.twilight_date || b.shoot_date, b.twilight_time, 'Twilight', '')
-            : '')
-        : '<p class="adm-empty">No shoot date yet — Edit to schedule.</p>') +
-      '</div>' +
-      '<div class="adm-card"><h2>Details</h2><div class="adm-kvgrid">' +
-        '<div class="adm-kv"><label>Client</label><div>' + (b.client_id ? '<a style="cursor:pointer" onclick="ADM.go(\'client/' + b.client_id + '\')">' + esc(b.client_name || '') + '</a>' : '—') + '</div></div>' +
-        '<div class="adm-kv"><label>Service</label><div>' + esc(b.type || '—') + '</div></div>' +
-        '<div class="adm-kv"><label>Sqft</label><div>' + (b.sqft ? Number(b.sqft).toLocaleString() : '—') + '</div></div>' +
-        '<div class="adm-kv"><label>Location</label><div>' + esc(fullLoc || '—') + '</div></div>' +
+    // ---- main column (Visaro-style project info grid) ----
+    function kv(label, val) {
+      return '<div class="adm-kv"><label>' + label + '</label><div>' + val + '</div></div>';
+    }
+    function longDate(dateStr, timeStr) {
+      var d = new Date(String(dateStr).slice(0, 10) + 'T12:00:00');
+      return d.toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' }) +
+        (timeStr ? ', ' + fmtT(timeStr) : '');
+    }
+    var cl = b.client_id ? state.clients.find(function (c) { return c.id == b.client_id; }) : null;
+    var main = '<div><div class="adm-card"><h2>Project info</h2><div class="adm-kvgrid">' +
+        kv('Property', esc(b.title)) +
+        kv('City, State', esc(fullLoc || '—')) +
+        kv('Square footage', b.sqft ? Number(b.sqft).toLocaleString() + ' sq ft' : '—') +
+        kv('Service', esc(b.type || '—')) +
+        kv('Shoot date', b.shoot_date ? longDate(b.shoot_date, b.shoot_time) : '—') +
+        ((b.twilight_date || b.twilight_time)
+          ? kv('Twilight', longDate(b.twilight_date || b.shoot_date, b.twilight_time))
+          : '') +
+        kv('Total amount', total != null ? money(total) : '—') +
+        kv('Payment', '<span class="adm-badge adm-badge--' + (b.status === 'paid' ? 'paid">Paid' : 'unpaid">Unpaid') + '</span>') +
+        kv('Client', b.client_id
+          ? '<a style="cursor:pointer" onclick="ADM.go(\'client/' + b.client_id + '\')">' + esc(b.client_name || '') + '</a>' +
+            (cl && cl.brokerage ? ' <small class="mut">&mdash; ' + esc(cl.brokerage) + '</small>' : '')
+          : '—') +
       '</div>' +
       (b.deliverables
         ? '<div class="adm-notes" style="margin-top:1.3rem"><b style="display:block;font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:0.4rem">Deliverables</b>' + esc(b.deliverables) + '</div>'
@@ -900,9 +901,15 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         : '<p class="adm-empty">No price set — Edit to add the quote.</p>') +
       '</div>';
 
+    var stageSel = '<div class="adm-field" style="margin-top:0.8rem"><label>Change stage</label>' +
+      '<select onchange="ADM.stage(' + b.id + ', this.value)">' +
+      STAGES.map(function (s) {
+        return '<option value="' + s + '"' + (b.status === s ? ' selected' : '') + '>' + STAGE_LABEL[s] + '</option>';
+      }).join('') + '</select></div>';
+
     var statusCard = '<div class="adm-card"><h2>Actions</h2>' +
       '<button class="adm-btn" onclick="ADM.confirm(' + b.id + ')">' + (b.confirmed_at ? 'Resend confirmation' : 'Confirm &amp; send') + '</button>' +
-      (next ? '<button class="adm-btn adm-btn--ghost" onclick="ADM.stage(' + b.id + ',\'' + next + '\')">Move to ' + STAGE_LABEL[next] + ' &rsaquo;</button>' : '') +
+      stageSel +
       '<div class="adm-confnote' + (b.confirmed_at ? ' ok' : '') + '">' +
         (b.confirmed_at ? '&#10003; Confirmed ' + dstr(b.confirmed_at) : 'Not confirmed yet — client hasn\'t been notified.') +
       '</div></div>';

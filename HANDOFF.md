@@ -412,3 +412,15 @@ we hit 13. Fixed by consolidating:
   wizard posting to `/api/book`.
 - Function count is now 4 (`admin/[action]`, `book`, `calendar`,
   `delivery`) — lots of headroom for Stripe etc.
+
+### Project page: Visaro-style info grid + delivery modal
+
+- Project detail main column is now one "Project info" card matching
+  Visaro's grid: Property / City, State / Square footage / Service /
+  Shoot date (+time) / Twilight (when set) / Total amount / Payment
+  (Paid-Unpaid badge) / Client (with brokerage) — no shooter/duration/
+  Frame.io by design. Deliverables + access notes below.
+- Actions card gained a Change stage dropdown (Visaro quick action).
+- Delivery card: "Create delivery" opens a small modal (gallery link,
+  download link, delivered-on) instead of the full Edit form; after
+  creation it becomes Send/Resend + Edit delivery + links.
