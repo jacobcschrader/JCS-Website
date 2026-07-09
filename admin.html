@@ -234,9 +234,9 @@ small.mut { color: var(--muted); }
 var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', delivered:'#7a5fb8', completed:'#3f7a4f', paid:'#1d4d2a' };
   var TYPES = ['Architectural Photography','Film / Videography','Aerial & Drone','Full Campaign (Stills + Film)','Other'];
   var ADDONS = {
-    'Photography': ['HDR photography','Drone photos','Twilight photos','Vertical / vignette photos','Virtual staging'],
-    'Videography': ['The Signature Cut','Twilight video','Vertical reel'],
-    'Universal':   ['2D floor plan','Dedicated listing website']
+    'Photography': ['Flash / Ambient Photography','Aerial Photography','Vertical / Vignette Images','Twilight Coverage'],
+    'Film':        ['Cinematic Film','Social Reel'],
+    'Beyond':      ['Floor Plan Schematics','Property Website']
   };
   var STAGES = ['upcoming','editing','revisions','delivered','completed','paid'];   // pipeline order
   var STAGE_LABEL = { upcoming:'Upcoming', editing:'Editing', revisions:'Revisions', delivered:'Delivered', completed:'Completed', paid:'Paid' };
@@ -348,15 +348,25 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     }).join('');
     var typeOpts = TYPES.map(function (t) { return '<option' + (v.type === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('');
     var statusOpts = STATUSES.map(function (s) { return '<option value="' + s + '"' + (v.status === s ? ' selected' : '') + '>' + (STAGE_LABEL[s] || 'Canceled') + '</option>'; }).join('');
+    function addonLabel(label, on) {
+      return '<label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--ink);text-transform:none;letter-spacing:0;cursor:pointer">' +
+        '<input type="checkbox" class="f-addon" value="' + esc(label) + '"' + (on ? ' checked' : '') + ' style="width:auto"> ' + esc(label) + '</label>';
+    }
+    var standardAddons = Object.keys(ADDONS).reduce(function (all, g) { return all.concat(ADDONS[g]); }, []);
+    var customAddons = checkedAddons.filter(function (x) { return standardAddons.indexOf(x) === -1; });
     var addonsHtml = Object.keys(ADDONS).map(function (group) {
       return '<div style="margin-top:0.6rem"><div style="font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem">' + group + '</div>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.35rem 1rem">' +
-        ADDONS[group].map(function (label) {
-          var on = checkedAddons.indexOf(label) > -1 ? ' checked' : '';
-          return '<label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--ink);text-transform:none;letter-spacing:0;cursor:pointer">' +
-            '<input type="checkbox" class="f-addon" value="' + esc(label) + '"' + on + ' style="width:auto"> ' + esc(label) + '</label>';
-        }).join('') + '</div></div>';
-    }).join('');
+        ADDONS[group].map(function (label) { return addonLabel(label, checkedAddons.indexOf(label) > -1); }).join('') +
+        '</div></div>';
+    }).join('') +
+      '<div style="margin-top:0.6rem"><div style="font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem">Custom</div>' +
+        '<div id="f-customlist" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.35rem 1rem">' +
+        customAddons.map(function (label) { return addonLabel(label, true); }).join('') + '</div>' +
+        '<div style="display:flex;gap:0.5rem;margin-top:0.5rem">' +
+          '<input id="f-customsvc" placeholder="Add a custom service…" style="flex:1;font-family:var(--sans);font-size:0.85rem;color:var(--ink);background:var(--paper-warm);border:1px solid var(--line);padding:0.5rem 0.7rem;outline:none">' +
+          '<button type="button" class="adm-btn adm-btn--ghost" id="f-addcustom" style="padding:0.45rem 0.9rem">+ Add</button>' +
+        '</div></div>';
 
     openModal(b.id ? 'Edit project' : 'New project',
       '<div class="adm-field full"><label for="f-title">Property address *</label><input id="f-title" required placeholder="7750 Lahontan Drive" value="' + esc(v.title || '') + '"></div>' +
@@ -395,10 +405,29 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     function checkedList() {
       return Array.prototype.map.call(document.querySelectorAll('.f-addon:checked'), function (x) { return x.value; });
     }
-    document.querySelectorAll('.f-addon').forEach(function (cb) {
-      cb.addEventListener('change', function () {
-        $('f-deliverables').value = checkedList().join(' · ');
+    function regenDeliverables() { $('f-deliverables').value = checkedList().join(' · '); }
+    // delegate so custom checkboxes added later also trigger the composer
+    $('modal-form').addEventListener('change', function (e) {
+      if (e.target.classList && e.target.classList.contains('f-addon')) regenDeliverables();
+    });
+    function addCustomService() {
+      var input = $('f-customsvc');
+      var label = input.value.trim().slice(0, 100);
+      if (!label) return;
+      var exists = Array.prototype.some.call(document.querySelectorAll('.f-addon'), function (x) {
+        return x.value.toLowerCase() === label.toLowerCase();
       });
+      if (!exists) {
+        var wrap = document.createElement('div');
+        wrap.innerHTML = addonLabel(label, true);
+        $('f-customlist').appendChild(wrap.firstChild);
+      }
+      input.value = '';
+      regenDeliverables();
+    }
+    $('f-addcustom').addEventListener('click', addCustomService);
+    $('f-customsvc').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); addCustomService(); }
     });
     // inline new client: stash the draft, create the client, come back
     $('f-newclient').addEventListener('click', function () {
