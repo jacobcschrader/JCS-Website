@@ -12,7 +12,7 @@ const crypto = require("node:crypto");
 const { requireAuth } = require("../auth.js");
 const { db } = require("../db.js");
 const { linksOf, recipientsOf } = require("../links.js");
-const { sendEmail, brandedHtml, OWNER } = require("../email.js");
+const { sendEmail, jcsEmail, SENDERS, OWNER } = require("../email.js");
 
 const escHtml = (s) =>
   String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
@@ -52,25 +52,57 @@ module.exports = async function handler(req, res) {
     const cc = String(b.delivery_cc || "").split(/[,;\s]+/).filter((e) => /.+@.+\..+/.test(e)).slice(0, 10);
     const note = String(b.delivery_message || "").trim();
 
+    const sentAt = new Date().toLocaleString("en-US", {
+      timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric",
+      hour: "numeric", minute: "2-digit", timeZoneName: "short",
+    });
+    const headline = `${escHtml(b.client_name || "")}${b.client_name ? " · " : ""}${escHtml(b.title)}`;
+    const included = links.map((l) => escHtml(l.label)).join(" · ");
+
     await sendEmail({
+      from: SENDERS.delivery,
       to: clientTo,
       cc,
       replyTo: OWNER,
-      subject: `Your delivery is ready — ${b.title}`,
-      text: `Hi ${first},\n\n${note ? note + "\n\n" : ""}${b.title} is ready. View and download everything here:\n${pageUrl}\n\n` +
+      subject: `${b.title} | Media Delivery`,
+      text: `Hi ${first},\n\n${note ? note + "\n\n" : ""}Your full delivery for ${b.title} is ready:\n${pageUrl}\n\n` +
         `— Jacob Schrader · jacobcschrader.com`,
-      html: brandedHtml({
-        eyebrowText: "Your delivery",
-        headline: `${escHtml(b.title)} is ready.`,
-        bodyHtml:
-          `<p style="margin:0 0 14px;">Hi ${escHtml(first)},</p>` +
-          (note ? `<p style="margin:0 0 14px;">${escHtml(note)}</p>` : "") +
-          `<p style="margin:0 0 14px;">Your full delivery for <b>${escHtml(b.title)}</b> is ready — ` +
-          `everything included with your shoot.</p>` +
-          (b.deliverables ? `<p style="margin:0;color:#5d6a7e;font-size:13px;">Included: ${escHtml(b.deliverables)}</p>` : ""),
-        cta: { label: "View Your Delivery", url: pageUrl },
+      html: jcsEmail({
+        eyebrow: "Media Delivery",
+        headline,
+        note: `Hi ${escHtml(first)} — ${note ? escHtml(note) + " " : ""}your full delivery is ready. Everything is on your page, always up to date.`,
+        rows: [
+          ["Client", b.client_name ? escHtml(b.client_name) : ""],
+          ["Property", escHtml(b.title) + (b.location ? `<br><span style="color:#8a94a6;">${escHtml(b.location)}</span>` : "")],
+          ["Included", included],
+          ["Delivered", escHtml(sentAt)],
+        ],
+        cta: { label: "View Delivery", url: pageUrl },
+        audience: "client",
       }),
     });
+
+    // admin copy — like Visaro's "Delivery Sent" notification
+    await sendEmail({
+      from: SENDERS.admin,
+      to: OWNER,
+      subject: `${b.title} | Delivery Sent`,
+      text: `Delivery sent to ${clientTo.join(", ")}${cc.length ? " (cc " + cc.join(", ") + ")" : ""}.\n${pageUrl}`,
+      html: jcsEmail({
+        eyebrow: "Delivery Sent",
+        headline,
+        note: `Notified ${escHtml(clientTo.join(", "))}${cc.length ? ` · cc ${escHtml(cc.join(", "))}` : ""} at ${escHtml(sentAt)}.`,
+        rows: [
+          ["Client", b.client_name ? escHtml(b.client_name) : ""],
+          ["Property", escHtml(b.title)],
+          ["Links", included],
+          ["Sends", String((Number(b.delivery_sends) || 0) + 1)],
+        ],
+        cta: { label: "View Delivery", url: pageUrl },
+        copyUrl: `https://www.jacobcschrader.com/admin#project/${b.id}`,
+        audience: "admin",
+      }),
+    }).catch(() => { /* admin copy is best-effort */ });
 
     // advance stage if the project hasn't reached 'delivered' yet
     const preDelivered = ["upcoming", "editing", "revisions"].includes(b.status);

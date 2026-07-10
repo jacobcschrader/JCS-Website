@@ -9,7 +9,7 @@ const crypto = require("node:crypto");
 const { requireAuth } = require("../auth.js");
 const { db } = require("../db.js");
 const { recipientsOf } = require("../links.js");
-const { sendEmail, brandedHtml, detailRow, OWNER } = require("../email.js");
+const { sendEmail, jcsEmail, SENDERS, OWNER } = require("../email.js");
 
 const escHtml = (s) =>
   String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
@@ -54,25 +54,26 @@ module.exports = async function handler(req, res) {
     const first = (b.client_name || "").split(" ")[0] || "there";
 
     await sendEmail({
+      from: SENDERS.billing,
       to: clientTo,
       replyTo: OWNER,
-      subject: `Invoice ${number} — ${b.title}`,
+      subject: `${b.title} | Invoice ${number}`,
       text: `Hi ${first},\n\nInvoice ${number} for ${b.title} — total ${money(total)}.\n` +
         `View it here: ${pageUrl}\n\nQuestions? Just reply to this email.\n\n` +
         `— Jacob Schrader · jacobcschrader.com`,
-      html: brandedHtml({
-        eyebrowText: `Invoice ${number}`,
-        headline: `${money(total)}${b.status === "paid" ? " — paid, thank you." : ""}`,
-        bodyHtml:
-          `<p style="margin:0 0 14px;">Hi ${escHtml(first)},</p>` +
-          `<p style="margin:0 0 14px;">Here is your invoice for <b>${escHtml(b.title)}</b>.</p>` +
-          `<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 14px;">` +
-          detailRow("Invoice", escHtml(number)) +
-          detailRow("Property", escHtml(b.title)) +
-          detailRow("Total", escHtml(money(total))) +
-          `</table>` +
-          `<p style="margin:0;">Questions about this invoice? Just reply to this email.</p>`,
+      html: jcsEmail({
+        eyebrow: `Invoice ${number}`,
+        headline: `${escHtml(b.client_name || "")}${b.client_name ? " · " : ""}${escHtml(b.title)}`,
+        note: `Hi ${escHtml(first)} — here is your invoice. Questions? Just reply.`,
+        rows: [
+          ["Invoice", escHtml(number)],
+          ["Property", escHtml(b.title) + (b.location ? `<br><span style="color:#8a94a6;">${escHtml(b.location)}</span>` : "")],
+          ["Service", b.type ? escHtml(b.type) : ""],
+          ["Status", b.status === "paid" ? "Paid — thank you" : "Due"],
+          ["Total", escHtml(money(total))],
+        ],
         cta: { label: "View Invoice", url: pageUrl },
+        audience: "client",
       }),
     });
 

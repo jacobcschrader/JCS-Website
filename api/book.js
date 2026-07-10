@@ -5,7 +5,7 @@
 //  3. Emails the applicant a branded "Application received".
 // =====================================================================
 const { db } = require("./_lib/db.js");
-const { sendEmail, brandedHtml, detailRow, OWNER } = require("./_lib/email.js");
+const { sendEmail, jcsEmail, SENDERS, OWNER } = require("./_lib/email.js");
 
 const field = (v, max = 300) => String(v == null ? "" : v).trim().slice(0, max);
 const escHtml = (s) =>
@@ -46,48 +46,57 @@ module.exports = async function handler(req, res) {
       RETURNING id`;
 
     const loc = [f.city, [f.state, f.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
-    const rows =
-      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:2px 0 20px;">` +
-      detailRow("Property", escHtml(f.title) + (loc ? "<br><span style=\"color:#8a94a6\">" + escHtml(loc) + "</span>" : "")) +
-      (f.sqft ? detailRow("Sqft", Number(f.sqft).toLocaleString()) : "") +
-      (f.target_date ? detailRow("Target", escHtml(f.target_date)) : "") +
-      (f.services ? detailRow("Services", escHtml(f.services)) : "") +
-      detailRow("Contact", escHtml(f.email) + (f.phone ? " · " + escHtml(f.phone) : "")) +
-      (f.brokerage ? detailRow("Brokerage", escHtml(f.brokerage)) : "") +
-      `</table>`;
+    const rows = [
+      ["Client", escHtml(f.name)],
+      ["Email", `<a href="mailto:${escHtml(f.email)}" style="color:#33507e;">${escHtml(f.email)}</a>`],
+      ["Phone", f.phone ? escHtml(f.phone) : ""],
+      ["Brokerage", f.brokerage ? escHtml(f.brokerage) : ""],
+      ["Property", escHtml(f.title) + (loc ? `<br><span style="color:#8a94a6;">${escHtml(loc)}</span>` : "")],
+      ["Sqft", f.sqft ? Number(f.sqft).toLocaleString() : ""],
+      ["Services", f.services ? escHtml(f.services) : ""],
+      ["Target date", f.target_date ? escHtml(f.target_date) : ""],
+    ];
 
     // ---- to Jacob -----------------------------------------------------
     await sendEmail({
+      from: SENDERS.admin,
       to: OWNER,
       replyTo: f.email,
-      subject: `New application — ${f.title}${f.name ? " · " + f.name : ""}`,
+      subject: `${f.title} | New Application`,
       text: `New application from ${f.name} (${f.email}) for ${f.title}.\n\n${f.message}`,
-      html: brandedHtml({
-        eyebrowText: "New application",
-        headline: escHtml(f.name),
-        bodyHtml: rows +
-          (f.message ? `<div style="background:#f6f4ef;padding:18px 20px;font-size:14.5px;line-height:1.7;white-space:pre-line;">${escHtml(f.message)}</div>` : ""),
-        cta: { label: "Review in admin", url: "https://www.jacobcschrader.com/admin#requests" },
+      html: jcsEmail({
+        eyebrow: "New Application",
+        headline: escHtml(f.title) + (loc ? `, ${escHtml(loc)}` : ""),
+        note: f.message
+          ? `<span style="white-space:pre-line;">&ldquo;${escHtml(f.message)}&rdquo;</span>`
+          : "",
+        rows,
+        cta: { label: "Review in Admin", url: "https://www.jacobcschrader.com/admin#requests" },
+        audience: "admin",
       }),
     });
 
     // ---- to applicant (best effort) ------------------------------------
     try {
       await sendEmail({
+        from: SENDERS.enquiry,
         to: f.email,
         replyTo: OWNER,
-        subject: "Application received — Jacob Schrader",
+        subject: `${f.title} | Application Received`,
         text: `Hi ${f.name},\n\nThank you — your application for ${f.title} has been received. ` +
           "I review every request personally and will reply within 24 hours.\n\n— Jacob Schrader · jacobcschrader.com",
-        html: brandedHtml({
-          eyebrowText: "Application received",
+        html: jcsEmail({
+          eyebrow: "Application Received",
           headline: "Thank you — I have your request.",
-          bodyHtml:
-            `<p style="margin:0 0 14px;">Hi ${escHtml(f.name)},</p>` +
-            `<p style="margin:0 0 14px;">Your application for <b>${escHtml(f.title)}</b> has been received. ` +
-            `I review every request personally and will reply within 24&nbsp;hours with availability and a custom quote.</p>` +
-            `<p style="margin:0;">In the meantime, recent work is below.</p>`,
-          cta: { label: "View the work", url: "https://www.jacobcschrader.com/projects" },
+          note: `Hi ${escHtml(f.name)} — your application for <b>${escHtml(f.title)}</b> has been received. ` +
+            "I review every request personally and will reply within 24&nbsp;hours with availability and a custom quote.",
+          rows: [
+            ["Property", escHtml(f.title) + (loc ? `<br><span style="color:#8a94a6;">${escHtml(loc)}</span>` : "")],
+            ["Services", f.services ? escHtml(f.services) : ""],
+            ["Target date", f.target_date ? escHtml(f.target_date) : ""],
+          ],
+          cta: { label: "View the Work", url: "https://www.jacobcschrader.com/projects" },
+          audience: "client",
         }),
       });
     } catch (e) { /* applicant email is best-effort */ }

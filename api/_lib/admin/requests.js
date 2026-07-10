@@ -8,7 +8,7 @@
 // =====================================================================
 const { requireAuth } = require("../auth.js");
 const { db } = require("../db.js");
-const { sendEmail, brandedHtml, OWNER } = require("../email.js");
+const { sendEmail, jcsEmail, SENDERS, OWNER } = require("../email.js");
 
 const escHtml = (s) =>
   String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
@@ -66,22 +66,23 @@ module.exports = async function handler(req, res) {
     if (b.action === "decline") {
       try {
         await sendEmail({
+          from: SENDERS.enquiry,
           to: r.email,
           replyTo: OWNER,
-          subject: `Regarding ${r.title} — Jacob Schrader`,
+          subject: `${r.title} | Application Update`,
           text: `Hi ${r.name},\n\nThank you for thinking of me for ${r.title}. ` +
             "My calendar is fully committed at the moment and I'm unable to take this one on. " +
             "I take on a limited number of projects to keep the work at its best, and I'd welcome " +
             "the chance to be considered for a future property.\n\n— Jacob Schrader · jacobcschrader.com",
-          html: brandedHtml({
-            eyebrowText: "Thank you",
+          html: jcsEmail({
+            eyebrow: "Application Update",
             headline: "Thank you for thinking of me.",
-            bodyHtml:
-              `<p style="margin:0 0 14px;">Hi ${escHtml(r.name)},</p>` +
-              `<p style="margin:0 0 14px;">Thank you for your application for <b>${escHtml(r.title)}</b>. ` +
-              `My calendar is fully committed at the moment and I'm unable to take this one on.</p>` +
-              `<p style="margin:0;">I take on a limited number of projects each season to keep the work at its best — ` +
-              `I'd welcome the chance to be considered for a future property.</p>`,
+            note: `Hi ${escHtml(r.name)} — thank you for your application for <b>${escHtml(r.title)}</b>. ` +
+              "My calendar is fully committed at the moment and I'm unable to take this one on. " +
+              "I take on a limited number of projects each season to keep the work at its best — " +
+              "I'd welcome the chance to be considered for a future property.",
+            cta: { label: "View the Work", url: "https://www.jacobcschrader.com/projects" },
+            audience: "client",
           }),
         });
       } catch (e) { /* still mark declined even if email fails */ }

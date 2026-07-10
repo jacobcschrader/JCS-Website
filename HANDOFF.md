@@ -574,3 +574,25 @@ https:// is prepended both on save (bookings parseLinks) and on read
 Each link row now has its own Save button — saves the delivery (all
 fields) without re-rendering the form, flashes "✓ Live", and the
 client's page reflects it immediately.
+
+### Email system redesign (Visaro-structured, JCS-branded)
+
+One template (jcsEmail in api/_lib/email.js) now powers every email:
+navy masthead with only the Cormorant-italic JCS wordmark (no tagline),
+tracked eyebrow, serif headline "Client · Property", optional note,
+hairline label/value detail table, navy button, "Or copy:" link, and a
+"CLIENT/ADMIN NOTIFICATION · {event}" footer.
+
+Subjects: `{Property} | {Event}` — Booking Confirmed, Media Delivery,
+Delivery Sent (new admin copy), Invoice JCS-0007, New Application,
+Application Received, Application Update (decline). Portal magic link:
+"Your Client Portal | Jacob Schrader".
+
+Senders (domain verified on Resend, no extra setup):
+- enquiry@jacobcschrader.com — confirmations, applications, declines,
+  portal links (client-facing)
+- delivery@jacobcschrader.com — media deliveries
+- billing@jacobcschrader.com — invoices
+- admin@jacobcschrader.com — all notifications to Jacob ("JCS Studio")
+CONTACT_FROM env is now only a fallback when no sender is passed.
+All 8 email paths covered by mock tests (senders, subjects, template).

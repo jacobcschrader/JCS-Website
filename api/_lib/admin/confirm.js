@@ -8,7 +8,7 @@
 // =====================================================================
 const { requireAuth } = require("../auth.js");
 const { db } = require("../db.js");
-const { sendEmail, brandedHtml, detailRow, OWNER } = require("../email.js");
+const { sendEmail, jcsEmail, SENDERS, OWNER } = require("../email.js");
 const { buildIcs, fmtTime, gcalLink } = require("../ics.js");
 const gcal = require("../gcal.js");
 const { recipientsOf } = require("../links.js");
@@ -94,27 +94,15 @@ module.exports = async function handler(req, res) {
         (b.twilight_time ? ` · ${fmtTime(b.twilight_time)}` : "")
       : null;
 
-    const rows =
-      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:2px 0 20px;">` +
-      detailRow("Property", escHtml(b.title)) +
-      (b.location ? detailRow("Location", escHtml(b.location)) : "") +
-      detailRow("Shoot", escHtml(whenMain)) +
-      (whenTwi ? detailRow("Twilight", escHtml(whenTwi)) : "") +
-      (b.type ? detailRow("Type", escHtml(b.type)) : "") +
-      (b.deliverables ? detailRow("Deliverables", escHtml(b.deliverables)) : "") +
-      (b.show_price !== false && b.price && b.discount_value
-        ? detailRow("Discount", "&minus;$" + Number(b.discount_value).toLocaleString() +
-            (b.discount_code ? ' <span style="color:#8a94a6;">(' + escHtml(b.discount_code) + ")</span>" : ""))
-        : "") +
-      (b.show_price !== false && b.price
-        ? detailRow("Total", "$" + (Number(b.price) + Number(b.travel_fee || 0) - Number(b.discount_value || 0)).toLocaleString() +
-            (b.travel_fee ? ' <span style="color:#8a94a6;">(incl. $' + Number(b.travel_fee).toLocaleString() + " travel)</span>" : ""))
-        : "") +
-      `</table>`;
-    const calLinks = `<p style="margin:16px 0 0;font-size:12.5px;">` +
-      `<a href="${escHtml(gcalLink(events[0]))}" style="color:#0f2240;">Add shoot to Google Calendar</a>` +
-      (events[1] ? ` &nbsp;·&nbsp; <a href="${escHtml(gcalLink(events[1]))}" style="color:#0f2240;">Add twilight</a>` : "") +
-      `</p>`;
+    const money = (n) => "$" + Number(n).toLocaleString();
+    const total = Number(b.price || 0) + Number(b.travel_fee || 0) - Number(b.discount_value || 0);
+    const showPrice = b.show_price !== false && b.price;
+    const headline = `${escHtml(b.client_name || "")}${b.client_name ? " · " : ""}${escHtml(b.title)}`;
+    const propertyVal = escHtml(b.title) + (b.location ? `<br><span style="color:#8a94a6;">${escHtml(b.location)}</span>` : "");
+    const calLinks = `<div style="margin-top:14px;font-family:'Inter',Helvetica,Arial,sans-serif;font-size:11px;color:#8a94a6;">` +
+      `<a href="${escHtml(gcalLink(events[0]))}" style="color:#33507e;">Add shoot to Google Calendar</a>` +
+      (events[1] ? ` &nbsp;·&nbsp; <a href="${escHtml(gcalLink(events[1]))}" style="color:#33507e;">Add twilight</a>` : "") +
+      `</div>`;
 
     // ---- 1) client confirmation (skipped gracefully if no email) -----
     // Goes to every address on the client profile (primary + extras).
@@ -122,20 +110,31 @@ module.exports = async function handler(req, res) {
     let clientSent = false;
     if (clientTo.length) {
       await sendEmail({
+        from: SENDERS.enquiry,
         to: clientTo,
         replyTo: OWNER,
-        subject: `Booking confirmed — ${b.title}`,
+        subject: `${b.title} | Booking Confirmed`,
         text: `Your shoot is confirmed.\n\nProperty: ${b.title}\nShoot: ${whenMain}` +
           (whenTwi ? `\nTwilight: ${whenTwi}` : "") +
-          `\n\nCalendar invite attached. — Jacob Schrader · jacobcschrader.com`,
-        html: brandedHtml({
-          eyebrowText: "Booking confirmed",
-          headline: "You're on the calendar.",
-          bodyHtml:
-            `<p style="margin:0 0 16px;">Hi ${escHtml(b.client_name || "there")}, your shoot is confirmed — details below. ` +
-            `A calendar invite is attached.</p>` + rows +
-            `<p style="margin:0;">Questions before the shoot? Just reply to this email.</p>` + calLinks,
+          `\n\nAdd to calendar: ${addToCalUrl}\n\n— Jacob Schrader · jacobcschrader.com`,
+        html: jcsEmail({
+          eyebrow: "Booking Confirmed",
+          headline,
+          note: "You're on the calendar. Questions before the shoot? Just reply.",
+          rows: [
+            ["Property", propertyVal],
+            ["Service", b.type ? escHtml(b.type) : ""],
+            ["Shoot date", escHtml(whenMain)],
+            ["Twilight", whenTwi ? escHtml(whenTwi) : ""],
+            ["Included", b.deliverables ? escHtml(b.deliverables) : ""],
+            ["Discount", showPrice && b.discount_value
+              ? "&minus;" + money(b.discount_value) + (b.discount_code ? ` <span style="color:#8a94a6;">(${escHtml(b.discount_code)})</span>` : "") : ""],
+            ["Total", showPrice
+              ? money(total) + (b.travel_fee ? ` <span style="color:#8a94a6;">(incl. ${money(b.travel_fee)} travel)</span>` : "") : ""],
+          ],
           cta: { label: "Add to Calendar", url: addToCalUrl },
+          extraHtml: calLinks,
+          audience: "client",
         }),
       });
       clientSent = true;
@@ -143,19 +142,29 @@ module.exports = async function handler(req, res) {
 
     // ---- 2) copy to Jacob --------------------------------------------
     await sendEmail({
+      from: SENDERS.admin,
       to: OWNER,
-      subject: `Confirmed — ${b.title}${b.client_name ? " · " + b.client_name : ""}`,
+      subject: `${b.title} | Booking Confirmed`,
       text: `Booking confirmed.\n\nProperty: ${b.title}\nClient: ${b.client_name || "—"}\nShoot: ${whenMain}` +
-        (whenTwi ? `\nTwilight: ${whenTwi}` : "") + (b.price ? `\nPrice: $${Number(b.price).toLocaleString()}` : ""),
-      html: brandedHtml({
-        eyebrowText: "Booking confirmed",
-        headline: escHtml(b.title),
-        bodyHtml: rows.replace("</table>",
-          (b.client_name ? detailRow("Client", escHtml(b.client_name)) : "") +
-          (b.price ? detailRow("Price", "$" + Number(b.price).toLocaleString()) : "") + "</table>") +
-          (clientSent
-            ? `<p style="margin:0;">The client confirmation went to ${escHtml(clientTo.join(", "))}.</p>`
-            : `<p style="margin:0;color:#8a4d2f;">No client email on file — only you received this.</p>`) + calLinks,
+        (whenTwi ? `\nTwilight: ${whenTwi}` : "") + (b.price ? `\nTotal: ${money(total)}` : ""),
+      html: jcsEmail({
+        eyebrow: "Booking Confirmed",
+        headline,
+        note: clientSent
+          ? `Client confirmation sent to ${escHtml(clientTo.join(", "))}. Calendar invite attached.`
+          : `<span style="color:#8a4d2f;">No client email on file — only you received this.</span>`,
+        rows: [
+          ["Client", b.client_name ? escHtml(b.client_name) : ""],
+          ["Property", propertyVal],
+          ["Service", b.type ? escHtml(b.type) : ""],
+          ["Shoot date", escHtml(whenMain)],
+          ["Twilight", whenTwi ? escHtml(whenTwi) : ""],
+          ["Total", b.price
+            ? money(total) + (b.travel_fee ? ` <span style="color:#8a94a6;">(incl. ${money(b.travel_fee)} travel)</span>` : "") : ""],
+        ],
+        cta: { label: "View Project", url: `https://www.jacobcschrader.com/admin#project/${b.id}` },
+        extraHtml: calLinks,
+        audience: "admin",
       }),
       attachments: [ownerIcs],
     });

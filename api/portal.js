@@ -12,7 +12,7 @@
 const crypto = require("node:crypto");
 const { db } = require("./_lib/db.js");
 const { linksOf } = require("./_lib/links.js");
-const { sendEmail, brandedHtml } = require("./_lib/email.js");
+const { sendEmail, jcsEmail, SENDERS } = require("./_lib/email.js");
 
 const STAGE = {
   upcoming: "Booked",       // → "Upcoming" once a shoot date is set
@@ -57,18 +57,18 @@ async function magicLink(req, res) {
   const first = (c.name || "").split(" ")[0] || "there";
 
   await sendEmail({
+    from: SENDERS.enquiry,
     to: email,
-    subject: "Your client portal — Jacob Schrader",
+    subject: "Your Client Portal | Jacob Schrader",
     text: `Hi ${first},\n\nHere is your private portal link — projects, deliveries, and invoices:\n${url}\n\n` +
       `Keep this link handy; it always works.\n\n— Jacob Schrader · jacobcschrader.com`,
-    html: brandedHtml({
-      eyebrowText: "Client portal",
+    html: jcsEmail({
+      eyebrow: "Client Portal",
       headline: "Your projects, one place.",
-      bodyHtml:
-        `<p style="margin:0 0 14px;">Hi ${first.replace(/[<>&]/g, "")},</p>` +
-        `<p style="margin:0 0 14px;">Here is your private portal — every project, delivery, and invoice, always current.</p>` +
-        `<p style="margin:0;color:#5d6a7e;font-size:13px;">This link is yours alone and always works — no password needed.</p>`,
+      note: `Hi ${first.replace(/[<>&]/g, "")} — here is your private portal: every project, delivery, and invoice, always current. ` +
+        "The link is yours alone and always works — no password needed.",
       cta: { label: "Open Your Portal", url },
+      audience: "client",
     }),
   });
   done();
