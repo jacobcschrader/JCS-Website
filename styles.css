@@ -152,6 +152,21 @@ em { font-style: italic; }
 .nav--over-hero:not(.scrolled) .nav__brand span { color: rgba(255,255,255,0.6); }
 .nav--over-hero:not(.scrolled) .nav__links a::after { background: #fff; }
 
+/* Minimal client-page bar (portal / delivery / invoice): wordmark +
+   one contextual link — no site nav, no Client Login. */
+.mnav { position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.4rem var(--gut); }
+.mnav__brand { font-family: var(--serif); font-style: italic; font-size: 1.35rem;
+  color: var(--navy); text-decoration: none; letter-spacing: 0.04em; }
+.mnav__link { font-size: 0.64rem; letter-spacing: 0.2em; text-transform: uppercase;
+  font-weight: 600; color: var(--muted); text-decoration: none;
+  transition: color 0.3s var(--ease); white-space: nowrap; }
+.mnav__link:hover { color: var(--navy); }
+.mnav--light .mnav__brand { color: #fff; }
+.mnav--light .mnav__link { color: rgba(255,255,255,0.75); }
+.mnav--light .mnav__link:hover { color: #fff; }
+
 /* Right-side Client Login (Visaro-style header: brand / links / login) */
 .nav__login {
   font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase;

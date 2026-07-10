@@ -615,3 +615,13 @@ All 8 email paths covered by mock tests (senders, subjects, template).
   feedback flag.
 - api/delivery.js gained POST {t, action: approve|changes, message}.
   New columns: delivery_approved_at, delivery_feedback.
+
+### Client pages: minimal chrome
+
+Delivery, invoice, and portal pages no longer show the site nav (or
+"Client Login" — pointless when they're already in). Each gets a
+minimal bar (.mnav in styles.css): JCS wordmark + one contextual link —
+"← Back to Portal" on delivery/invoice (APIs now return portal_url),
+"View the Work →" on the portal. Footers slimmed to brand + contact +
+copyright. Delivery bar is white over the navy hero, flips dark on the
+invalid-link state.

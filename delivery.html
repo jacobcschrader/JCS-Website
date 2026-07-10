@@ -59,19 +59,9 @@
 </head>
 <body>
 
-<nav class="nav nav--over-hero">
-  <a class="nav__brand" href="/">JCS</a>
-  <button class="nav__toggle" aria-label="Menu"><span></span><span></span><span></span></button>
-  <div class="nav__links">
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-    <a href="/projects">Projects</a>
-    <a href="/architecture">Architecture</a>
-    <a href="/films">Films</a>
-    <a href="/design">Design</a>
-    <a href="/contact">Contact</a>
-  </div>
-  <a class="nav__login" href="/portal">Client Login</a>
+<nav class="mnav mnav--light" id="dv-nav">
+  <a class="mnav__brand" href="/">JCS</a>
+  <a class="mnav__link" id="dv-portal-link" hidden>&larr; Back to Portal</a>
 </nav>
 
 <header class="dv-hero" id="dv-hero" hidden>
@@ -123,20 +113,12 @@
 <footer class="footer footer--min">
   <div class="wrap footer__center">
     <a class="footer__brand" href="/">JCS</a>
-    <nav class="footer__links">
-      <a href="/projects">Projects</a>
-      <a href="/architecture">Architecture</a>
-      <a href="/films">Films</a>
-      <a href="/design">Design</a>
-      <a href="/about">About</a>
-      <a href="/contact">Contact</a>
-    </nav>
     <div class="footer__meta">
       <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a>
       <span class="sep">·</span>
       <a href="tel:+14088248719">(408) 824-8719</a>
     </div>
-    <div class="footer__base">© 2026 Jacob Schrader · Real Estate · Architecture · Design</div>
+    <div class="footer__base">© 2026 Jacob Schrader</div>
   </div>
 </footer>
 
@@ -145,7 +127,7 @@
 (async function () {
   var $ = function (id) { return document.getElementById(id); };
   var t = new URLSearchParams(location.search).get('t');
-  function missing() { $('dv-missing').hidden = false; document.querySelector('.nav').classList.remove('nav--over-hero'); }
+  function missing() { $('dv-missing').hidden = false; $('dv-nav').classList.remove('mnav--light'); }
   function dstr(s) {
     return new Date(String(s).slice(0, 10) + 'T12:00:00')
       .toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
@@ -159,6 +141,7 @@
     $('dv-title').textContent = d.title;
     $('dv-loc').textContent = d.location || '';
     if (d.delivered_at) $('dv-date').textContent = 'Delivered ' + dstr(d.delivered_at);
+    if (d.portal_url) { var pl = $('dv-portal-link'); pl.href = d.portal_url; pl.hidden = false; }
     var acts = $('dv-actions');
     (d.links || []).forEach(function (l, i) {
       var a = document.createElement('a');

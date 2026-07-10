@@ -15,7 +15,8 @@ module.exports = async function handler(req, res) {
       SELECT bk.id, bk.title, bk.location, bk.type, bk.shoot_date, bk.price,
              bk.travel_fee, bk.travel_note, bk.discount_code, bk.discount_value,
              bk.status, bk.deliverables, bk.invoice_sent_at, bk.created_at,
-             c.name AS client_name, c.brokerage AS client_brokerage
+             c.name AS client_name, c.brokerage AS client_brokerage,
+             c.portal_token AS client_portal_token
       FROM bookings bk LEFT JOIN clients c ON c.id = bk.client_id
       WHERE bk.invoice_token = ${t} LIMIT 1`;
     if (!b) { res.status(404).json({ error: "not-found" }); return; }
@@ -35,6 +36,7 @@ module.exports = async function handler(req, res) {
       items,
       total: items.reduce((s2, i) => s2 + i.amount, 0),
       paid: b.status === "paid",
+      portal_url: b.client_portal_token ? `/portal?c=${b.client_portal_token}` : "",
     });
   } catch (e) {
     res.status(500).json({ error: "error" });

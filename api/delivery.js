@@ -17,7 +17,7 @@ const escHtml = (s) =>
 
 async function fetchByToken(s, t) {
   const [b] = await s`
-    SELECT bk.*, c.name AS client_name
+    SELECT bk.*, c.name AS client_name, c.portal_token AS client_portal_token
     FROM bookings bk LEFT JOIN clients c ON c.id = bk.client_id
     WHERE bk.delivery_token = ${t} LIMIT 1`;
   return b;
@@ -113,6 +113,7 @@ module.exports = async function handler(req, res) {
       delivered_at: b.delivered_at || b.delivery_sent_at || null,
       approved_at: b.delivery_approved_at || null,
       client_first: (b.client_name || "").split(" ")[0] || "",
+      portal_url: b.client_portal_token ? `/portal?c=${b.client_portal_token}` : "",
     });
   } catch (e) {
     res.status(500).json({ error: "error" });

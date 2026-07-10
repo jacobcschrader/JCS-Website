@@ -36,7 +36,7 @@
 .inv-print { margin-top: 1.6rem; text-align: center; }
 .inv-missing { text-align: center; padding: 4rem 1rem; }
 @media print {
-  .nav, .footer, .inv-print, .page-head { display: none !important; }
+  .mnav, .footer, .inv-print, .page-head { display: none !important; }
   body { background: #fff !important; }
   .inv-card { box-shadow: none; padding: 0; }
   .inv-wrap { padding: 0; }
@@ -45,22 +45,12 @@
 </head>
 <body>
 
-<nav class="nav">
-  <a class="nav__brand" href="/">JCS</a>
-  <button class="nav__toggle" aria-label="Menu"><span></span><span></span><span></span></button>
-  <div class="nav__links">
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-    <a href="/projects">Projects</a>
-    <a href="/architecture">Architecture</a>
-    <a href="/films">Films</a>
-    <a href="/design">Design</a>
-    <a href="/contact">Contact</a>
-  </div>
-  <a class="nav__login" href="/portal">Client Login</a>
+<nav class="mnav" style="position:static">
+  <a class="mnav__brand" href="/">JCS</a>
+  <a class="mnav__link" id="inv-portal-link" hidden>&larr; Back to Portal</a>
 </nav>
 
-<header class="page-head">
+<header class="page-head" style="padding-top:clamp(2.5rem,6vh,4rem)">
   <div class="wrap hero-in" style="text-align:center">
     <span class="eyebrow" style="display:inline-flex">Invoice</span>
   </div>
@@ -102,20 +92,12 @@
 <footer class="footer footer--min">
   <div class="wrap footer__center">
     <a class="footer__brand" href="/">JCS</a>
-    <nav class="footer__links">
-      <a href="/projects">Projects</a>
-      <a href="/architecture">Architecture</a>
-      <a href="/films">Films</a>
-      <a href="/design">Design</a>
-      <a href="/about">About</a>
-      <a href="/contact">Contact</a>
-    </nav>
     <div class="footer__meta">
       <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a>
       <span class="sep">·</span>
       <a href="tel:+14088248719">(408) 824-8719</a>
     </div>
-    <div class="footer__base">© 2026 Jacob Schrader · Real Estate · Architecture · Design</div>
+    <div class="footer__base">© 2026 Jacob Schrader</div>
   </div>
 </footer>
 
@@ -132,6 +114,7 @@
     var r = await fetch('/api/invoice?t=' + encodeURIComponent(t));
     if (!r.ok) { missing(); return; }
     var d = await r.json();
+    if (d.portal_url) { var pl = $('inv-portal-link'); pl.href = d.portal_url; pl.hidden = false; }
     document.title = d.number + ' — Invoice — Jacob Schrader';
     $('inv-number').textContent = 'Invoice ' + d.number;
     if (d.issued) {
