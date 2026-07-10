@@ -1033,17 +1033,16 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
           (travel ? '<div class="adm-mrow"><span>Travel' + (b.travel_note ? ' <small>(' + esc(b.travel_note) + ')</small>' : '') + '</span><span>' + money(travel) + '</span></div>' : '') +
           (b.discount_value ? '<div class="adm-mrow"><span>Discount <small>(' + esc(b.discount_code || '') + ')</small></span><span>&minus;' + money(b.discount_value) + '</span></div>' : '') +
           '</div>' +
+          (b.client_id
+            ? '<button class="adm-btn" style="margin-top:0.9rem" onclick="ADM.invSend(' + b.id + ')">' +
+              (b.invoice_sent_at ? 'Resend invoice' : 'Generate &amp; send invoice') + '</button>'
+            : '<div class="adm-confnote">Add a client to invoice this project.</div>') +
           (b.invoice_token
-            ? (b.client_id
-                ? '<button class="adm-btn" style="margin-top:0.9rem" onclick="ADM.invSend(' + b.id + ')">' +
-                  (b.invoice_sent_at ? 'Resend invoice' : 'Send invoice to client') + '</button>'
-                : '') +
-              '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="/invoice?t=' + esc(b.invoice_token) + '" target="_blank" rel="noopener">View invoice &rarr;</a>' +
-              '<div class="adm-confnote' + (b.invoice_sent_at ? ' ok' : '') + '">' +
-                (b.invoice_sent_at
-                  ? '&#10003; Invoice ' + invNum + ' sent ' + dstr(b.invoice_sent_at) + (b.invoice_sends > 1 ? ' &middot; ' + b.invoice_sends + '&times;' : '')
-                  : 'Invoice ' + invNum + ' — not sent yet.') + '</div>'
-            : '<button class="adm-btn adm-btn--ghost" style="margin-top:0.9rem" onclick="ADM.invMake(' + b.id + ')">Generate invoice</button>') +
+            ? '<a class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" href="/invoice?t=' + esc(b.invoice_token) + '" target="_blank" rel="noopener">View invoice &rarr;</a>'
+            : '') +
+          (b.invoice_sent_at
+            ? '<div class="adm-confnote ok">&#10003; Invoice ' + invNum + ' sent ' + dstr(b.invoice_sent_at) + (b.invoice_sends > 1 ? ' &middot; ' + b.invoice_sends + '&times;' : '') + '</div>'
+            : (b.client_id ? '<div class="adm-confnote">Invoice ' + invNum + ' emails to the client the moment you generate it.</div>' : '')) +
           '<div class="adm-confnote">' + (b.show_price === false ? 'Price hidden in client confirmation.' : 'Price shown in client confirmation.') + '</div>'
         : '<p class="adm-empty">No price set — Edit to add the quote.</p>') +
       '</div>';
@@ -1133,23 +1132,10 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         alert(msg);
       } catch (e) { alert(friendly(e)); }
     },
-    invMake: async function (id) {
-      try {
-        await api('invoice', 'POST', { id: id });
-        await reload(); render();
-      } catch (e) {
-        alert(String(e.message) === 'no-price' ? 'Set a price first (Edit).' : friendly(e));
-      }
-    },
     invSend: async function (id) {
-      var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
-      var again = b.invoice_sent_at ? 'Resend' : 'Send';
-      if (!confirm(again + ' invoice JCS-' + String(b.id).padStart(4, '0') + '?\n\nClient: ' + (b.client_name || '—') +
-        '\nGoes to every email on the client profile.')) return;
       try {
-        var j = await api('invoice', 'POST', { id: id, send: true });
+        await api('invoice', 'POST', { id: id, send: true });
         await reload(); render();
-        alert('Invoice sent to ' + j.sentTo.join(', ') + '.\n\nInvoice page: ' + j.pageUrl);
       } catch (e) {
         alert(String(e.message) === 'no-client-email' ? 'The client has no email on file — add one first.'
           : String(e.message) === 'no-price' ? 'Set a price first (Edit).' : friendly(e));

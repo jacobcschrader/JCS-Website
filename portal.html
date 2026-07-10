@@ -223,8 +223,9 @@
     }
 
     function chip(stage) {
-      var cls = stage === 'In production' ? 'prod' : stage === 'Upcoming' ? 'up'
-        : stage === 'Booked' ? 'booked' : 'done';
+      if (stage === 'Delivered') return '<span class="pt-chip pt-chip--due">Unpaid</span>';
+      if (stage === 'Completed') return '<span class="pt-chip pt-chip--paid">Paid</span>';
+      var cls = stage === 'In production' ? 'prod' : 'up';
       return '<span class="pt-chip pt-chip--' + cls + '">' + esc(stage) + '</span>';
     }
     function row(p) {
@@ -232,8 +233,7 @@
         .filter(Boolean).join(' · ');
       var right = '';
       if (p.delivery) right += '<a class="pt-lnk" href="/delivery?t=' + esc(p.delivery.token) + '">View Delivery</a>';
-      if (p.invoice) right += '<a class="pt-lnk" href="/invoice?t=' + esc(p.invoice.token) + '">Invoice ' + esc(p.invoice.number) + '</a>' +
-        '<span class="pt-chip pt-chip--' + (p.invoice.paid ? 'paid">Paid' : 'due">Due') + '</span>';
+      if (p.invoice) right += '<a class="pt-lnk" href="/invoice?t=' + esc(p.invoice.token) + '">View Invoice &rarr;</a>';
       right += chip(p.stage);
       return '<div class="pt-row"><div class="pt-row__t"><b>' + esc(p.title) + '</b>' +
         (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div><div class="pt-row__r">' + right + '</div></div>';
@@ -246,7 +246,7 @@
       });
       var groups = [
         ['Upcoming', 'Upcoming'], ['In Production', 'In production'],
-        ['Booked', 'Booked'], ['Delivered', 'Delivered']
+        ['Delivered', 'Delivered'], ['Completed', 'Completed']
       ].map(function (g) {
         return [g[0], list.filter(function (p) { return p.stage === g[1]; })];
       });

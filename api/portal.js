@@ -14,17 +14,18 @@ const { db } = require("./_lib/db.js");
 const { linksOf } = require("./_lib/links.js");
 const { sendEmail, jcsEmail, SENDERS } = require("./_lib/email.js");
 
-const STAGE = {
-  upcoming: "Booked",       // → "Upcoming" once a shoot date is set
-  editing: "In production",
-  revisions: "In production",
-  delivered: "Delivered",
-  completed: "Delivered",
-  paid: "Delivered",
-};
+// Client-facing pipeline, derived — the project moves on its own:
+//   Upcoming       scheduled, shoot day hasn't come
+//   In production  from the shoot date on (or editing/revisions)
+//   Delivered      the delivery email went out — Unpaid until…
+//   Completed      the invoice is paid
 function stageOf(b) {
-  if (b.status === "upcoming" && b.shoot_date) return "Upcoming";
-  return STAGE[b.status] || "Booked";
+  if (b.status === "paid") return "Completed";
+  if (b.delivery_sent_at || ["delivered", "completed"].includes(b.status)) return "Delivered";
+  if (["editing", "revisions"].includes(b.status)) return "In production";
+  const todayLA = new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
+  if (b.shoot_date && String(b.shoot_date).slice(0, 10) <= todayLA) return "In production";
+  return "Upcoming";
 }
 
 async function magicLink(req, res) {
@@ -117,9 +118,9 @@ module.exports = async function handler(req, res) {
       client_first: (c.name || "").split(" ")[0] || "",
       client_name: c.name || "",
       stats: {
-        upcoming: projects.filter((p) => p.stage === "Upcoming" || p.stage === "Booked").length,
+        upcoming: projects.filter((p) => p.stage === "Upcoming").length,
         production: projects.filter((p) => p.stage === "In production").length,
-        delivered: projects.filter((p) => p.stage === "Delivered").length,
+        delivered: projects.filter((p) => p.stage === "Delivered" || p.stage === "Completed").length,
         outstanding,
       },
       projects,

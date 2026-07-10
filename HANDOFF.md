@@ -625,3 +625,27 @@ minimal bar (.mnav in styles.css): JCS wordmark + one contextual link —
 "View the Work →" on the portal. Footers slimmed to brand + contact +
 copyright. Delivery bar is white over the navy hero, flips dark on the
 invalid-link state.
+
+### Portal pipeline (derived, self-advancing)
+
+Client-facing stages are now derived — nothing to move manually:
+- **Upcoming** — scheduled, shoot day hasn't come
+- **In production** — from the shoot date on (LA time), or
+  editing/revisions in the admin
+- **Delivered** — the delivery email went out (or admin stage
+  delivered/completed) — chip shows red **Unpaid**
+- **Completed** — invoice paid (admin stage Paid) — chip shows green
+  **Paid**
+Stats strip: Delivered count includes Completed. Invoice rows no
+longer show their own Due/Paid chip (the stage chip covers it).
+Test projects #2–#5 created on client 1 covering all four states.
+
+### One-click invoicing
+
+- Payment card: "Generate & send invoice" — one click creates the
+  invoice and emails it to every address on the client profile (no
+  confirm popup; the "✓ Invoice JCS-XXXX sent" status is the
+  feedback). Becomes "Resend invoice" after the first send. "View
+  invoice →" appears once the token exists.
+- Portal rows: the invoice link is now a "View Invoice →" button next
+  to "View Delivery →" (appears once the invoice was sent).
