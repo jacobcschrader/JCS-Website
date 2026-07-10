@@ -15,13 +15,17 @@ const { linksOf } = require("./_lib/links.js");
 const { sendEmail, brandedHtml } = require("./_lib/email.js");
 
 const STAGE = {
-  upcoming: "Booked",
+  upcoming: "Booked",       // → "Upcoming" once a shoot date is set
   editing: "In production",
   revisions: "In production",
   delivered: "Delivered",
   completed: "Delivered",
   paid: "Delivered",
 };
+function stageOf(b) {
+  if (b.status === "upcoming" && b.shoot_date) return "Upcoming";
+  return STAGE[b.status] || "Booked";
+}
 
 async function magicLink(req, res) {
   const body = req.body || {};
@@ -98,7 +102,7 @@ module.exports = async function handler(req, res) {
         location: b.location || "",
         shoot_date: b.shoot_date || null,
         service: b.type || "",
-        stage: STAGE[b.status] || "Booked",
+        stage: stageOf(b),
         delivery: b.delivery_sent_at
           ? { token: b.delivery_token, links: linksOf(b), delivered_at: b.delivered_at || null }
           : null,
@@ -113,6 +117,7 @@ module.exports = async function handler(req, res) {
       client_first: (c.name || "").split(" ")[0] || "",
       client_name: c.name || "",
       stats: {
+        upcoming: projects.filter((p) => p.stage === "Upcoming" || p.stage === "Booked").length,
         production: projects.filter((p) => p.stage === "In production").length,
         delivered: projects.filter((p) => p.stage === "Delivered").length,
         outstanding,

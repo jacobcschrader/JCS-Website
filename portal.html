@@ -8,39 +8,97 @@
 <meta name="description" content="Your projects with Jacob Schrader.">
 <link rel="stylesheet" href="styles.css">
 <style>
-.pt-wrap { max-width: 860px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2rem) 6rem; }
-.pt-hello { text-align: center; margin-bottom: 2.4rem; }
-.pt-hello small { display: block; font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
-.pt-hello h1 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(2rem, 5vw, 2.9rem); color: var(--navy); margin: 0; line-height: 1.1; }
-.pt-stats { display: flex; justify-content: center; gap: 0; background: #fff; box-shadow: 0 12px 40px rgba(15,34,64,0.05); margin-bottom: 2.6rem; }
-.pt-stat { flex: 1; text-align: center; padding: 1.4rem 1rem; }
-.pt-stat + .pt-stat { border-left: 1px solid var(--line); }
-.pt-stat b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.9rem; color: var(--navy); }
-.pt-stat span { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-.pt-hero { background: var(--navy); color: #fff; padding: clamp(1.8rem, 4vw, 2.6rem); text-align: center; margin-bottom: 2.6rem; }
-.pt-hero small { display: block; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 0.5rem; }
-.pt-hero h2 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(1.5rem, 3.5vw, 2.1rem); margin: 0 0 1.4rem; }
+/* Lining figures — Cormorant's old-style numerals read like letters */
+.pt-num { font-family: var(--serif); font-weight: 500; color: var(--navy);
+  font-variant-numeric: lining-nums; font-feature-settings: 'lnum' 1; }
+
+.pt-wrap { padding: clamp(2.6rem, 6vw, 4rem) 0 6rem; }
+
+/* stats — hairline strip, no cards */
+.pt-stats { display: grid; grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  margin-bottom: clamp(2.6rem, 6vw, 4rem); }
+.pt-stat { padding: 1.6rem 1rem 1.5rem; text-align: center; }
+.pt-stat + .pt-stat { border-left: 1px solid var(--line-soft, #eee); }
+.pt-stat b { display: block; font-size: 2rem; line-height: 1; margin-bottom: 0.55rem; }
+.pt-stat span { font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500; }
+
+/* hero — the delivery this link came from */
+.pt-hero { background: var(--navy); color: #fff; padding: clamp(2.2rem, 5vw, 3.4rem);
+  text-align: center; margin-bottom: clamp(2.6rem, 6vw, 4rem); }
+.pt-hero .eyebrow { color: rgba(255,255,255,0.65); display: inline-flex; }
+.pt-hero h2 { font-family: var(--serif); font-style: italic; font-weight: 400; color: #fff;
+  font-size: clamp(1.7rem, 4vw, 2.5rem); margin: 1.1rem 0 0.4rem; line-height: 1.12; }
+.pt-hero .loc { font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.55); margin-bottom: 1.9rem; }
 .pt-hero .btns { display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap; }
-.pt-hero a { display: inline-block; padding: 0.85rem 1.7rem; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600; text-decoration: none; }
-.pt-hero a.solid { background: #fff; color: var(--navy); }
-.pt-hero a.ghost { border: 1px solid rgba(255,255,255,0.35); color: #fff; }
-.pt-sec { margin-bottom: 2.4rem; }
-.pt-sec > label { display: block; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line); }
-.pt-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.1rem 0.2rem; border-bottom: 1px solid #eee; flex-wrap: wrap; }
-.pt-row__t b { display: block; font-size: 1rem; font-weight: 500; color: var(--ink); }
-.pt-row__t small { color: var(--muted); font-size: 0.8rem; }
-.pt-row__r { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; }
-.pt-chip { font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; padding: 0.3rem 0.65rem; }
+.pt-hero .btns a { display: inline-block; padding: 0.9rem 1.9rem; font-size: 0.66rem;
+  letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; text-decoration: none;
+  transition: opacity 0.3s var(--ease); }
+.pt-hero .btns a:hover { opacity: 0.85; }
+.pt-hero .btns a.solid { background: #fff; color: var(--navy); }
+.pt-hero .btns a.ghost { border: 1px solid rgba(255,255,255,0.4); color: #fff; }
+
+/* sections */
+.pt-sec { margin-bottom: clamp(2.4rem, 5vw, 3.4rem); }
+.pt-sec__head { display: flex; align-items: baseline; justify-content: space-between;
+  padding-bottom: 0.85rem; border-bottom: 1px solid var(--line); }
+.pt-sec__head .eyebrow { display: inline-flex; }
+.pt-sec__head small { font-size: 0.68rem; letter-spacing: 0.14em; color: var(--muted); }
+
+.pt-row { display: flex; justify-content: space-between; align-items: center; gap: 1.4rem;
+  padding: 1.35rem 0.2rem; border-bottom: 1px solid var(--line-soft, #eee); flex-wrap: wrap;
+  transition: background 0.25s var(--ease); }
+.pt-row:hover { background: rgba(255,255,255,0.6); }
+.pt-row__t b { display: block; font-family: var(--serif); font-weight: 500;
+  font-size: 1.18rem; color: var(--navy); line-height: 1.25; }
+.pt-row__t small { display: block; margin-top: 0.3rem; font-size: 0.68rem;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.pt-row__r { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; }
+.pt-lnk { font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase;
+  font-weight: 600; color: var(--navy); text-decoration: none;
+  border-bottom: 1px solid var(--line); padding-bottom: 0.2rem;
+  transition: border-color 0.3s var(--ease); }
+.pt-lnk:hover { border-color: var(--navy); }
+
+.pt-chip { font-size: 0.56rem; letter-spacing: 0.18em; text-transform: uppercase;
+  font-weight: 600; padding: 0.34rem 0.7rem; white-space: nowrap; }
 .pt-chip--prod { background: #f4ede0; color: #8a6d2f; }
-.pt-chip--booked { background: #e8ecf3; color: #33507e; }
+.pt-chip--up { background: #e8ecf3; color: #33507e; }
+.pt-chip--booked { background: #edeae3; color: #6b6455; }
 .pt-chip--done { background: #dfeee2; color: #1d4d2a; }
 .pt-chip--due { background: #f5e8e8; color: #a03a3a; }
 .pt-chip--paid { background: #dfeee2; color: #1d4d2a; }
-.pt-lnk { font-size: 0.8rem; color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
-.pt-note { margin-top: 2.6rem; text-align: center; font-size: 0.82rem; color: var(--muted); }
+
+.pt-note { margin-top: clamp(2.6rem, 6vw, 4rem); padding-top: 2rem;
+  border-top: 1px solid var(--line); text-align: center;
+  font-size: 0.85rem; color: var(--muted); }
 .pt-note a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
-.pt-missing { text-align: center; padding: 4rem 1rem; }
-@media (max-width: 560px) { .pt-stats { flex-direction: column; } .pt-stat + .pt-stat { border-left: 0; border-top: 1px solid var(--line); } }
+
+/* login */
+.pt-panel { max-width: 460px; margin: 0 auto; background: #fff;
+  padding: clamp(2rem, 5vw, 3rem); box-shadow: 0 16px 50px rgba(15,34,64,0.06); }
+.pt-panel label { display: block; font-size: 0.62rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 0.55rem; }
+.pt-panel input[type=email] { width: 100%; box-sizing: border-box; font-family: var(--sans);
+  font-size: 0.95rem; color: var(--ink); background: var(--paper-warm, #f6f4ef);
+  border: 1px solid var(--line); padding: 0.9rem 0.95rem; outline: none;
+  transition: border-color 0.3s var(--ease); }
+.pt-panel input[type=email]:focus { border-color: var(--navy); background: #fff; }
+.pt-panel .note { font-size: 0.78rem; color: var(--muted); margin: 1.1rem 0 0; line-height: 1.65; }
+.pt-missing { text-align: center; padding: 3rem 1rem 0; }
+.pt-missing h1 { font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: 1.6rem; color: var(--navy); margin: 0 0 0.6rem; }
+.pt-missing p { font-size: 0.85rem; color: var(--muted); }
+.pt-missing a { color: var(--navy); }
+
+@media (max-width: 700px) {
+  .pt-stats { grid-template-columns: 1fr 1fr; }
+  .pt-stat:nth-child(3), .pt-stat:nth-child(4) { border-top: 1px solid var(--line-soft, #eee); }
+  .pt-stat:nth-child(3) { border-left: 0; }
+  .pt-row__r { width: 100%; justify-content: flex-start; }
+}
 </style>
 </head>
 <body>
@@ -61,42 +119,41 @@
 </nav>
 
 <header class="page-head">
-  <div class="wrap hero-in" style="text-align:center">
-    <span class="eyebrow" style="display:inline-flex">Client portal</span>
+  <div class="wrap hero-in">
+    <span class="eyebrow">Client Portal</span>
+    <h1 class="display" style="font-size:clamp(1.9rem,3.6vw,2.9rem)" id="pt-head">Welcome back.</h1>
   </div>
 </header>
 
-<div class="pt-wrap">
+<div class="wrap pt-wrap">
   <div id="pt-app" hidden>
-    <div class="pt-hello"><small>Welcome back,</small><h1 id="pt-name"></h1></div>
     <div class="pt-stats">
-      <div class="pt-stat"><b id="pt-prod">0</b><span>In production</span></div>
-      <div class="pt-stat"><b id="pt-done">0</b><span>Delivered</span></div>
-      <div class="pt-stat"><b id="pt-due">$0</b><span>Outstanding</span></div>
+      <div class="pt-stat"><b class="pt-num" id="pt-up">0</b><span>Upcoming</span></div>
+      <div class="pt-stat"><b class="pt-num" id="pt-prod">0</b><span>In Production</span></div>
+      <div class="pt-stat"><b class="pt-num" id="pt-done">0</b><span>Delivered</span></div>
+      <div class="pt-stat"><b class="pt-num" id="pt-due">$0</b><span>Outstanding</span></div>
     </div>
     <div id="pt-hero"></div>
     <div id="pt-secs"></div>
-    <p class="pt-note">Questions or requests? <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a> · <a href="tel:+14088248719">(408) 824-8719</a></p>
+    <p class="pt-note">Questions or requests? <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a> &nbsp;·&nbsp; <a href="tel:+14088248719">(408) 824-8719</a></p>
   </div>
 
   <div class="pt-missing" id="pt-missing" hidden>
-    <h1 style="font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.6rem;color:var(--navy)">This portal link isn't valid.</h1>
-    <p style="font-size:0.85rem;color:var(--muted)">Sign in below with your email, or <a href="mailto:jacxbschrader@gmail.com" style="color:var(--navy)">get in touch</a>.</p>
+    <h1>This portal link isn't valid.</h1>
+    <p>Sign in below with your email, or <a href="mailto:jacxbschrader@gmail.com">get in touch</a>.</p>
   </div>
 
   <div id="pt-login" hidden>
-    <div class="pt-hello"><small>Client login</small><h1>Welcome back.</h1></div>
-    <form id="pt-form" style="max-width:420px;margin:0 auto;background:#fff;padding:clamp(1.8rem,4vw,2.6rem);box-shadow:0 12px 40px rgba(15,34,64,0.05)">
-      <label for="pt-email" style="display:block;font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:0.5rem">Your email</label>
-      <input id="pt-email" type="email" required placeholder="you@brokerage.com" autocomplete="email"
-        style="width:100%;box-sizing:border-box;font-family:var(--sans);font-size:0.95rem;color:var(--ink);background:var(--paper-warm);border:1px solid var(--line);padding:0.85rem 0.9rem;outline:none">
+    <form id="pt-form" class="pt-panel">
+      <label for="pt-email">Your email</label>
+      <input id="pt-email" type="email" required placeholder="you@brokerage.com" autocomplete="email">
       <input id="pt-company" name="company" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
-      <button class="btn btn--solid" type="submit" id="pt-submit" style="width:100%;margin-top:1.1rem;border:0;cursor:pointer">Email Me My Portal Link</button>
-      <p style="font-size:0.78rem;color:var(--muted);margin:1rem 0 0;line-height:1.6">No password needed — if your email is tied to any projects, your private portal link is on its way.</p>
+      <button class="btn btn--solid" type="submit" id="pt-submit" style="width:100%;margin-top:1.2rem;border:0;cursor:pointer">Email Me My Portal Link</button>
+      <p class="note">No password needed — if your email is tied to any projects, your private portal link is on its way.</p>
     </form>
-    <div id="pt-sent" hidden style="max-width:420px;margin:0 auto;background:#fff;padding:clamp(1.8rem,4vw,2.6rem);box-shadow:0 12px 40px rgba(15,34,64,0.05);text-align:center">
+    <div id="pt-sent" hidden class="pt-panel" style="text-align:center">
       <h2 style="font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.5rem;color:var(--navy);margin:0 0 0.6rem">Check your inbox.</h2>
-      <p style="font-size:0.85rem;color:var(--muted);margin:0;line-height:1.7">If that email is tied to any projects, your portal link is on its way. It's private and always works.</p>
+      <p class="note" style="margin:0">If that email is tied to any projects, your portal link is on its way. It's private and always works.</p>
     </div>
   </div>
 </div>
@@ -127,7 +184,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var qs = new URLSearchParams(location.search);
   var c = qs.get('c'), focus = qs.get('p');
-  function missing() { $('pt-missing').hidden = false; }
+  function missing() { $('pt-missing').hidden = false; $('pt-login').hidden = false; wireLogin(); }
   function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
   function money(n) { return '$' + Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 2 }); }
   function dstr(s) {
@@ -135,9 +192,7 @@
     return new Date(String(s).slice(0, 10) + 'T12:00:00')
       .toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   }
-  if (!c) {
-    // no token → email-only sign in (magic link)
-    $('pt-login').hidden = false;
+  function wireLogin() {
     $('pt-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       var btn = $('pt-submit');
@@ -152,14 +207,15 @@
       $('pt-form').hidden = true;
       $('pt-sent').hidden = false;
     });
-    return;
   }
+  if (!c) { $('pt-login').hidden = false; wireLogin(); return; }
   try {
     var r = await fetch('/api/portal?c=' + encodeURIComponent(c));
     if (!r.ok) { missing(); return; }
     var d = await r.json();
-    $('pt-name').textContent = d.client_name;
+    $('pt-head').innerHTML = 'Welcome back, <em>' + esc(d.client_first || d.client_name) + '</em>.';
     document.title = d.client_name + ' — Client Portal — Jacob Schrader';
+    $('pt-up').textContent = d.stats.upcoming;
     $('pt-prod').textContent = d.stats.production;
     $('pt-done').textContent = d.stats.delivered;
     $('pt-due').textContent = money(d.stats.outstanding);
@@ -167,35 +223,43 @@
     // hero: the delivery this link came from (?p=), if it's out
     var hero = focus ? d.projects.find(function (p) { return String(p.id) === String(focus) && p.delivery; }) : null;
     if (hero) {
-      $('pt-hero').innerHTML = '<div class="pt-hero"><small>Your delivery is ready</small>' +
-        '<h2>' + esc(hero.title) + '</h2><div class="btns">' +
+      $('pt-hero').innerHTML = '<div class="pt-hero"><span class="eyebrow">Your Delivery Is Ready</span>' +
+        '<h2>' + esc(hero.title) + '</h2>' +
+        (hero.location ? '<div class="loc">' + esc(hero.location) + '</div>' : '') +
+        '<div class="btns">' +
         hero.delivery.links.map(function (l, i) {
           return '<a class="' + (i === 0 ? 'solid' : 'ghost') + '" href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + '</a>';
         }).join('') + '</div></div>';
     }
 
     function chip(stage) {
-      var cls = stage === 'In production' ? 'prod' : stage === 'Booked' ? 'booked' : 'done';
+      var cls = stage === 'In production' ? 'prod' : stage === 'Upcoming' ? 'up'
+        : stage === 'Booked' ? 'booked' : 'done';
       return '<span class="pt-chip pt-chip--' + cls + '">' + esc(stage) + '</span>';
     }
     function row(p) {
       var sub = [p.location, p.shoot_date ? dstr(p.shoot_date) : '', p.service]
         .filter(Boolean).join(' · ');
-      var right = chip(p.stage);
-      if (p.delivery) right = '<a class="pt-lnk" href="/delivery?t=' + esc(p.delivery.token) + '">View delivery &rarr;</a> ' + right;
-      if (p.invoice) right = '<a class="pt-lnk" href="/invoice?t=' + esc(p.invoice.token) + '">Invoice ' + esc(p.invoice.number) + '</a> ' +
-        '<span class="pt-chip pt-chip--' + (p.invoice.paid ? 'paid">Paid' : 'due">Due') + '</span> ' + right;
+      var right = '';
+      if (p.delivery) right += '<a class="pt-lnk" href="/delivery?t=' + esc(p.delivery.token) + '">View Delivery</a>';
+      if (p.invoice) right += '<a class="pt-lnk" href="/invoice?t=' + esc(p.invoice.token) + '">Invoice ' + esc(p.invoice.number) + '</a>' +
+        '<span class="pt-chip pt-chip--' + (p.invoice.paid ? 'paid">Paid' : 'due">Due') + '</span>';
+      right += chip(p.stage);
       return '<div class="pt-row"><div class="pt-row__t"><b>' + esc(p.title) + '</b>' +
         (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div><div class="pt-row__r">' + right + '</div></div>';
     }
     var groups = [
-      ['In production', d.projects.filter(function (p) { return p.stage === 'In production'; })],
+      ['Upcoming', d.projects.filter(function (p) { return p.stage === 'Upcoming'; })],
+      ['In Production', d.projects.filter(function (p) { return p.stage === 'In production'; })],
       ['Booked', d.projects.filter(function (p) { return p.stage === 'Booked'; })],
       ['Delivered', d.projects.filter(function (p) { return p.stage === 'Delivered'; })]
     ];
     $('pt-secs').innerHTML = groups.map(function (g) {
-      return g[1].length ? '<div class="pt-sec"><label>' + g[0] + ' · ' + g[1].length + '</label>' +
-        g[1].map(row).join('') + '</div>' : '';
+      return g[1].length
+        ? '<div class="pt-sec"><div class="pt-sec__head"><span class="eyebrow">' + g[0] + '</span>' +
+          '<small>' + g[1].length + ' project' + (g[1].length === 1 ? '' : 's') + '</small></div>' +
+          g[1].map(row).join('') + '</div>'
+        : '';
     }).join('') || '<p style="text-align:center;color:var(--muted);font-size:0.9rem">No projects yet.</p>';
 
     $('pt-app').hidden = false;
