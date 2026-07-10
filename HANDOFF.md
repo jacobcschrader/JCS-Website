@@ -658,3 +658,25 @@ ALL it does — no Pixieset drafts, no emails (Jacob scratched the
 auto-gallery part). The manual Pixieset draft hook still fires when a
 project is saved into Editing by hand. Optional CRON_SECRET env var
 locks the endpoint. 7 of 12 functions.
+
+### Portfolio: JCS-Originals imported
+
+All 8 remaining projects from ~/Desktop/JCS-originals/Projects were
+processed (resized to 2400px long edge, JPEG q80, ~88MB total from
+7.4GB of originals) into projects/<kebab>/1..N.jpg + cover.jpg, added
+LIVE to RAW_PROJECTS (sample draft entries removed), and share pages
+regenerated:
+
+- 2350 Big Ranch Road — Napa, CA (45)
+- 3 N La Senda Drive — Laguna Beach, CA (24)
+- 465 Headwaters Way — location TBD (12)
+- 5211 Pennock Point — Jupiter, FL (23)
+- 55 Del Monte Drive — location TBD (13)
+- 8076 Villandry Drive — Truckee, CA / Martis Camp (11)
+- 9233 Heartwood Drive — Truckee, CA (24)
+- 9304 Ninebark Road — Truckee, CA (12)
+(9290 Brae Road was already live.)
+
+Jacob to fill in: locations for Headwaters + Del Monte, plus year /
+headline / shot_for / brokerage per project in projects-data.js.
+Cover = photo 1 of each set — swap cover.jpg to change.

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base href="/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3 N La Senda Drive — Jacob Schrader</title>
+<meta name="description" content="3 N La Senda Drive — Laguna Beach, CA. Photography &amp; film by Jacob Schrader.">
+<!-- Social link previews (Open Graph + Twitter) -->
+<link rel="canonical" href="https://www.jacobcschrader.com/project/3nlasendadrive">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jacob Schrader">
+<meta property="og:title" content="3 N La Senda Drive — Jacob Schrader">
+<meta property="og:description" content="3 N La Senda Drive — Laguna Beach, CA. Photography &amp; film by Jacob Schrader.">
+<meta property="og:url" content="https://www.jacobcschrader.com/project/3nlasendadrive">
+<meta property="og:image" content="https://www.jacobcschrader.com/projects/3-n-la-senda-drive/cover.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="3 N La Senda Drive — Jacob Schrader">
+<meta name="twitter:description" content="3 N La Senda Drive — Laguna Beach, CA. Photography &amp; film by Jacob Schrader.">
+<meta name="twitter:image" content="https://www.jacobcschrader.com/projects/3-n-la-senda-drive/cover.jpg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="nav nav--over-hero">
+  <a class="nav__brand" href="/">JCS</a>
+  <button class="nav__toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  <div class="nav__links">
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/projects" class="active">Projects</a>
+    <a href="/architecture">Architecture</a>
+    <a href="/films">Films</a>
+    <a href="/contact">Contact</a>
+  </div>
+  <a class="nav__login" href="/portal">Client Login</a>
+</nav>
+
+<main id="proj"><div class="spin" style="min-height:60vh;display:flex;align-items:center;justify-content:center;color:var(--muted)">Loading…</div></main>
+
+<footer class="footer footer--min">
+  <div class="wrap footer__center">
+    <a class="footer__brand" href="/">JCS</a>
+    <nav class="footer__links">
+      <a href="/projects">Projects</a>
+      <a href="/architecture">Architecture</a>
+      <a href="/films">Films</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+    </nav>
+    <div class="footer__meta">
+      <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a>
+      <span class="sep">·</span>
+      <a href="tel:+14088248719">(408) 824-8719</a>
+      <span class="sep">·</span>
+      <a href="#">Instagram</a>
+    </div>
+    <div class="footer__base">© 2026 Jacob Schrader · Real Estate · Architecture · Design</div>
+  </div>
+</footer>
+
+<script src="projects-data.js"></script>
+<script src="site.js"></script>
+<script>
+(async function () {
+  var root = document.getElementById("proj");
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+  function qs(k){ return new URLSearchParams(location.search).get(k); }
+  var slug = qs("slug") || "3nlasendadrive";
+
+  function message(html){
+    root.innerHTML = '<section class="section"><div class="wrap center" style="padding-top:7rem;max-width:600px;margin-inline:auto">'+html+'</div></section>';
+  }
+  function notFound(){
+    message('<h1 class="h-section">Project not found.</h1><p class="lead" style="margin-top:1rem"><a href="/projects" style="text-decoration:underline;text-underline-offset:5px">Back to projects</a></p>');
+  }
+
+  // Render the project page from a normalized object {p, prev, next}.
+  function renderProject(p, prev, next) {
+    document.title = (p.title || "Project") + " — Jacob Schrader";
+
+    // Hero: cover image + black overlay + project name (like the home hero)
+    var hero = '<header class="proj-hero">'+
+      (p.cover_url ? '<img src="'+esc(p.cover_url)+'" alt="'+esc(p.title)+'">' : '')+
+      '<div class="proj-hero__inner">'+
+        '<h1 class="proj-hero__title">'+esc(p.title||"")+'</h1>'+
+        (p.location ? '<span class="proj-hero__loc">'+esc(p.location)+(p.year?" · "+esc(p.year):"")+'</span>' : '')+
+      '</div>'+
+    '</header>';
+
+    var credits = "";
+    if (p.shot_for)  credits += '<div><span class="k">Shot for</span>'+esc(p.shot_for)+'</div>';
+    if (p.brokerage) credits += '<div><span class="k">Brokerage</span>'+esc(p.brokerage)+'</div>';
+    if (p.price)     credits += '<div><span class="k">Price</span>'+esc(p.price)+'</div>';
+    credits = credits ? '<div class="proj-intro__credits">'+credits+'</div>' : "";
+
+    // The text content shown below the hero (headline, description, credits)
+    var introInner =
+      (p.headline ? '<h2 class="proj-intro__type">'+esc(p.headline)+'</h2>' : '')+
+      (p.summary ? '<p class="proj-intro__desc">'+esc(p.summary)+'</p>' : '')+
+      credits;
+
+    // ph__label is a placeholder caption; it hides automatically once a real video loads.
+    var hFilmBox = '<div class="proj-film"><div class="ph" data-video="'+esc(p.horizontal_video)+'"><span class="ph__label">Horizontal film</span></div></div>';
+
+    // With a horizontal film: text on the left, film on the right (Guthrie style).
+    // Without a film: the text block is centered on its own.
+    var lead;
+    if (p.horizontal_video) {
+      lead = '<section class="proj-lead reveal"><div class="wrap"><div class="proj-lead__grid">'+
+               '<div class="proj-lead__text">'+ introInner +'</div>'+ hFilmBox +
+             '</div></div></section>';
+    } else {
+      lead = introInner ? '<div class="proj-intro reveal">'+ introInner +'</div>' : '';
+    }
+
+    var vreel = p.vertical_video ? '<section class="reveal" style="padding:0 0 clamp(1rem,2vw,2rem)"><div class="wrap"><div class="proj-reel"><div class="ph" data-video="'+esc(p.vertical_video)+'"><span class="ph__label">Vertical reel</span></div></div></div></section>' : "";
+
+    var galleryUrls = (Array.isArray(p.gallery) ? p.gallery : []).filter(Boolean);
+    var hasGallery = galleryUrls.length > 0;
+
+    var nav = '<div class="proj-nav">'+
+      (prev ? '<a href="/project/'+encodeURIComponent(prev.slug)+'"><small>Previous</small><b>'+esc(prev.title)+'</b></a>' : '<span></span>')+
+      (next ? '<a class="next" href="/project/'+encodeURIComponent(next.slug)+'"><small>Next</small><b>'+esc(next.title)+'</b></a>' : '')+
+      '</div>';
+
+    root.innerHTML =
+      hero +
+      lead + vreel +
+      '<section class="section" style="padding-top:'+(hasGallery?'clamp(1rem,3vw,2rem)':'0')+'"><div class="wrap">'+
+        (hasGallery ? '<div class="proj-gallery" id="pgal"></div>' : '') + nav +
+      '</div></section>';
+
+    // Justified-rows gallery: photos flow left-to-right, top-to-bottom in
+    // full-width rows of equal height. Each row is scaled so its images exactly
+    // fill the width — no cropping, no empty gaps. Needs natural dimensions, so
+    // it lays out once images report their size.
+    function buildJustified() {
+      var g = document.getElementById("pgal"); if (!g) return;
+      g.innerHTML = "";
+      var items = galleryUrls.map(function (u, i) {
+        var fig = document.createElement("figure"); fig.className = "pgal";
+        var img = document.createElement("img"); img.src = u; img.alt = ""; img.decoding = "async";
+        // First photos load eagerly; the rest load as the visitor nears
+        // them (rows use a placeholder ratio until each photo reports its
+        // real one, then settle).
+        if (i >= 8) img.loading = "lazy";
+        // Click any photo to open the fullscreen viewer at that photo.
+        fig.addEventListener("click", function () {
+          if (window.JSLightbox) window.JSLightbox.open(galleryUrls, i);
+        });
+        fig.appendChild(img); g.appendChild(fig);
+        return { fig: fig, img: img, ar: 0 };
+      });
+      function gap() { var v = parseFloat(getComputedStyle(g).columnGap); return isNaN(v) ? 8 : v; }
+      function layout() {
+        var cw = g.clientWidth; if (!cw) return;
+        var gp = gap();
+        var targetH = cw > 1100 ? 300 : (cw > 680 ? 240 : 190);
+        var row = [], sum = 0;
+        function flush(last) {
+          if (!row.length) return;
+          var tg = gp * (row.length - 1);
+          var h = (cw - tg) / sum;
+          if (last) h = Math.min(h, targetH);
+          row.forEach(function (r) { r.fig.style.width = Math.floor(h * r.ar) + "px"; r.fig.style.height = Math.floor(h) + "px"; });
+          row = []; sum = 0;
+        }
+        items.forEach(function (it) {
+          row.push(it); sum += (it.ar || 1.5);
+          var tg = gp * (row.length - 1);
+          if ((cw - tg) / sum <= targetH) flush(false);
+        });
+        flush(true);
+        g.classList.add("ready");
+      }
+      // Re-layout (debounced) as photos report their real dimensions —
+      // required because lazy-loaded photos arrive as the visitor scrolls.
+      var lt;
+      function scheduleLayout() { clearTimeout(lt); lt = setTimeout(layout, 80); }
+      items.forEach(function (it) {
+        if (it.img.complete && it.img.naturalWidth) { it.ar = it.img.naturalWidth / it.img.naturalHeight; }
+        else {
+          it.img.addEventListener("load", function () { it.ar = (it.img.naturalWidth / it.img.naturalHeight) || 1.5; scheduleLayout(); });
+          it.img.addEventListener("error", function () { it.ar = it.ar || 1.5; scheduleLayout(); });
+        }
+      });
+      layout();   // first pass immediately (placeholder ratios where needed)
+      var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(layout, 150); });
+    }
+
+    if (window.JSVideos) window.JSVideos.enhance(document);
+    root.querySelectorAll('.reveal').forEach(function (c, i) { setTimeout(function(){ c.classList.add('in'); }, 80 + i*60); });
+    if (hasGallery) buildJustified();
+  }
+
+  function showFromList(list) {
+    var proj = null;
+    for (var i = 0; i < list.length; i++) { if (list[i].slug === slug) { proj = list[i]; break; } }
+    if (!proj) { notFound(); return; }
+    // Prev/next only step through finished (non-draft) projects.
+    var pub = list.filter(function (p) { return !p.draft; });
+    var idx = pub.indexOf(proj);
+    renderProject(proj, idx > -1 ? pub[idx - 1] : null, idx > -1 ? pub[idx + 1] : null);
+  }
+
+  // Projects come from the local data file (projects-data.js).
+  showFromList(window.PROJECTS_DATA || []);
+})();
+</script>
+</body>
+</html>
