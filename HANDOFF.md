@@ -649,3 +649,12 @@ Test projects #2–#5 created on client 1 covering all four states.
   invoice →" appears once the token exists.
 - Portal rows: the invoice link is now a "View Invoice →" button next
   to "View Delivery →" (appears once the invoice was sent).
+
+### Shoot-day automation (stage move only)
+
+api/cron.js + vercel.json crons: daily at 14:00 UTC (6/7am Pacific),
+projects whose shoot date has arrived move upcoming → editing. That is
+ALL it does — no Pixieset drafts, no emails (Jacob scratched the
+auto-gallery part). The manual Pixieset draft hook still fires when a
+project is saved into Editing by hand. Optional CRON_SECRET env var
+locks the endpoint. 7 of 12 functions.
