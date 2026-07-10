@@ -323,8 +323,9 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     render();
   }
   async function reload() {
-    var c = await api('clients'), b = await api('bookings'), r = await api('requests'), d = await api('discounts');
-    state.clients = c.clients; state.bookings = b.bookings; state.requests = r.requests; state.discounts = d.discounts; state.loaded = true;
+    var c = await api('clients'), b = await api('bookings'), r = await api('requests'), d = await api('discounts'), st = await api('settings');
+    state.clients = c.clients; state.bookings = b.bookings; state.requests = r.requests; state.discounts = d.discounts;
+    state.settings = st.settings || {}; state.loaded = true;
     var pending = state.requests.filter(function (x) { return x.status === 'pending'; }).length;
     var badge = $('req-badge');
     if (badge) { badge.textContent = pending; badge.classList.toggle('adm-hidden', !pending); }
@@ -828,7 +829,18 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
 
   function vSettings() {
     var list = state.discounts;
+    var sub = (state.settings || {}).pixieset_subdomain || '';
     return head('Settings') +
+      '<div class="adm-card"><h2>Pixieset</h2>' +
+      '<div class="adm-confnote" style="margin:0 0 1rem">When a project moves to <b>Editing</b>, a delivery draft is created automatically with the predicted gallery link — ' +
+        'name the Pixieset collection the same as the property (e.g. &ldquo;123 Main St&rdquo; &rarr; ' +
+        (sub ? esc(sub) : 'yourstudio') + '.pixieset.com/123-main-st) and the link just works. Pixieset has no public API, so the collection itself is created in Pixieset or via their Lightroom plugin.</div>' +
+      '<form class="adm-form" onsubmit="ADM.settingsSave(event)">' +
+        fld('s-pixieset', 'Pixieset subdomain', '<input id="s-pixieset" placeholder="yourstudio" value="' + esc(sub) + '">') +
+        '<div class="adm-field"><label>&nbsp;</label><button class="adm-btn" type="submit">Save</button></div>' +
+      '</form>' +
+      (sub ? '<div class="adm-confnote ok">&#10003; Predicted links use ' + esc(sub) + '.pixieset.com &mdash; <a href="https://' + esc(sub) + '.pixieset.com" target="_blank" rel="noopener" style="color:inherit">open your gallery home &rarr;</a></div>' : '') +
+      '</div>' +
       '<div class="adm-card"><h2>Discount codes</h2>' +
       '<form class="adm-form" onsubmit="ADM.discCreate(event)" style="margin-bottom:1.4rem">' +
         fld('d-code', 'Code *', '<input id="d-code" required placeholder="SPRING10" style="text-transform:uppercase">') +
@@ -1215,6 +1227,13 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     clientFilter: function (v) { state.clientFilter = v; render(); },
     stage: function (id, s) { setStage(id, s).catch(function (e) { alert(friendly(e)); }); },
     reqTab: function (t) { state.reqTab = t; render(); },
+    settingsSave: async function (e) {
+      e.preventDefault();
+      try {
+        var j = await api('settings', 'PUT', { pixieset_subdomain: $('s-pixieset').value });
+        state.settings = j.settings || {}; render();
+      } catch (err) { alert(friendly(err)); }
+    },
     discCreate: async function (e) {
       e.preventDefault();
       try {

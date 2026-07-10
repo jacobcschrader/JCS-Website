@@ -98,6 +98,11 @@ function ensureSchema() {
       )`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount_code text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount_value numeric`;
+      // Studio settings (key/value) — e.g. pixieset_subdomain.
+      await s`CREATE TABLE IF NOT EXISTS settings (
+        key   text PRIMARY KEY,
+        value text NOT NULL DEFAULT ''
+      )`;
       // Work-with-me applications (public /book form).
       await s`CREATE TABLE IF NOT EXISTS requests (
         id          serial PRIMARY KEY,

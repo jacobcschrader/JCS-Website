@@ -15,6 +15,7 @@ const routes = {
   discounts: require("../_lib/admin/discounts.js"),
   deliver: require("../_lib/admin/deliver.js"),
   invoice: require("../_lib/admin/invoice.js"),
+  settings: require("../_lib/admin/settings.js"),
 };
 
 module.exports = function handler(req, res) {

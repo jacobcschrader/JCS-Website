@@ -518,3 +518,24 @@ first delivery):
   Portal"). No accounts, no passwords. Always responds ok — never
   reveals whether an email exists; honeypot field included. Token is
   issued on first login request if the client doesn't have one yet.
+
+### Pixieset auto-draft (Editing → delivery draft)
+
+Pixieset has NO public developer API (only a Lightroom plugin + mobile
+app), so collections can't be created programmatically. Instead we
+exploit their predictable URLs:
+
+- Settings → **Pixieset** card: set the studio subdomain once
+  (e.g. "jacobschrader" → jacobschrader.pixieset.com). Stored in the
+  new `settings` table (key/value; api/_lib/admin/settings.js, router
+  action 'settings').
+- When a project moves to **Editing** (from any path — stage dropdown,
+  drag, edit form) and has no delivery links yet, the server prefills
+  the delivery draft: predicted gallery link
+  `https://<sub>.pixieset.com/<slugified title>/` + draft stamp, so it
+  appears on Deliveries immediately.
+- Workflow: name the Pixieset collection exactly like the property
+  ("123 Main St" — or sync via the Lightroom plugin) and the predicted
+  link resolves; adjust it in the delivery editor if it ever differs.
+- Custom links are never overwritten; the hook skips projects that
+  already have links, and does nothing until the subdomain is set.
