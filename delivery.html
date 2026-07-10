@@ -8,22 +8,58 @@
 <meta name="description" content="Your delivery from Jacob Schrader.">
 <link rel="stylesheet" href="styles.css">
 <style>
-.dv-wrap { max-width: 680px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2rem) 6rem; }
-.dv-card { background: #fff; padding: clamp(2rem, 5vw, 3.2rem); box-shadow: 0 16px 50px rgba(15,34,64,0.06); text-align: center; }
-.dv-title { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--navy); margin: 0.4rem 0 0.5rem; line-height: 1.15; }
-.dv-loc { font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-.dv-rule { width: 48px; height: 1px; background: var(--line); margin: 1.8rem auto; }
-.dv-dels { font-size: 0.92rem; line-height: 1.8; color: var(--ink); max-width: 44ch; margin: 0 auto; }
-.dv-dels b { display: block; font-size: 0.64rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 0.6rem; }
-.dv-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2.2rem; }
-.dv-note { margin-top: 1.8rem; font-size: 0.82rem; color: var(--muted); }
+.dv-hero { background: var(--navy); color: #fff; text-align: center;
+  padding: clamp(7rem, 14vh, 10rem) clamp(1.25rem, 5vw, 2rem) clamp(3.4rem, 7vw, 5rem); }
+.dv-hero .eyebrow { display: inline-flex; color: rgba(255,255,255,0.6); }
+.dv-hero h1 { font-family: var(--serif); font-style: italic; font-weight: 400; color: #fff;
+  font-size: clamp(2.2rem, 5.5vw, 3.6rem); line-height: 1.08; margin: 1.2rem 0 0.7rem; }
+.dv-hero .loc { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(255,255,255,0.55); }
+.dv-hero .date { font-size: 0.82rem; color: rgba(255,255,255,0.45); margin-top: 0.5rem; }
+.dv-hero .btns { display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap; margin-top: 2.4rem; }
+.dv-hero .btns a { display: inline-block; padding: 1rem 2.1rem; font-size: 0.66rem;
+  letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; text-decoration: none;
+  transition: opacity 0.3s var(--ease); }
+.dv-hero .btns a:hover { opacity: 0.85; }
+.dv-hero .btns a.solid { background: #fff; color: var(--navy); }
+.dv-hero .btns a.ghost { border: 1px solid rgba(255,255,255,0.4); color: #fff; }
+
+.dv-wrap { max-width: 680px; margin: 0 auto; padding: clamp(2.6rem, 6vw, 4rem) clamp(1.25rem, 5vw, 2rem) 6rem; }
+.dv-dels { text-align: center; padding-bottom: clamp(2rem, 5vw, 3rem); border-bottom: 1px solid var(--line); }
+.dv-dels b { display: block; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600; margin-bottom: 0.7rem; }
+.dv-dels span { font-size: 0.95rem; color: var(--ink); line-height: 1.8; }
+
+.dv-review { text-align: center; padding-top: clamp(2rem, 5vw, 3rem); }
+.dv-review h2 { font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: 1.5rem; color: var(--navy); margin: 0 0 0.5rem; }
+.dv-review p { font-size: 0.88rem; color: var(--muted); margin: 0 0 1.6rem; line-height: 1.7; }
+.dv-review .acts { display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap; }
+.dv-approved { display: inline-flex; align-items: center; gap: 0.6rem; background: #dfeee2;
+  color: #1d4d2a; font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
+  font-weight: 600; padding: 0.75rem 1.4rem; }
+#dv-changes-form { max-width: 460px; margin: 1.6rem auto 0; text-align: left; }
+#dv-changes-form label { display: block; font-size: 0.62rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 0.5rem; }
+#dv-changes-form textarea { width: 100%; box-sizing: border-box; min-height: 120px; resize: vertical;
+  font-family: var(--sans); font-size: 0.92rem; color: var(--ink); background: #fff;
+  border: 1px solid var(--line); padding: 0.85rem 0.95rem; outline: none; line-height: 1.6;
+  transition: border-color 0.3s var(--ease); }
+#dv-changes-form textarea:focus { border-color: var(--navy); }
+
+.dv-note { margin-top: clamp(2.4rem, 5vw, 3.4rem); padding-top: 1.8rem; border-top: 1px solid var(--line);
+  text-align: center; font-size: 0.84rem; color: var(--muted); }
 .dv-note a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
-.dv-missing { text-align: center; padding: 4rem 1rem; }
+.dv-missing { text-align: center; padding: 9rem 1rem 5rem; }
+.dv-missing h1 { font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: 1.7rem; color: var(--navy); margin: 0 0 0.6rem; }
+.dv-missing p { font-size: 0.85rem; color: var(--muted); }
+.dv-missing a { color: var(--navy); }
 </style>
 </head>
 <body>
 
-<nav class="nav">
+<nav class="nav nav--over-hero">
   <a class="nav__brand" href="/">JCS</a>
   <button class="nav__toggle" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="nav__links">
@@ -38,27 +74,50 @@
   <a class="nav__login" href="/portal">Client Login</a>
 </nav>
 
-<header class="page-head">
-  <div class="wrap hero-in" style="text-align:center">
-    <span class="eyebrow" style="display:inline-flex" id="dv-eyebrow">Your delivery</span>
-  </div>
+<header class="dv-hero" id="dv-hero" hidden>
+  <span class="eyebrow">Your Delivery</span>
+  <h1 id="dv-title"></h1>
+  <div class="loc" id="dv-loc"></div>
+  <div class="date" id="dv-date"></div>
+  <div class="btns" id="dv-actions"></div>
 </header>
 
-<div class="dv-wrap">
-  <div class="dv-card" id="dv-card" hidden>
-    <div class="dv-loc" id="dv-loc"></div>
-    <h1 class="dv-title" id="dv-title"></h1>
-    <div class="dv-loc" id="dv-date" style="letter-spacing:0.06em;text-transform:none"></div>
-    <div class="dv-rule"></div>
-    <div class="dv-dels" id="dv-dels" hidden><b>Included in your delivery</b><span id="dv-dels-text"></span></div>
-    <div class="dv-actions" id="dv-actions"></div>
-    <p class="dv-note">Questions or requests? <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a> · <a href="tel:+14088248719">(408) 824-8719</a></p>
+<div class="dv-wrap" id="dv-body" hidden>
+  <div class="dv-dels" id="dv-dels" hidden>
+    <b>Included in your delivery</b>
+    <span id="dv-dels-text"></span>
   </div>
 
-  <div class="dv-missing" id="dv-missing" hidden>
-    <h1 class="dv-title" style="font-size:1.6rem">This delivery link isn't valid.</h1>
-    <p class="dv-note">Check the link from your email, or <a href="mailto:jacxbschrader@gmail.com">get in touch</a> and I'll resend it.</p>
+  <div class="dv-review">
+    <div id="dv-review-open">
+      <h2>Happy with everything?</h2>
+      <p>Approve the delivery, or tell me what to adjust — revisions are always included.</p>
+      <div class="acts">
+        <a class="btn btn--solid" style="cursor:pointer" id="dv-approve">Approve Delivery</a>
+        <a class="btn" style="cursor:pointer" id="dv-request">Request Changes</a>
+      </div>
+      <form id="dv-changes-form" hidden>
+        <label for="dv-msg">What should change?</label>
+        <textarea id="dv-msg" required placeholder="e.g. Could we brighten the kitchen photos and trim the film intro?"></textarea>
+        <button class="btn btn--solid" type="submit" id="dv-send" style="width:100%;margin-top:1rem;border:0;cursor:pointer">Send Request</button>
+      </form>
+    </div>
+    <div id="dv-review-approved" hidden>
+      <div class="dv-approved">&#10003;&nbsp; Delivery approved<span id="dv-approved-date" style="text-transform:none;letter-spacing:0.04em;font-weight:400"></span></div>
+      <p style="margin-top:1.2rem">Thank you! Need something adjusted after all? <a href="#" id="dv-reopen" style="color:var(--navy)">Request changes</a>.</p>
+    </div>
+    <div id="dv-review-sent" hidden>
+      <h2>Request received.</h2>
+      <p>I'm on it — you'll get an updated delivery at this same link.</p>
+    </div>
   </div>
+
+  <p class="dv-note">Questions or requests? <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a> &nbsp;·&nbsp; <a href="tel:+14088248719">(408) 824-8719</a></p>
+</div>
+
+<div class="dv-missing" id="dv-missing" hidden>
+  <h1>This delivery link isn't valid.</h1>
+  <p>Check the link from your email, or <a href="mailto:jacxbschrader@gmail.com">get in touch</a> and I'll resend it.</p>
 </div>
 
 <footer class="footer footer--min">
@@ -76,8 +135,6 @@
       <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a>
       <span class="sep">·</span>
       <a href="tel:+14088248719">(408) 824-8719</a>
-      <span class="sep">·</span>
-      <a href="#">Instagram</a>
     </div>
     <div class="footer__base">© 2026 Jacob Schrader · Real Estate · Architecture · Design</div>
   </div>
@@ -88,30 +145,79 @@
 (async function () {
   var $ = function (id) { return document.getElementById(id); };
   var t = new URLSearchParams(location.search).get('t');
-  function missing() { $('dv-missing').hidden = false; $('dv-eyebrow').textContent = 'Delivery'; }
+  function missing() { $('dv-missing').hidden = false; document.querySelector('.nav').classList.remove('nav--over-hero'); }
+  function dstr(s) {
+    return new Date(String(s).slice(0, 10) + 'T12:00:00')
+      .toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+  }
   if (!t) { missing(); return; }
   try {
     var r = await fetch('/api/delivery?t=' + encodeURIComponent(t));
     if (!r.ok) { missing(); return; }
     var d = await r.json();
-    $('dv-loc').textContent = d.location || '';
-    $('dv-title').textContent = d.title;
     document.title = d.title + ' — Delivery — Jacob Schrader';
-    if (d.delivered_at) {
-      var dt = new Date(String(d.delivered_at).slice(0, 10) + 'T12:00:00');
-      $('dv-date').textContent = 'Delivered ' + dt.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
-    }
-    if (d.deliverables) { $('dv-dels').hidden = false; $('dv-dels-text').textContent = d.deliverables; }
+    $('dv-title').textContent = d.title;
+    $('dv-loc').textContent = d.location || '';
+    if (d.delivered_at) $('dv-date').textContent = 'Delivered ' + dstr(d.delivered_at);
     var acts = $('dv-actions');
-    function btn(label, url, solid) {
+    (d.links || []).forEach(function (l, i) {
       var a = document.createElement('a');
-      a.className = 'btn' + (solid ? ' btn--solid' : '');
-      a.href = url; a.target = '_blank'; a.rel = 'noopener';
-      a.textContent = label;
+      a.className = i === 0 ? 'solid' : 'ghost';
+      a.href = l.url; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = l.label || 'View';
       acts.appendChild(a);
+    });
+    if (d.deliverables) { $('dv-dels').hidden = false; $('dv-dels-text').textContent = d.deliverables; }
+
+    function showApproved(at) {
+      $('dv-review-open').hidden = true;
+      $('dv-review-sent').hidden = true;
+      $('dv-review-approved').hidden = false;
+      if (at) $('dv-approved-date').textContent = ' · ' + dstr(at);
     }
-    (d.links || []).forEach(function (l, i) { btn(l.label || 'View', l.url, i === 0); });
-    $('dv-card').hidden = false;
+    if (d.approved_at) showApproved(d.approved_at);
+
+    $('dv-approve').addEventListener('click', async function () {
+      this.textContent = 'Approving…';
+      try {
+        var rr = await fetch('/api/delivery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ t: t, action: 'approve' })
+        });
+        var j = await rr.json();
+        if (rr.ok) showApproved(j.approved_at);
+        else this.textContent = 'Approve Delivery';
+      } catch (e) { this.textContent = 'Approve Delivery'; }
+    });
+    function openForm() {
+      $('dv-review-approved').hidden = true;
+      $('dv-review-open').hidden = false;
+      $('dv-changes-form').hidden = false;
+      $('dv-msg').focus();
+    }
+    $('dv-request').addEventListener('click', openForm);
+    $('dv-reopen').addEventListener('click', function (e) { e.preventDefault(); openForm(); });
+    $('dv-changes-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var btn = $('dv-send');
+      btn.disabled = true; btn.textContent = 'Sending…';
+      try {
+        var rr = await fetch('/api/delivery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ t: t, action: 'changes', message: $('dv-msg').value })
+        });
+        if (rr.ok) {
+          $('dv-review-open').hidden = true;
+          $('dv-review-approved').hidden = true;
+          $('dv-review-sent').hidden = false;
+        } else { btn.disabled = false; btn.textContent = 'Send Request'; }
+      } catch (err) { btn.disabled = false; btn.textContent = 'Send Request'; }
+    });
+
+    $('dv-hero').hidden = false;
+    $('dv-body').hidden = false;
   } catch (e) { missing(); }
 })();
 </script>

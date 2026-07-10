@@ -596,3 +596,22 @@ Senders (domain verified on Resend, no extra setup):
 - admin@jacobcschrader.com — all notifications to Jacob ("JCS Studio")
 CONTACT_FROM env is now only a fallback when no sender is passed.
 All 8 email paths covered by mock tests (senders, subjects, template).
+
+### Delivery page redesign + client review flow
+
+- delivery.html rebuilt: full-bleed navy hero (eyebrow, big serif
+  italic property title, location, delivered date, link buttons — white
+  solid first), "Included in your delivery" strip below, then a review
+  section, then contact.
+- **Client review**: "Happy with everything?" → Approve Delivery
+  (stamps delivery_approved_at, admin email "{Property} | Delivery
+  Approved") or Request Changes (textarea → saves delivery_feedback,
+  moves delivered/completed projects back to Revisions, admin email
+  "{Property} | Changes Requested" with the note). Approved state shows
+  a green "✓ Delivery approved · date" chip and can be reopened.
+- Admin: project Delivery card shows "✓ Client approved {date}" or a
+  red "Changes requested" block with the note; Deliveries cards get
+  Approved / Changes requested badges. Resending a delivery clears the
+  feedback flag.
+- api/delivery.js gained POST {t, action: approve|changes, message}.
+  New columns: delivery_approved_at, delivery_feedback.

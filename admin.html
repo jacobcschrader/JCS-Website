@@ -802,9 +802,13 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
               ? 'Sent to client ' + dstr(b.delivery_sent_at) + (b.delivery_sends > 1 ? ' · ' + b.delivery_sends + '&times;' : '')
               : '';
             return '<div class="adm-del"><b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) +
-              (b.delivery_sent_at
-                ? ' <span class="adm-badge adm-badge--delivered">Sent</span>'
-                : (isDraft ? ' <span class="adm-badge adm-badge--draft">Draft</span>' : '')) + '</b>' +
+              (b.delivery_approved_at
+                ? ' <span class="adm-badge adm-badge--paid">Approved</span>'
+                : (b.delivery_feedback && b.delivery_sent_at
+                    ? ' <span class="adm-badge adm-badge--unpaid">Changes requested</span>'
+                    : b.delivery_sent_at
+                      ? ' <span class="adm-badge adm-badge--delivered">Sent</span>'
+                      : (isDraft ? ' <span class="adm-badge adm-badge--draft">Draft</span>' : ''))) + '</b>' +
               '<small>' + esc(b.client_name || '—') + (b.delivered_at ? '<br>Delivered ' + dstr(b.delivered_at) : '') +
               (sent ? '<br>' + sent : '') +
               (n ? '<br>' + n + ' link' + (n > 1 ? 's' : '') : '') +
@@ -1076,7 +1080,12 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
             (b.delivery_sent_at
               ? '&#10003; Sent ' + dstr(b.delivery_sent_at) + (b.delivery_sends > 1 ? ' &middot; ' + b.delivery_sends + '&times;' : '')
               : (b.client_id ? 'Not sent to client yet.' : 'Add a client to send the delivery.')) +
-          '</div>'
+          '</div>' +
+          (b.delivery_approved_at
+            ? '<div class="adm-confnote ok">&#10003; Client approved ' + dstr(b.delivery_approved_at) + '</div>'
+            : (b.delivery_feedback
+                ? '<div class="adm-notes" style="margin-top:0.8rem"><b style="display:block;font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;color:#a03a3a;font-weight:600;margin-bottom:0.4rem">Changes requested</b>' + esc(b.delivery_feedback) + '</div>'
+                : ''))
         : '<button class="adm-btn" onclick="ADM.delEdit(' + b.id + ')">Create delivery</button>' +
           '<p class="adm-empty" style="margin-top:0.8rem">Add named links (gallery, films, floor plans…), a note, and CC — then send the client their branded delivery page.</p>') +
       '</div>';

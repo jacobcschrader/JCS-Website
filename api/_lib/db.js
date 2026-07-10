@@ -82,6 +82,9 @@ function ensureSchema() {
       // Draft deliveries: stamped when "Create delivery" is first hit,
       // so the Deliveries page shows the draft before anything is sent.
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_created_at timestamptz`;
+      // Client review on the delivery page: approve / request changes.
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_approved_at timestamptz`;
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_feedback text DEFAULT ''`;
       // Invoices: token powers the public /invoice?t=… page.
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS invoice_token text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS invoice_sent_at timestamptz`;
