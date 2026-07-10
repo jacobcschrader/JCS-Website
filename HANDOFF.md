@@ -539,3 +539,24 @@ exploit their predictable URLs:
   link resolves; adjust it in the delivery editor if it ever differs.
 - Custom links are never overwritten; the hook skips projects that
   already have links, and does nothing until the subdomain is set.
+
+### Delivery editor tweaks
+
+- Live edits: the client's delivery page reads the DB fresh on every
+  load (no-store), so Save alone updates it — no resend. The editor
+  says so once a delivery is sent, and the resend button is now
+  "Resend email" to make the distinction clear.
+- Publish & send / Resend email no longer show confirm dialogs or
+  success alerts — the Sent status updating is the feedback (errors
+  still alert).
+- Removed the "Delivered on" field from the editor; delivered_at still
+  auto-stamps on first send.
+
+### Portal search + newest-first ordering
+
+- Portal: search box above the project sections (address, city,
+  service, invoice number; live filter; hidden when a client has
+  fewer than 4 projects).
+- Ordering is newest shoot date → oldest everywhere: admin pipeline
+  rows AND board cards (were ascending), client portal groups (API
+  already DESC), client-page project list, and Deliveries.

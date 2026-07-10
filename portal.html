@@ -41,6 +41,13 @@
 .pt-hero .btns a.ghost { border: 1px solid rgba(255,255,255,0.4); color: #fff; }
 
 /* sections */
+.pt-search { margin-bottom: clamp(1.8rem, 4vw, 2.6rem); }
+.pt-search input { width: 100%; box-sizing: border-box; font-family: var(--sans);
+  font-size: 0.92rem; color: var(--ink); background: #fff; border: 1px solid var(--line);
+  padding: 0.9rem 1.1rem; outline: none; transition: border-color 0.3s var(--ease); }
+.pt-search input:focus { border-color: var(--navy); }
+.pt-search input::placeholder { color: var(--muted); letter-spacing: 0.04em; }
+
 .pt-sec { margin-bottom: clamp(2.4rem, 5vw, 3.4rem); }
 .pt-sec__head { display: flex; align-items: baseline; justify-content: space-between;
   padding-bottom: 0.85rem; border-bottom: 1px solid var(--line); }
@@ -134,6 +141,7 @@
       <div class="pt-stat"><b class="pt-num" id="pt-due">$0</b><span>Outstanding</span></div>
     </div>
     <div id="pt-hero"></div>
+    <div class="pt-search"><input id="pt-q" type="search" placeholder="Search your projects — address, city, service…" autocomplete="off"></div>
     <div id="pt-secs"></div>
     <p class="pt-note">Questions or requests? <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a> &nbsp;·&nbsp; <a href="tel:+14088248719">(408) 824-8719</a></p>
   </div>
@@ -248,19 +256,30 @@
       return '<div class="pt-row"><div class="pt-row__t"><b>' + esc(p.title) + '</b>' +
         (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div><div class="pt-row__r">' + right + '</div></div>';
     }
-    var groups = [
-      ['Upcoming', d.projects.filter(function (p) { return p.stage === 'Upcoming'; })],
-      ['In Production', d.projects.filter(function (p) { return p.stage === 'In production'; })],
-      ['Booked', d.projects.filter(function (p) { return p.stage === 'Booked'; })],
-      ['Delivered', d.projects.filter(function (p) { return p.stage === 'Delivered'; })]
-    ];
-    $('pt-secs').innerHTML = groups.map(function (g) {
-      return g[1].length
-        ? '<div class="pt-sec"><div class="pt-sec__head"><span class="eyebrow">' + g[0] + '</span>' +
-          '<small>' + g[1].length + ' project' + (g[1].length === 1 ? '' : 's') + '</small></div>' +
-          g[1].map(row).join('') + '</div>'
-        : '';
-    }).join('') || '<p style="text-align:center;color:var(--muted);font-size:0.9rem">No projects yet.</p>';
+    function renderSecs(q) {
+      q = (q || '').trim().toLowerCase();
+      var list = !q ? d.projects : d.projects.filter(function (p) {
+        return [p.title, p.location, p.service, p.invoice && p.invoice.number]
+          .filter(Boolean).join(' ').toLowerCase().indexOf(q) > -1;
+      });
+      var groups = [
+        ['Upcoming', 'Upcoming'], ['In Production', 'In production'],
+        ['Booked', 'Booked'], ['Delivered', 'Delivered']
+      ].map(function (g) {
+        return [g[0], list.filter(function (p) { return p.stage === g[1]; })];
+      });
+      $('pt-secs').innerHTML = groups.map(function (g) {
+        return g[1].length
+          ? '<div class="pt-sec"><div class="pt-sec__head"><span class="eyebrow">' + g[0] + '</span>' +
+            '<small>' + g[1].length + ' project' + (g[1].length === 1 ? '' : 's') + '</small></div>' +
+            g[1].map(row).join('') + '</div>'
+          : '';
+      }).join('') || '<p style="text-align:center;color:var(--muted);font-size:0.9rem">' +
+        (q ? 'Nothing matches &ldquo;' + esc(q) + '&rdquo;.' : 'No projects yet.') + '</p>';
+    }
+    renderSecs('');
+    $('pt-q').addEventListener('input', function () { renderSecs(this.value); });
+    if (d.projects.length < 4) $('pt-q').parentNode.hidden = true;
 
     $('pt-app').hidden = false;
   } catch (e) { missing(); }

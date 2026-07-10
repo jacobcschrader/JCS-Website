@@ -547,18 +547,19 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         '<div class="acts">' +
           (b.delivery_token ? '<a class="adm-btn adm-btn--ghost" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Preview as client</a>' : '') +
           '<button class="adm-btn adm-btn--ghost" onclick="ADM.delSave(' + b.id + ')">Save</button>' +
-          '<button class="adm-btn" onclick="ADM.delSend(' + b.id + ')">' + (sent ? 'Resend delivery' : 'Publish &amp; send') + '</button>' +
+          '<button class="adm-btn" onclick="ADM.delSend(' + b.id + ')">' + (sent ? 'Resend email' : 'Publish &amp; send') + '</button>' +
         '</div></div>' +
 
-      '<div class="adm-card"><h2>Delivery settings</h2><div class="adm-form">' +
+      '<div class="adm-card"><h2>Delivery settings</h2>' +
+        (sent ? '<div class="adm-confnote ok" style="margin:0 0 1rem">&#10003; The client\'s delivery page updates live when you save — no need to resend. Resend only emails them again.</div>' : '') +
+        '<div class="adm-form">' +
         '<div class="adm-field full"><label for="dv-msg">Message to client <small style="text-transform:none;letter-spacing:0">(goes in the delivery email)</small></label>' +
           '<textarea id="dv-msg" placeholder="Add a note — e.g. Fixed the TVs!">' + esc(b.delivery_message || '') + '</textarea></div>' +
         fld('dv-cc', 'CC recipients', '<input id="dv-cc" placeholder="Buyer\'s agent, spouse… — comma-separated emails" value="' + esc(b.delivery_cc || '') + '">') +
-        fld('dv-date', 'Delivered on', '<input id="dv-date" type="date" value="' + (b.delivered_at ? String(b.delivered_at).slice(0, 10) : new Date().toISOString().slice(0, 10)) + '">') +
       '</div></div>' +
 
       '<div class="adm-card"><h2>Links</h2>' +
-        '<div class="adm-confnote" style="margin:0 0 0.9rem">Each link becomes a button on the client\'s delivery page — name them whatever you like.</div>' +
+        '<div class="adm-confnote" style="margin:0 0 0.9rem">Each link becomes a button on the client\'s delivery page — name them whatever you like. Saved changes go live on the client\'s page instantly.</div>' +
         '<div id="dv-links">' + links.map(dvRow).join('') + '</div>' +
         '<button type="button" class="adm-btn adm-btn--ghost" onclick="ADM.delAddLink()">+ Add link</button>' +
       '</div>';
@@ -706,7 +707,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     if (state.view === 'board') {
       body = '<div class="adm-pipe" id="pipe">' + STAGES.map(function (stage) {
         var list = items.filter(function (b) { return b.status === stage; })
-          .sort(function (x, y) { return new Date(x.shoot_date || 0) - new Date(y.shoot_date || 0); });
+          .sort(function (x, y) { return new Date(y.shoot_date || 0) - new Date(x.shoot_date || 0); });
         var sum = list.reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
         var next = STAGES[STAGES.indexOf(stage) + 1];
         return '<div class="adm-col" data-stage="' + stage + '">' +
@@ -729,7 +730,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       };
       body = '<div id="pipe">' + STAGES.map(function (stage) {
         var list = items.filter(function (b) { return b.status === stage; })
-          .sort(function (x, y) { return new Date(x.shoot_date || 0) - new Date(y.shoot_date || 0); });
+          .sort(function (x, y) { return new Date(y.shoot_date || 0) - new Date(x.shoot_date || 0); });
         var sum = list.reduce(function (s, b) { return s + net(b); }, 0);
         var next = STAGES[STAGES.indexOf(stage) + 1];
         var closed = state.collapsed[stage] ? ' closed' : '';
@@ -1059,7 +1060,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
           '<div class="adm-mrow"><span>Links</span><span>' + dlinks.length + '</span></div>' +
           (b.client_id && dlinks.length
             ? '<button class="adm-btn" style="margin-top:0.6rem" onclick="ADM.deliver(' + b.id + ')">' +
-              (b.delivery_sent_at ? 'Resend delivery' : 'Publish &amp; send') + '</button>'
+              (b.delivery_sent_at ? 'Resend email' : 'Publish &amp; send') + '</button>'
             : '') +
           '<button class="adm-btn adm-btn--ghost" style="margin-top:0.6rem" onclick="ADM.delEdit(' + b.id + ')">Open delivery &rarr;</button>' +
           (b.delivery_token
@@ -1188,7 +1189,6 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       var body = Object.assign({}, b, {
         delivery_message: $('dv-msg').value,
         delivery_cc: $('dv-cc').value,
-        delivered_at: $('dv-date').value,
         delivery_links: JSON.stringify(links)
       });
       try {
@@ -1202,15 +1202,9 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       if (!(await ADM.delSave(id, true))) { render(); return; }
       var b = state.bookings.find(function (x) { return x.id == id; });
       if (!b || !dvLinks(b).length) { render(); alert('Add at least one link before sending.'); return; }
-      var again = b.delivery_sent_at ? 'Resend' : 'Send';
-      var cc = (b.delivery_cc || '').trim();
-      if (!confirm(again + ' the delivery email?\n\nClient: ' + (b.client_name || '—') +
-        (cc ? '\nCC: ' + cc : '') +
-        '\nThey get a branded email linking to their JCS delivery page.')) { render(); return; }
       try {
-        var j = await api('deliver', 'POST', { id: id });
+        await api('deliver', 'POST', { id: id });
         await reload(); render();
-        alert('Delivery sent.\n\nClient page: ' + j.pageUrl);
       } catch (e) {
         render();
         alert(String(e.message) === 'no-client-email' ? 'The client has no email on file — add one first.'
