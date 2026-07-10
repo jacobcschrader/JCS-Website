@@ -49,11 +49,17 @@ function parse(b) {
 
 // Named delivery links: JSON array of { label, url }. Validated and
 // re-stringified so the DB only ever holds clean JSON (or '').
+// URLs without a scheme ("jacobcschrader.com") get https:// prepended —
+// otherwise browsers treat them as relative links on the client page.
+function absUrl(u) {
+  if (!u) return "";
+  return /^https?:\/\//i.test(u) ? u : "https://" + u.replace(/^\/+/, "");
+}
 function parseLinks(raw) {
   try {
     const arr = typeof raw === "string" ? JSON.parse(raw || "[]") : raw || [];
     const clean = (Array.isArray(arr) ? arr : [])
-      .map((l) => ({ label: field(l && l.label, 80), url: field(l && l.url, 600) }))
+      .map((l) => ({ label: field(l && l.label, 80), url: absUrl(field(l && l.url, 600)) }))
       .filter((l) => l.url)
       .slice(0, 12);
     return clean.length ? JSON.stringify(clean) : "";

@@ -3,19 +3,26 @@
 //  of { label, url }; legacy bookings that only have delivery_url /
 //  download_url fall back to Gallery / Download entries.
 // =====================================================================
+// Scheme-less URLs would render as relative links on the client page.
+function absUrl(u) {
+  u = String(u || "").trim();
+  if (!u) return "";
+  return /^https?:\/\//i.test(u) ? u : "https://" + u.replace(/^\/+/, "");
+}
+
 function linksOf(b) {
   try {
     const arr = JSON.parse(b.delivery_links || "[]");
     if (Array.isArray(arr) && arr.length) {
       return arr.filter((l) => l && l.url).map((l) => ({
         label: String(l.label || "View").slice(0, 80),
-        url: String(l.url).slice(0, 600),
+        url: absUrl(String(l.url).slice(0, 600)),
       }));
     }
   } catch (e) { /* fall through */ }
   const legacy = [];
-  if (b.delivery_url) legacy.push({ label: "View Gallery", url: b.delivery_url });
-  if (b.download_url) legacy.push({ label: "Download Films & Files", url: b.download_url });
+  if (b.delivery_url) legacy.push({ label: "View Gallery", url: absUrl(b.delivery_url) });
+  if (b.download_url) legacy.push({ label: "Download Films & Files", url: absUrl(b.download_url) });
   return legacy;
 }
 

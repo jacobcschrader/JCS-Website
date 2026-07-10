@@ -560,3 +560,17 @@ exploit their predictable URLs:
 - Ordering is newest shoot date → oldest everywhere: admin pipeline
   rows AND board cards (were ascending), client portal groups (API
   already DESC), client-page project list, and Deliveries.
+
+### Fix: scheme-less delivery links
+
+A link saved as "jacobcschrader.com" (no https://) rendered as a
+RELATIVE link on the client page — the browser resolved it against the
+delivery page URL, which looked like "the old link still there". Now
+https:// is prepended both on save (bookings parseLinks) and on read
+(linksOf, covers already-stored and legacy values).
+
+### Per-link Save in the delivery editor
+
+Each link row now has its own Save button — saves the delivery (all
+fields) without re-rendering the form, flashes "✓ Live", and the
+client's page reflects it immediately.

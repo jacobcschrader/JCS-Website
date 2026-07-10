@@ -211,6 +211,11 @@ small.mut { color: var(--muted); }
 .dv-lrow .dv-url { flex: 1; }
 .dv-x { flex: 0 0 38px; background: none; border: 1px solid var(--line); color: var(--muted); font-size: 1.1rem; cursor: pointer; }
 .dv-x:hover { color: #a03a3a; border-color: #a03a3a; }
+.dv-save { flex: 0 0 auto; background: none; border: 1px solid var(--line); color: var(--navy);
+  font-family: var(--sans); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase;
+  font-weight: 600; padding: 0 0.9rem; cursor: pointer; transition: border-color 0.3s var(--ease); }
+.dv-save:hover { border-color: var(--navy); }
+.dv-save.ok { background: #dfeee2; border-color: #dfeee2; color: #1d4d2a; }
 @media (max-width: 700px) { .dv-lrow { flex-wrap: wrap; } .dv-lrow .dv-lbl { flex: 1 1 100%; } }
 .adm-msg { font-size: 0.85rem; margin-top: 0.8rem; color: #a33; }
 
@@ -524,6 +529,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     return '<div class="dv-lrow">' +
       '<input class="dv-lbl" placeholder="Title — e.g. Gallery" value="' + esc(l.label || '') + '">' +
       '<input class="dv-url" type="url" placeholder="https://…" value="' + esc(l.url || '') + '">' +
+      '<button type="button" class="dv-save" title="Save — goes live on the client\'s page instantly" onclick="ADM.delSaveRow(this)">Save</button>' +
       '<button type="button" class="dv-x" title="Remove link" onclick="this.parentNode.remove()">&times;</button>' +
     '</div>';
   }
@@ -1162,6 +1168,17 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
           brokerage: c.brokerage, notes: c.notes, extra_emails: JSON.stringify(extras) });
         await reload(); render();
       } catch (e) { alert(friendly(e)); }
+    },
+    delSaveRow: async function (btn) {
+      var id = parseInt(route().split('/')[1], 10); if (!id) return;
+      btn.disabled = true; btn.textContent = 'Saving…';
+      var ok = await ADM.delSave(id, true);   // quiet: keep the form as-is
+      btn.disabled = false;
+      btn.textContent = ok ? '✓ Live' : 'Save';
+      if (ok) {
+        btn.classList.add('ok');
+        setTimeout(function () { btn.classList.remove('ok'); btn.textContent = 'Save'; }, 1800);
+      }
     },
     delEdit: async function (id) {
       var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
