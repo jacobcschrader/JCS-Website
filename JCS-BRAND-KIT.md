@@ -18,7 +18,7 @@ calm, editorial, expensive, unhurried. Think Sotheby's catalog, not
 Instagram ad.
 
 - Tagline / descriptor: **Real Estate · Architecture · Design**
-- Sub-line used on site: *"Based in Diablo, CA — available worldwide."*
+- Sub-line used on site: *"Based in Danville, CA — available worldwide."*
 - Clients: Serhant, Compass, Sotheby's, Coldwell Banker, Berkshire Hathaway,
   Engel & Völkers, Keller Williams, Casa Tua
 - Press: The Wall Street Journal, Robb Report, Tahoe Quarterly, The Bee, SF Gate
