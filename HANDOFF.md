@@ -659,24 +659,27 @@ auto-gallery part). The manual Pixieset draft hook still fires when a
 project is saved into Editing by hand. Optional CRON_SECRET env var
 locks the endpoint. 7 of 12 functions.
 
-### Portfolio: JCS-Originals imported
+### Portfolio: JCS-Originals imported (complete)
 
-All 8 remaining projects from ~/Desktop/JCS-originals/Projects were
-processed (resized to 2400px long edge, JPEG q80, ~88MB total from
-7.4GB of originals) into projects/<kebab>/1..N.jpg + cover.jpg, added
-LIVE to RAW_PROJECTS (sample draft entries removed), and share pages
-regenerated:
+All 8 remaining projects from ~/Desktop/JCS-originals/Projects are
+live, with FULL metadata from each folder's info.txt (location, year,
+headline, description, shot for, brokerage, price), the dedicated
+cover.jpg from each folder as the project cover, and web-transcoded
+films (1080p H.264 CRF23, 27-51MB — GitHub caps files at 100MB):
 
-- 2350 Big Ranch Road — Napa, CA (45)
-- 3 N La Senda Drive — Laguna Beach, CA (24)
-- 465 Headwaters Way — location TBD (12)
-- 5211 Pennock Point — Jupiter, FL (23)
-- 55 Del Monte Drive — location TBD (13)
-- 8076 Villandry Drive — Truckee, CA / Martis Camp (11)
-- 9233 Heartwood Drive — Truckee, CA (24)
-- 9304 Ninebark Road — Truckee, CA (12)
-(9290 Brae Road was already live.)
+- 2350 Big Ranch Road — Napa · Vineyard Estate · $14.9M (44)
+- 3 N La Senda Drive — Laguna Beach · $22M (23 + horizontal film)
+- 465 Headwaters Way — Carson City NV · Clear Creek · $4.395M
+  (11 + vertical film) [info.txt said "456" — folder name 465 used]
+- 5211 Pennock Point — Jupiter FL · $45M (22)
+- 55 Del Monte Drive — Hillsborough · 'The Innovation' · $12.6M
+  (12 + horizontal film)
+- 8076 Villandry Drive — Truckee · Martis Camp · $6.995M
+  (10 + horizontal film)
+- 9233 Heartwood Drive — Truckee · $4.25M (23)
+- 9304 Ninebark Road — Truckee · $6.995M (11 + horizontal film)
+(9290 Brae Road was already live, 49 photos.)
 
-Jacob to fill in: locations for Headwaters + Del Monte, plus year /
-headline / shot_for / brokerage per project in projects-data.js.
-Cover = photo 1 of each set — swap cover.jpg to change.
+Sample/filler project folders deleted (420-toro-canyon, 1437-san-miguel,
+rincon-point, 850-rockbridge, la-vista-grande). Share pages regenerated
+for all 9. Total new media ~250MB — the git push will be large.
