@@ -109,7 +109,10 @@ window.addEventListener('DOMContentLoaded', function () {
     video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
-    video.preload = 'metadata';
+    // Desktop: buffer ahead so below-the-fold films start instantly when
+    // scrolled to. Mobile / data-saver keeps the lighter metadata preload.
+    var saveData = navigator.connection && navigator.connection.saveData;
+    video.preload = (saveData || window.matchMedia('(max-width: 760px)').matches) ? 'metadata' : 'auto';
     if (host.getAttribute('data-poster')) video.poster = host.getAttribute('data-poster');
     video.src = src;
 
