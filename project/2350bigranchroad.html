@@ -103,18 +103,25 @@
     // ph__label is a placeholder caption; it hides automatically once a real video loads.
     var hFilmBox = '<div class="proj-film"><div class="ph" data-video="'+esc(p.horizontal_video)+'"><span class="ph__label">Horizontal film</span></div></div>';
 
-    // With a horizontal film: text on the left, film on the right (Guthrie style).
-    // Without a film: the text block is centered on its own.
-    var lead;
+    var reelBox = '<div class="proj-reel proj-reel--lead"><div class="ph" data-video="'+esc(p.vertical_video)+'"><span class="ph__label">Vertical reel</span></div></div>';
+
+    // With a film: text on the left, media on the right (Guthrie style).
+    // A vertical reel takes the same spot, sized down like the horizontals.
+    // Without any film: the text block is centered on its own.
+    var lead, vreel = '';
     if (p.horizontal_video) {
       lead = '<section class="proj-lead reveal"><div class="wrap"><div class="proj-lead__grid">'+
                '<div class="proj-lead__text">'+ introInner +'</div>'+ hFilmBox +
              '</div></div></section>';
+      // a project with BOTH keeps the reel in its own section below
+      if (p.vertical_video) vreel = '<section class="reveal" style="padding:0 0 clamp(1rem,2vw,2rem)"><div class="wrap"><div class="proj-reel"><div class="ph" data-video="'+esc(p.vertical_video)+'"><span class="ph__label">Vertical reel</span></div></div></div></section>';
+    } else if (p.vertical_video) {
+      lead = '<section class="proj-lead reveal"><div class="wrap"><div class="proj-lead__grid proj-lead__grid--reel">'+
+               '<div class="proj-lead__text">'+ introInner +'</div>'+ reelBox +
+             '</div></div></section>';
     } else {
       lead = introInner ? '<div class="proj-intro reveal">'+ introInner +'</div>' : '';
     }
-
-    var vreel = p.vertical_video ? '<section class="reveal" style="padding:0 0 clamp(1rem,2vw,2rem)"><div class="wrap"><div class="proj-reel"><div class="ph" data-video="'+esc(p.vertical_video)+'"><span class="ph__label">Vertical reel</span></div></div></div></section>' : "";
 
     var galleryUrls = (Array.isArray(p.gallery) ? p.gallery : []).filter(Boolean);
     var hasGallery = galleryUrls.length > 0;
