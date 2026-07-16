@@ -795,8 +795,9 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     var delivered = state.bookings.filter(function (b) {
       return b.delivery_created_at || ['delivered', 'completed', 'paid'].indexOf(b.status) > -1 || dvLinks(b).length;
     }).sort(function (a, b) {
-      return new Date(b.delivery_created_at || b.delivered_at || b.shoot_date || 0) -
-             new Date(a.delivery_created_at || a.delivered_at || a.shoot_date || 0);
+      // newest "Create delivery" first (legacy items fall back to sent time)
+      return new Date(b.delivery_created_at || b.delivery_sent_at || 0) -
+             new Date(a.delivery_created_at || a.delivery_sent_at || 0);
     });
     return head('Deliveries') +
       (delivered.length
