@@ -36,7 +36,7 @@ module.exports = async function handler(req, res) {
       items,
       total: items.reduce((s2, i) => s2 + i.amount, 0),
       paid: b.status === "paid",
-      portal_url: b.client_portal_token ? `/portal?c=${b.client_portal_token}` : "",
+      portal_url: "/portal",
     });
   } catch (e) {
     res.status(500).json({ error: "error" });

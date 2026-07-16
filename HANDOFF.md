@@ -698,3 +698,24 @@ for all 9. Total new media ~250MB — the git push will be large.
   (portal/delivery/invoice) stay noindex and out of the sitemap.
 - After deploy: verify with Google Rich Results Test + submit
   sitemap in Search Console (property for jacobcschrader.com).
+
+### Client dashboard locked down (verified sessions)
+
+The portal (dashboard) no longer serves data to anyone holding a URL:
+- /portal requires a signed HttpOnly session cookie (HMAC,
+  SESSION_SECRET, 30 days). Bare/legacy ?c= URLs show only the
+  sign-in form and the API answers 401.
+- Sign-in: magic-link email (only to addresses on the client profile)
+  → /api/portal?login=<signed 30-day token> → sets cookie → redirect.
+  Tampered/expired tokens are rejected (timing-safe compare).
+  ?logout=1 signs out (Sign Out link in the portal bar).
+- Delivery email "View Delivery" is now a sign-in link (safe — the
+  email itself is the identity proof) landing on the portal with that
+  delivery hero'd.
+- Delivery + invoice PAGES stay tokenized and shareable by design
+  (agents forward them); their "Back to Portal" goes to plain /portal.
+- Admin client page "Open portal →" mints a sign-in URL via the new
+  authed action api/_lib/admin/portal-link.js (router: portallink).
+- clients.portal_token is now unused (harmless legacy column).
+- Fully mock-tested: 401 paths, forged/expired tokens, cookie flags,
+  logout, deliver CTA format.

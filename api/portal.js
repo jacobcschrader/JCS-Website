@@ -1,24 +1,30 @@
 // =====================================================================
-//  /api/portal — the client portal, public:
-//    GET  ?c=<client_token>  → portal data (client-safe fields only:
-//         no access notes, no pricing until an invoice was sent).
-//    POST { email }          → magic-link login: if the email is on a
-//         client profile (primary or co-recipient), their portal link
-//         is emailed to it. Always responds ok — never reveals whether
-//         an email exists.
-//  One private token per client, issued on first delivery or first
-//  login request.
+//  /api/portal — the client portal (dashboard). Cookie-authenticated:
+//    POST { email }        → magic-link sign-in: if the email is on a
+//         client profile (primary or co-recipient), a sign-in link is
+//         emailed to it. Always responds ok — never reveals whether an
+//         email exists.
+//    GET  ?login=<token>   → verifies the signed sign-in token, sets a
+//         secure HttpOnly session cookie (30 days), redirects to
+//         /portal (carrying &p=<project> through if present).
+//    GET  ?logout=1        → clears the cookie, redirects to /portal.
+//    GET                   → portal data for the signed-in client only
+//         (client-safe fields; pricing only where an invoice was sent).
+//
+//  A bare /portal URL shows nothing but the sign-in form — possession
+//  of a URL is never enough; access requires a link sent to an email
+//  on the client's profile. Sign-in links and sessions are HMAC-signed
+//  with SESSION_SECRET (same secret as the admin, different prefix).
 // =====================================================================
 const crypto = require("node:crypto");
 const { db } = require("./_lib/db.js");
 const { linksOf } = require("./_lib/links.js");
 const { sendEmail, jcsEmail, SENDERS } = require("./_lib/email.js");
+const { COOKIE, DAY, makeToken, verifyToken, readCookie, loginUrl } = require("./_lib/portal-auth.js");
 
 // Client-facing pipeline, derived — the project moves on its own:
-//   Upcoming       scheduled, shoot day hasn't come
-//   In production  from the shoot date on (or editing/revisions)
-//   Delivered      the delivery email went out — Unpaid until…
-//   Completed      the invoice is paid
+//   Upcoming → In production (shoot date) → Delivered (email sent,
+//   Unpaid) → Completed (invoice paid)
 function stageOf(b) {
   if (b.status === "paid") return "Completed";
   if (b.delivery_sent_at || ["delivered", "completed"].includes(b.status)) return "Delivered";
@@ -30,14 +36,12 @@ function stageOf(b) {
 
 async function magicLink(req, res) {
   const body = req.body || {};
-  // honeypot — bots fill every field
-  if (body.company) { res.status(200).json({ ok: true }); return; }
+  if (body.company) { res.status(200).json({ ok: true }); return; }   // honeypot
   const email = String(body.email || "").trim().toLowerCase();
   const done = () => res.status(200).json({ ok: true });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { done(); return; }
 
   const s = await db();
-  // match primary email or any co-recipient email on the profile
   const rows = await s`
     SELECT * FROM clients
     WHERE lower(email) = ${email} OR extra_emails ILIKE ${"%" + email + "%"}
@@ -49,25 +53,20 @@ async function magicLink(req, res) {
   });
   if (!c) { done(); return; }
 
-  let token = c.portal_token;
-  if (!token) {
-    token = crypto.randomBytes(12).toString("base64url");
-    await s`UPDATE clients SET portal_token = ${token} WHERE id = ${c.id}`;
-  }
-  const url = `https://www.jacobcschrader.com/portal?c=${token}`;
+  const url = loginUrl(c.id);
   const first = (c.name || "").split(" ")[0] || "there";
 
   await sendEmail({
     from: SENDERS.enquiry,
     to: email,
     subject: "Your Client Portal | Jacob Schrader",
-    text: `Hi ${first},\n\nHere is your private portal link — projects, deliveries, and invoices:\n${url}\n\n` +
-      `Keep this link handy; it always works.\n\n— Jacob Schrader · jacobcschrader.com`,
+    text: `Hi ${first},\n\nSign in to your portal — projects, deliveries, and invoices:\n${url}\n\n` +
+      `This link signs you in on this device and is valid for 30 days.\n\n— Jacob Schrader · jacobcschrader.com`,
     html: jcsEmail({
       eyebrow: "Client Portal",
       headline: "Your projects, one place.",
-      note: `Hi ${first.replace(/[<>&]/g, "")} — here is your private portal: every project, delivery, and invoice, always current. ` +
-        "The link is yours alone and always works — no password needed.",
+      note: `Hi ${first.replace(/[<>&]/g, "")} — sign in to your private portal: every project, delivery, and invoice, always current. ` +
+        "This link signs you in on this device; request a fresh one anytime.",
       cta: { label: "Open Your Portal", url },
       audience: "client",
     }),
@@ -79,12 +78,37 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method === "POST") { await magicLink(req, res); return; }
 
-    const t = String((req.query || {}).c || "");
-    if (!t || t.length < 10) { res.status(404).json({ error: "not-found" }); return; }
+    const q = req.query || {};
+
+    // ---- sign in via emailed link → session cookie + redirect --------
+    if (q.login) {
+      const cid = verifyToken(q.login, "portal-login");
+      if (!cid) { res.statusCode = 302; res.setHeader("Location", "/portal"); res.end(); return; }
+      const session = makeToken(cid, "portal-session", 30 * DAY);
+      res.setHeader("Set-Cookie",
+        `${COOKIE}=${session}; Max-Age=${30 * DAY}; Path=/; HttpOnly; Secure; SameSite=Lax`);
+      res.statusCode = 302;
+      res.setHeader("Location", "/portal" + (q.p ? `?p=${encodeURIComponent(q.p)}` : ""));
+      res.end();
+      return;
+    }
+
+    // ---- sign out -----------------------------------------------------
+    if (q.logout) {
+      res.setHeader("Set-Cookie", `${COOKIE}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`);
+      res.statusCode = 302;
+      res.setHeader("Location", "/portal");
+      res.end();
+      return;
+    }
+
+    // ---- portal data: signed-in client only ---------------------------
+    const cid = verifyToken(readCookie(req), "portal-session");
+    if (!cid) { res.status(401).json({ error: "unauthorized" }); return; }
 
     const s = await db();
-    const [c] = await s`SELECT id, name FROM clients WHERE portal_token = ${t} LIMIT 1`;
-    if (!c) { res.status(404).json({ error: "not-found" }); return; }
+    const [c] = await s`SELECT id, name FROM clients WHERE id = ${cid} LIMIT 1`;
+    if (!c) { res.status(401).json({ error: "unauthorized" }); return; }
 
     const rows = await s`
       SELECT * FROM bookings

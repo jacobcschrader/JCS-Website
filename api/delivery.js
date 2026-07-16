@@ -113,7 +113,7 @@ module.exports = async function handler(req, res) {
       delivered_at: b.delivered_at || b.delivery_sent_at || null,
       approved_at: b.delivery_approved_at || null,
       client_first: (b.client_name || "").split(" ")[0] || "",
-      portal_url: b.client_portal_token ? `/portal?c=${b.client_portal_token}` : "",
+      portal_url: "/portal",
     });
   } catch (e) {
     res.status(500).json({ error: "error" });

@@ -112,7 +112,10 @@
 
 <nav class="mnav" style="position:static">
   <a class="mnav__brand" href="/">JCS</a>
-  <a class="mnav__link" href="/contact">Book Again &rarr;</a>
+  <span>
+    <a class="mnav__link" href="/contact">Book Again &rarr;</a>
+    <a class="mnav__link" id="pt-signout" hidden href="/api/portal?logout=1" style="margin-left:1.6rem">Sign Out</a>
+  </span>
 </nav>
 
 <header class="page-head" style="padding-top:clamp(2.5rem,6vh,4rem)">
@@ -147,11 +150,11 @@
       <input id="pt-email" type="email" required placeholder="you@brokerage.com" autocomplete="email">
       <input id="pt-company" name="company" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
       <button class="btn btn--solid" type="submit" id="pt-submit" style="width:100%;margin-top:1.2rem;border:0;cursor:pointer">Email Me My Portal Link</button>
-      <p class="note">No password needed — if your email is tied to any projects, your private portal link is on its way.</p>
+      <p class="note">No password needed — if your email is tied to any projects, a sign-in link is on its way.</p>
     </form>
     <div id="pt-sent" hidden class="pt-panel" style="text-align:center">
       <h2 style="font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.5rem;color:var(--navy);margin:0 0 0.6rem">Check your inbox.</h2>
-      <p class="note" style="margin:0">If that email is tied to any projects, your portal link is on its way. It's private and always works.</p>
+      <p class="note" style="margin:0">If that email is tied to any projects, a sign-in link is on its way. It signs you in on this device — request a fresh one anytime.</p>
     </div>
   </div>
 </div>
@@ -173,7 +176,7 @@
 (async function () {
   var $ = function (id) { return document.getElementById(id); };
   var qs = new URLSearchParams(location.search);
-  var c = qs.get('c'), focus = qs.get('p');
+  var focus = qs.get('p');
   function missing() { $('pt-missing').hidden = false; $('pt-login').hidden = false; wireLogin(); }
   function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
   function money(n) { return '$' + Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 2 }); }
@@ -198,9 +201,9 @@
       $('pt-sent').hidden = false;
     });
   }
-  if (!c) { $('pt-login').hidden = false; wireLogin(); return; }
   try {
-    var r = await fetch('/api/portal?c=' + encodeURIComponent(c));
+    var r = await fetch('/api/portal');
+    if (r.status === 401) { $('pt-login').hidden = false; wireLogin(); return; }
     if (!r.ok) { missing(); return; }
     var d = await r.json();
     $('pt-head').innerHTML = 'Welcome back, <em>' + esc(d.client_first || d.client_name) + '</em>.';
@@ -263,6 +266,7 @@
     $('pt-q').addEventListener('input', function () { renderSecs(this.value); });
     if (d.projects.length < 4) $('pt-q').parentNode.hidden = true;
 
+    $('pt-signout').hidden = false;
     $('pt-app').hidden = false;
   } catch (e) { missing(); }
 })();
