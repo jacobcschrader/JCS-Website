@@ -59,6 +59,30 @@ for (const p of projects) {
     // served from /project/<slug>, so relative asset/media paths need a root base
     .replace("<head>", '<head>\n<base href="/">');
 
+  // JSON-LD: breadcrumb + image gallery for this project
+  const ld = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${BASE}/` },
+          { "@type": "ListItem", "position": 2, "name": "Projects", "item": `${BASE}/projects` },
+          { "@type": "ListItem", "position": 3, "name": p.title }
+        ]
+      },
+      {
+        "@type": "ImageGallery",
+        "name": p.title,
+        "description": desc,
+        "url": url,
+        "image": img,
+        "creator": { "@type": "Person", "name": "Jacob Schrader", "url": `${BASE}/about` }
+      }
+    ]
+  };
+  out = out.replace("</head>", `<script type="application/ld+json">\n${JSON.stringify(ld, null, 1)}\n</script>\n</head>`);
+
   writeFileSync(join(root, "project", `${p.slug}.html`), out);
   console.log(`project/${p.slug}.html`);
 }

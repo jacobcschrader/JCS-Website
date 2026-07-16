@@ -683,3 +683,18 @@ films (1080p H.264 CRF23, 27-51MB — GitHub caps files at 100MB):
 Sample/filler project folders deleted (420-toro-canyon, 1437-san-miguel,
 rincon-point, 850-rockbridge, la-vista-grande). Share pages regenerated
 for all 9. Total new media ~250MB — the git push will be large.
+
+### SEO: JSON-LD structured data + sitemap + robots
+
+- JSON-LD on every public page (schema.org, validated absolute URLs):
+  homepage @graph = ProfessionalService/LocalBusiness (Danville CA,
+  areaServed, founder) + WebSite + Person; About = ProfilePage +
+  Person + breadcrumb; Films = breadcrumb + 4 VideoObjects (posters,
+  durations); Projects/Architecture/Design/Contact = breadcrumbs.
+- Per-project pages: generator now injects BreadcrumbList +
+  ImageGallery into each project/<slug>.html (regenerated).
+- robots.txt (blocks /admin + /api, points at sitemap) and
+  sitemap.xml (16 URLs: 7 static + 9 projects). Client pages
+  (portal/delivery/invoice) stay noindex and out of the sitemap.
+- After deploy: verify with Google Rich Results Test + submit
+  sitemap in Search Console (property for jacobcschrader.com).
