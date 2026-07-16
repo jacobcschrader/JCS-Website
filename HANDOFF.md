@@ -719,3 +719,15 @@ The portal (dashboard) no longer serves data to anyone holding a URL:
 - clients.portal_token is now unused (harmless legacy column).
 - Fully mock-tested: 401 paths, forged/expired tokens, cookie flags,
   logout, deliver CTA format.
+
+### Deliveries page: cover-photo cards
+
+Admin Deliveries cards now lead with a 16:10 cover image, status badge
+overlaid (Approved / Changes requested / Sent / Draft), then title,
+client, sent info + link count, and Open delivery / Preview actions.
+Covers come from the Pixieset gallery itself: a new authed action
+(api/_lib/admin/covers.js, router 'covers') fetches each delivery's
+first link and caches its og:image on bookings.delivery_cover_url
+(misses cached as '-'; a few per pass, fired in the background when
+the Deliveries page opens). Fallbacks: matching portfolio cover by
+title, else a navy JCS monogram tile.

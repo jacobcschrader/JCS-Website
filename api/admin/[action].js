@@ -17,6 +17,7 @@ const routes = {
   invoice: require("../_lib/admin/invoice.js"),
   settings: require("../_lib/admin/settings.js"),
   portallink: require("../_lib/admin/portal-link.js"),
+  covers: require("../_lib/admin/covers.js"),
 };
 
 module.exports = function handler(req, res) {

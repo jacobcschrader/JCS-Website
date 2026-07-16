@@ -79,6 +79,9 @@ function ensureSchema() {
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_message text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_cc text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_links text DEFAULT ''`;
+      // Cover image for the admin Deliveries cards (unfurled from the
+      // gallery link's og:image).
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_cover_url text DEFAULT ''`;
       // Draft deliveries: stamped when "Create delivery" is first hit,
       // so the Deliveries page shows the draft before anything is sent.
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_created_at timestamptz`;

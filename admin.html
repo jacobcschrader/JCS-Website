@@ -144,8 +144,13 @@ small.mut { color: var(--muted); }
 .adm-stage__body .adm-cardlet { margin-bottom: 0; border: 1px solid var(--line-soft); }
 
 /* ---- Deliveries ---- */
-.adm-delgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.2rem; }
-.adm-del { background: #fff; padding: 1.2rem 1.3rem; }
+.adm-delgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1.2rem; }
+.adm-del { background: #fff; overflow: hidden; }
+.adm-del__cover { position: relative; aspect-ratio: 16/10; background: linear-gradient(150deg, var(--navy) 0%, #1a3357 100%); cursor: pointer; }
+.adm-del__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.adm-del__cover .adm-badge { position: absolute; top: 0.7rem; left: 0.7rem; }
+.adm-del__cover .adm-del__mono { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 1.6rem; color: rgba(255,255,255,0.35); }
+.adm-del__body { padding: 1rem 1.2rem 1.15rem; }
 .adm-del b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.05rem; color: var(--navy); cursor: pointer; }
 .adm-del b:hover { text-decoration: underline; text-underline-offset: 3px; }
 .adm-del small { display: block; color: var(--muted); margin: 0.3rem 0 0.8rem; line-height: 1.6; }
@@ -799,26 +804,41 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
             var n = dvLinks(b).length;
             var isDraft = !!(b.delivery_created_at || n) && !b.delivery_sent_at;
             var sent = b.delivery_sent_at
-              ? 'Sent to client ' + dstr(b.delivery_sent_at) + (b.delivery_sends > 1 ? ' · ' + b.delivery_sends + '&times;' : '')
+              ? 'Sent ' + dstr(b.delivery_sent_at) + (b.delivery_sends > 1 ? ' · ' + b.delivery_sends + '&times;' : '')
               : '';
-            return '<div class="adm-del"><b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) +
-              (b.delivery_approved_at
-                ? ' <span class="adm-badge adm-badge--paid">Approved</span>'
-                : (b.delivery_feedback && b.delivery_sent_at
-                    ? ' <span class="adm-badge adm-badge--unpaid">Changes requested</span>'
-                    : b.delivery_sent_at
-                      ? ' <span class="adm-badge adm-badge--delivered">Sent</span>'
-                      : (isDraft ? ' <span class="adm-badge adm-badge--draft">Draft</span>' : ''))) + '</b>' +
-              '<small>' + esc(b.client_name || '—') + (b.delivered_at ? '<br>Delivered ' + dstr(b.delivered_at) : '') +
-              (sent ? '<br>' + sent : '') +
-              (n ? '<br>' + n + ' link' + (n > 1 ? 's' : '') : '') +
-              '<br><span class="adm-badge adm-badge--' + esc(b.status) + '">' + esc(b.status) + '</span></small>' +
+            var badge = b.delivery_approved_at
+              ? '<span class="adm-badge adm-badge--paid">Approved</span>'
+              : (b.delivery_feedback && b.delivery_sent_at
+                  ? '<span class="adm-badge adm-badge--unpaid">Changes requested</span>'
+                  : b.delivery_sent_at
+                    ? '<span class="adm-badge adm-badge--delivered">Sent</span>'
+                    : (isDraft ? '<span class="adm-badge adm-badge--draft">Draft</span>' : ''));
+            // cover: unfurled from the gallery link, else a matching
+            // portfolio cover, else the navy monogram
+            var cover = (b.delivery_cover_url && b.delivery_cover_url !== '-') ? b.delivery_cover_url : '';
+            if (!cover) {
+              var pf = (window.PROJECTS_DATA || []).find(function (p) {
+                return p.title.toLowerCase() === String(b.title).toLowerCase() && p.cover_url;
+              });
+              if (pf) cover = pf.cover_url;
+            }
+            return '<div class="adm-del">' +
+              '<div class="adm-del__cover" onclick="ADM.go(\'project/' + b.id + '\')">' +
+                (cover ? '<img src="' + esc(cover) + '" loading="lazy" alt="">' : '<span class="adm-del__mono">JCS</span>') +
+                badge +
+              '</div>' +
+              '<div class="adm-del__body">' +
+              '<b onclick="ADM.go(\'project/' + b.id + '\')">' + esc(b.title) + '</b>' +
+              '<small>' + esc(b.client_name || '—') +
+              (sent ? '<br>' + sent : (b.delivered_at ? '<br>Delivered ' + dstr(b.delivered_at) : '')) +
+              (n ? ' · ' + n + ' link' + (n > 1 ? 's' : '') : '') + '</small>' +
               ((b.delivery_created_at || n)
                 ? '<a class="lnk" style="cursor:pointer" onclick="ADM.delEdit(' + b.id + ')">Open delivery &rarr;</a>' +
                   (b.delivery_token
-                    ? ' <a class="lnk" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Preview as client &rarr;</a>'
+                    ? ' &nbsp;<a class="lnk" href="/delivery?t=' + esc(b.delivery_token) + '" target="_blank" rel="noopener">Preview &rarr;</a>'
                     : '')
                 : '<a class="lnk" style="cursor:pointer" onclick="ADM.delEdit(' + b.id + ')">Create delivery &rarr;</a>') +
+              '</div>' +
             '</div>';
           }).join('') + '</div>'
         : '<div class="adm-card"><p class="adm-empty">Nothing here yet — hit Create delivery on a project to start a draft.</p></div>');
@@ -1102,7 +1122,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     if (section === 'requests') m.innerHTML = vRequests();
     else if (section === 'pipeline') { m.innerHTML = vPipeline(); wirePipeline(); }
     else if (section === 'project') m.innerHTML = vBookingDetail(r.split('/')[1]);
-    else if (section === 'deliveries') m.innerHTML = vDeliveries();
+    else if (section === 'deliveries') { m.innerHTML = vDeliveries(); ADM.coversBackfill(); }
     else if (section === 'delivery') m.innerHTML = vDeliveryEdit(r.split('/')[1]);
     else if (section === 'clients') m.innerHTML = vClients();
     else if (section === 'client') m.innerHTML = vClientDetail(r.split('/')[1]);
@@ -1179,6 +1199,18 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         btn.classList.add('ok');
         setTimeout(function () { btn.classList.remove('ok'); btn.textContent = 'Save'; }, 1800);
       }
+    },
+    coversBackfill: async function () {
+      if (state.coversDone) return;
+      state.coversDone = true;
+      try {
+        // unfurl a few gallery covers per pass; refresh when any land
+        for (var i = 0; i < 3; i++) {
+          var j = await api('covers', 'POST', {});
+          if (j.updated) { await reload(); if (route().split('/')[0] === 'deliveries') render(); }
+          if (!j.checked || j.checked < 4) break;
+        }
+      } catch (e) { /* cosmetic — never block the page */ }
     },
     delEdit: async function (id) {
       var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
