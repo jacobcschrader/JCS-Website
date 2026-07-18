@@ -758,3 +758,8 @@ title, else a navy JCS monogram tile.
   Jacob still gets his copy + calendar; dialogs/notes reflect it.
 - Client field is a typeahead; client form has CC emails; form shows a
   live Total (price + travel − discount).
+- Shoot time + twilight time are 30-minute dropdowns (6:00 AM–10:00 PM);
+  off-grid times on existing projects are kept as an extra option.
+- All email senders are "Jacob C Schrader" (no more JCS Studio); the
+  masthead wordmark is a real Cormorant-italic PNG
+  (images/email/jcs-wordmark.png) so the JCS font renders in Gmail too.

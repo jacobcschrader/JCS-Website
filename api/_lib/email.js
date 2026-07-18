@@ -66,10 +66,10 @@ const LINE = "#ece8df";
 // Sender identities — domain is verified on Resend, so any mailbox
 // @jacobcschrader.com sends without further setup.
 const SENDERS = {
-  delivery: "Jacob Schrader <delivery@jacobcschrader.com>",
-  enquiry: "Jacob Schrader <enquiry@jacobcschrader.com>",
-  billing: "Jacob Schrader <billing@jacobcschrader.com>",
-  admin: "JCS Studio <admin@jacobcschrader.com>",
+  delivery: "Jacob C Schrader <delivery@jacobcschrader.com>",
+  enquiry: "Jacob C Schrader <enquiry@jacobcschrader.com>",
+  billing: "Jacob C Schrader <billing@jacobcschrader.com>",
+  admin: "Jacob C Schrader <admin@jacobcschrader.com>",
 };
 
 // One detail row: uppercase label left, value right.
@@ -105,8 +105,9 @@ function jcsEmail({ eyebrow, headline, note, rows = [], cta, copyUrl, audience =
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;">
 
-        <tr><td style="background:${NAVY};padding:26px 0;text-align:center;">
-          <div style="font-family:${SERIF};font-style:italic;font-weight:500;font-size:30px;line-height:1;color:#ffffff;letter-spacing:2px;">JCS</div>
+        <tr><td style="background:${NAVY};padding:24px 0;text-align:center;">
+          <img src="https://www.jacobcschrader.com/images/email/jcs-wordmark.png" width="64" height="36" alt="JCS"
+               style="display:block;margin:0 auto;border:0;font-family:${SERIF};font-style:italic;font-weight:500;font-size:30px;line-height:36px;color:#ffffff;letter-spacing:2px;">
         </td></tr>
 
         <tr><td style="padding:30px 34px 26px;">

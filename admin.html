@@ -387,6 +387,21 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
   function fld(id, label, inner) {
     return '<div class="adm-field"><label for="' + id + '">' + label + '</label>' + inner + '</div>';
   }
+  // Time picker: a select in 30-minute steps (6:00 AM – 10:00 PM). If an
+  // existing project has an off-grid time (e.g. 9:15), it's kept as an
+  // extra option so editing never silently changes it.
+  function timeSel(id, val) {
+    val = String(val || '').slice(0, 5);
+    var opts = ['<option value="">—</option>'], onGrid = false;
+    for (var m = 6 * 60; m <= 22 * 60; m += 30) {
+      var hh = String(Math.floor(m / 60)).padStart(2, '0'), mm = m % 60 ? '30' : '00';
+      var t = hh + ':' + mm, sel = t === val;
+      if (sel) onGrid = true;
+      opts.push('<option value="' + t + '"' + (sel ? ' selected' : '') + '>' + fmtT(t) + '</option>');
+    }
+    if (val && !onGrid) opts.push('<option value="' + esc(val) + '" selected>' + fmtT(val) + '</option>');
+    return '<select id="' + id + '">' + opts.join('') + '</select>';
+  }
 
   // ================= client form =================
   function clientModal(c, onSaved) {
@@ -459,9 +474,9 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         '<button type="button" class="adm-btn adm-btn--ghost" id="f-newclient" style="padding:0.55rem 0.9rem">+ New</button></div></div>' +
       fld('f-type', 'Service', '<select id="f-type">' + typeOpts + '</select>') +
       fld('f-date', 'Shoot date', '<input id="f-date" type="date" value="' + (v.shoot_date ? String(v.shoot_date).slice(0, 10) : '') + '">') +
-      fld('f-time', 'Shoot time', '<input id="f-time" type="time" value="' + esc((v.shoot_time || '').slice(0, 5)) + '">') +
+      fld('f-time', 'Shoot time', timeSel('f-time', v.shoot_time)) +
       fld('f-twidate', 'Twilight <small style="text-transform:none;letter-spacing:0">(optional — date blank = same day)</small>', '<input id="f-twidate" type="date" value="' + (v.twilight_date ? String(v.twilight_date).slice(0, 10) : '') + '">') +
-      fld('f-twitime', 'Twilight time <small style="text-transform:none;letter-spacing:0">(optional)</small>', '<input id="f-twitime" type="time" value="' + esc((v.twilight_time || '').slice(0, 5)) + '">') +
+      fld('f-twitime', 'Twilight time <small style="text-transform:none;letter-spacing:0">(optional)</small>', timeSel('f-twitime', v.twilight_time)) +
       '<div class="adm-field full"><label>Addons <small style="text-transform:none;letter-spacing:0">(builds the deliverables list)</small></label>' + addonsHtml + '</div>' +
       '<div class="adm-field full"><label for="f-deliverables">Deliverables <small style="text-transform:none;letter-spacing:0">(shown to client — edit freely)</small></label><textarea id="f-deliverables">' + esc(v.deliverables || '') + '</textarea></div>' +
       fld('f-price', 'Price ($)', '<input id="f-price" type="number" min="0" step="1" value="' + (v.price == null ? '' : v.price) + '">') +
