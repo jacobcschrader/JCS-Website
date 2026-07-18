@@ -2,13 +2,15 @@
 //  /api/admin/settings — studio settings, key/value (auth required)
 //    GET          → { settings: { key: value, … } }
 //    PUT {k: v,…} → upsert the given pairs
-//  Known keys: pixieset_subdomain (e.g. "jacobschrader" for
-//  jacobschrader.pixieset.com — powers predicted gallery links).
+//  Known keys:
+//    pixieset_subdomain — "jacobschrader" → predicted gallery links
+//    google_places_key  — Google Places API key for the address
+//                         autocomplete in the project form
 // =====================================================================
 const { requireAuth } = require("../auth.js");
 const { db } = require("../db.js");
 
-const KEYS = ["pixieset_subdomain"];
+const KEYS = ["pixieset_subdomain", "google_places_key"];
 const field = (v, max = 200) => String(v == null ? "" : v).trim().slice(0, max);
 
 module.exports = async function handler(req, res) {

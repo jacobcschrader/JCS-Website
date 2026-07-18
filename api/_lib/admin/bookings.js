@@ -38,6 +38,7 @@ function parse(b) {
     travel_fee: b.travel_fee === "" || b.travel_fee == null ? null : Number(b.travel_fee) || null,
     travel_note: field(b.travel_note, 300),
     show_price: b.show_price !== false && b.show_price !== "false",
+    skip_confirmation: b.skip_confirmation === true || b.skip_confirmation === "true",
     discount_code: field(b.discount_code, 40).toUpperCase().replace(/\s+/g, ""),
     download_url: field(b.download_url, 600),
     delivery_message: field(b.delivery_message, 2000),
@@ -123,8 +124,8 @@ module.exports = async function handler(req, res) {
       await maybePixiesetDraft(s, f);
       const token = (f.delivery_links || f.delivery_url) ? crypto.randomBytes(12).toString("base64url") : "";
       const [row] = await s`
-        INSERT INTO bookings (client_id, title, location, shoot_date, shoot_time, type, price, status, notes, delivery_url, delivered_at, twilight_date, twilight_time, deliverables, city, state, zip, sqft, addons, travel_fee, travel_note, show_price, discount_code, discount_value, download_url, delivery_message, delivery_cc, delivery_links, delivery_token)
-        VALUES (${f.client_id}, ${f.title}, ${f.location}, ${f.shoot_date}, ${f.shoot_time}, ${f.type}, ${f.price}, ${f.status}, ${f.notes}, ${f.delivery_url}, ${f.delivered_at}, ${f.twilight_date}, ${f.twilight_time}, ${f.deliverables}, ${f.city}, ${f.state}, ${f.zip}, ${f.sqft}, ${f.addons}, ${f.travel_fee}, ${f.travel_note}, ${f.show_price}, ${f.discount_code}, ${f.discount_value}, ${f.download_url}, ${f.delivery_message}, ${f.delivery_cc}, ${f.delivery_links}, ${token})
+        INSERT INTO bookings (client_id, title, location, shoot_date, shoot_time, type, price, status, notes, delivery_url, delivered_at, twilight_date, twilight_time, deliverables, city, state, zip, sqft, addons, travel_fee, travel_note, show_price, skip_confirmation, discount_code, discount_value, download_url, delivery_message, delivery_cc, delivery_links, delivery_token)
+        VALUES (${f.client_id}, ${f.title}, ${f.location}, ${f.shoot_date}, ${f.shoot_time}, ${f.type}, ${f.price}, ${f.status}, ${f.notes}, ${f.delivery_url}, ${f.delivered_at}, ${f.twilight_date}, ${f.twilight_time}, ${f.deliverables}, ${f.city}, ${f.state}, ${f.zip}, ${f.sqft}, ${f.addons}, ${f.travel_fee}, ${f.travel_note}, ${f.show_price}, ${f.skip_confirmation}, ${f.discount_code}, ${f.discount_value}, ${f.download_url}, ${f.delivery_message}, ${f.delivery_cc}, ${f.delivery_links}, ${token})
         RETURNING *`;
       res.status(200).json({ booking: row });
 
@@ -145,6 +146,7 @@ module.exports = async function handler(req, res) {
           deliverables = ${f.deliverables}, city = ${f.city}, state = ${f.state}, zip = ${f.zip},
           sqft = ${f.sqft}, addons = ${f.addons}, travel_fee = ${f.travel_fee},
           travel_note = ${f.travel_note}, show_price = ${f.show_price},
+          skip_confirmation = ${f.skip_confirmation},
           discount_code = ${f.discount_code}, discount_value = ${f.discount_value},
           download_url = ${f.download_url},
           delivery_message = ${f.delivery_message}, delivery_cc = ${f.delivery_cc},

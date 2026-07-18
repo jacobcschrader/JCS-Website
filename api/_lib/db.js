@@ -69,6 +69,8 @@ function ensureSchema() {
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travel_fee numeric`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travel_note text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS show_price boolean DEFAULT true`;
+      // Opt out of the client-side booking-confirmation email.
+      await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS skip_confirmation boolean DEFAULT false`;
       // Branded delivery flow (gallery + download links, send tracking).
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS download_url text DEFAULT ''`;
       await s`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivery_token text DEFAULT ''`;

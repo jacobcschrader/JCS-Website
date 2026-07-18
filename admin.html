@@ -209,6 +209,14 @@ small.mut { color: var(--muted); }
 .adm-field textarea { min-height: 70px; resize: vertical; }
 .adm-field input:focus, .adm-field select:focus, .adm-field textarea:focus { border-color: var(--navy); background: #fff; }
 .adm-avatar { flex: 0 0 54px; width: 54px; height: 54px; border-radius: 50%; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 1.25rem; letter-spacing: 0.04em; }
+.adm-cl-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 40; background: #fff;
+  border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(15,34,64,0.12); max-height: 260px; overflow: auto; }
+.adm-cl-item { padding: 0.55rem 0.75rem; cursor: pointer; }
+.adm-cl-item:hover { background: var(--paper-warm); }
+.adm-cl-item b { display: block; font-size: 0.88rem; font-weight: 500; color: var(--ink); }
+.adm-cl-item small { color: var(--muted); font-size: 0.74rem; }
+.adm-cl-item--empty { color: var(--muted); font-size: 0.8rem; cursor: default; }
+.adm-cl-item--empty:hover { background: none; }
 .dv-lrow { display: flex; gap: 0.6rem; margin-bottom: 0.6rem; }
 .dv-lrow input { box-sizing: border-box; font-family: var(--sans); font-size: 0.9rem; color: var(--ink); background: var(--paper-warm); border: 1px solid var(--line); padding: 0.6rem 0.7rem; outline: none; }
 .dv-lrow input:focus { border-color: var(--navy); background: #fff; }
@@ -388,11 +396,14 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       fld('f-brokerage', 'Brokerage', '<input id="f-brokerage" value="' + esc(c.brokerage || '') + '">') +
       fld('f-email', 'Email', '<input id="f-email" type="email" value="' + esc(c.email || '') + '">') +
       fld('f-phone', 'Phone', '<input id="f-phone" value="' + esc(c.phone || '') + '">') +
+      '<div class="adm-field full"><label for="f-extra">CC emails <small style="text-transform:none;letter-spacing:0">(assistant, spouse\u2026 \u2014 comma-separated; every notification goes to all)</small></label>' +
+        '<input id="f-extra" placeholder="assistant@brokerage.com, spouse@gmail.com" value="' + esc(cliExtras(c).join(', ')) + '"></div>' +
       '<div class="adm-field full"><label for="f-notes">Notes</label><textarea id="f-notes">' + esc(c.notes || '') + '</textarea></div>',
       async function () {
+        var extras = $('f-extra').value.split(/[,;\s]+/).filter(function (e) { return e.indexOf('@') > 0; });
         var body = { id: c.id, name: $('f-name').value, email: $('f-email').value, phone: $('f-phone').value,
                      brokerage: $('f-brokerage').value, notes: $('f-notes').value,
-                     extra_emails: c.extra_emails || '' };
+                     extra_emails: JSON.stringify(extras) };
         var j = await api('clients', c.id ? 'PUT' : 'POST', body);
         await reload();
         if (onSaved) onSaved(j.client); else render();
@@ -405,10 +416,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     var v = draft || b;   // draft = values captured before a quick client-create
     var checkedAddons = [];
     try { checkedAddons = JSON.parse(v.addons || '[]'); } catch (e) {}
-    var clientOpts = '<option value="">—</option>' + state.clients.map(function (c) {
-      var sel = (v.client_id || presetClient) == c.id ? ' selected' : '';
-      return '<option value="' + c.id + '"' + sel + '>' + esc(c.name) + '</option>';
-    }).join('');
+    var selClientId = v.client_id || presetClient || '';
+    var selClient = state.clients.find(function (c) { return c.id == selClientId; });
     var typeOpts = TYPES.map(function (t) { return '<option' + (v.type === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('');
     var statusOpts = STATUSES.map(function (s) { return '<option value="' + s + '"' + (v.status === s ? ' selected' : '') + '>' + (STAGE_LABEL[s] || 'Canceled') + '</option>'; }).join('');
     function addonLabel(label, on) {
@@ -432,14 +441,21 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         '</div></div>';
 
     openModal(b.id ? 'Edit project' : 'New project',
-      '<div class="adm-field full"><label for="f-title">Property address *</label><input id="f-title" required placeholder="7750 Lahontan Drive" value="' + esc(v.title || '') + '"></div>' +
+      '<div class="adm-field full"><label for="f-title">Property address *</label><div style="position:relative">' +
+        '<input id="f-title" required placeholder="7750 Lahontan Drive" autocomplete="off" value="' + esc(v.title || '') + '">' +
+        '<div id="f-addr-list" class="adm-cl-list" hidden></div></div></div>' +
       fld('f-city', 'City', '<input id="f-city" placeholder="Truckee" value="' + esc(v.city || '') + '">') +
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.9rem">' +
         '<div class="adm-field"><label for="f-state">State</label><input id="f-state" value="' + esc(v.state || 'CA') + '"></div>' +
         '<div class="adm-field"><label for="f-zip">Zip</label><input id="f-zip" value="' + esc(v.zip || '') + '"></div>' +
         '<div class="adm-field"><label for="f-sqft">Sqft</label><input id="f-sqft" type="number" min="0" value="' + (v.sqft == null ? '' : v.sqft) + '"></div>' +
       '</div>' +
-      '<div class="adm-field"><label for="f-client">Client</label><div style="display:flex;gap:0.5rem"><select id="f-client" style="flex:1">' + clientOpts + '</select>' +
+      '<div class="adm-field"><label for="f-client-q">Client</label><div style="display:flex;gap:0.5rem">' +
+        '<div style="position:relative;flex:1">' +
+          '<input type="hidden" id="f-client" value="' + esc(selClientId) + '">' +
+          '<input id="f-client-q" placeholder="Search clients\u2026" autocomplete="off" value="' + esc(selClient ? selClient.name : '') + '">' +
+          '<div id="f-client-list" class="adm-cl-list" hidden></div>' +
+        '</div>' +
         '<button type="button" class="adm-btn adm-btn--ghost" id="f-newclient" style="padding:0.55rem 0.9rem">+ New</button></div></div>' +
       fld('f-type', 'Service', '<select id="f-type">' + typeOpts + '</select>') +
       fld('f-date', 'Shoot date', '<input id="f-date" type="date" value="' + (v.shoot_date ? String(v.shoot_date).slice(0, 10) : '') + '">') +
@@ -458,7 +474,13 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         }).join('') + '</select>') +
       '<div class="adm-field full"><label for="f-notes">Access notes <small style="text-transform:none;letter-spacing:0">(internal — your calendar only)</small></label><textarea id="f-notes" placeholder="Gate codes, staging, access notes…">' + esc(v.notes || '') + '</textarea></div>' +
       '<div class="adm-field full"><label style="display:flex;align-items:center;gap:0.5rem;text-transform:none;letter-spacing:0;font-size:0.85rem;color:var(--ink);cursor:pointer">' +
-        '<input type="checkbox" id="f-showprice" style="width:auto"' + (v.show_price === false ? '' : ' checked') + '> Show price in the client\'s booking confirmation</label></div>',
+        '<input type="checkbox" id="f-showprice" style="width:auto"' + (v.show_price === false ? '' : ' checked') + '> Show price in the client\'s booking confirmation</label></div>' +
+      '<div class="adm-field full" style="margin-top:-0.6rem"><label style="display:flex;align-items:center;gap:0.5rem;text-transform:none;letter-spacing:0;font-size:0.85rem;color:var(--ink);cursor:pointer">' +
+        '<input type="checkbox" id="f-skipconf" style="width:auto"' + (v.skip_confirmation ? ' checked' : '') + '> Don\'t email confirmation to the client <small style="color:var(--muted)">(you still get your copy + calendar)</small></label></div>' +
+      '<div class="adm-field full" style="border-top:1px solid var(--line);padding-top:0.9rem;display:flex;justify-content:space-between;align-items:baseline">' +
+        '<label style="margin:0">Total</label>' +
+        '<div><span id="f-total" style="font-family:var(--serif);font-size:1.5rem;color:var(--navy);font-weight:500">$0</span>' +
+        '<small id="f-total-note" class="mut" style="display:block;text-align:right;letter-spacing:0"></small></div></div>',
       async function () {
         // merge over the existing booking so delivery fields (managed in
         // the delivery editor) survive a project edit
@@ -497,6 +519,169 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       if (e.key === 'Enter') { e.preventDefault(); addCustomService(); }
     });
     // inline new client: stash the draft, create the client, come back
+    // address autocomplete — Google Places when a key is set in
+    // Settings (Google-quality suggestions), Photon/OSM as fallback.
+    // Picking a suggestion fills street, city, state, and zip.
+    (function () {
+      var input = $('f-title'), list = $('f-addr-list'), timer = null, seq = 0;
+      var gkey = (state.settings || {}).google_places_key || '';
+      var ST = { 'california':'CA','nevada':'NV','oregon':'OR','washington':'WA','arizona':'AZ','utah':'UT',
+        'idaho':'ID','colorado':'CO','texas':'TX','florida':'FL','new york':'NY','montana':'MT','wyoming':'WY',
+        'hawaii':'HI','new mexico':'NM','georgia':'GA','north carolina':'NC','south carolina':'SC','tennessee':'TN',
+        'massachusetts':'MA','new jersey':'NJ','connecticut':'CT','illinois':'IL','michigan':'MI','minnesota':'MN',
+        'ohio':'OH','pennsylvania':'PA','virginia':'VA','maryland':'MD' };
+      function stateCode(s) { return ST[String(s || '').toLowerCase()] || s || ''; }
+      function show(items) {
+        list.innerHTML = items.map(function (it, i) {
+          return '<div class="adm-cl-item" data-i="' + i + '"><b>' + esc(it.line) + '</b>' +
+            (it.sub ? '<small>' + esc(it.sub) + '</small>' : '') + '</div>';
+        }).join('');
+        list._items = items;
+        list.hidden = !items.length;
+      }
+      async function lookupGoogle(q, mySeq) {
+        var r = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': gkey },
+          body: JSON.stringify({
+            input: q,
+            includedRegionCodes: ['us'],
+            locationBias: { circle: { center: { latitude: 38.5, longitude: -121.5 }, radius: 50000 } }
+          })
+        });
+        if (!r.ok || mySeq !== seq) return false;
+        var j = await r.json();
+        var items = (j.suggestions || []).map(function (s) {
+          var p = s.placePrediction;
+          if (!p) return null;
+          return {
+            line: (p.structuredFormat && p.structuredFormat.mainText && p.structuredFormat.mainText.text) || p.text.text,
+            sub: (p.structuredFormat && p.structuredFormat.secondaryText && p.structuredFormat.secondaryText.text) || '',
+            placeId: p.placeId
+          };
+        }).filter(Boolean).slice(0, 6);
+        if (mySeq !== seq) return true;
+        show(items);
+        return true;
+      }
+      async function lookupPhoton(q, mySeq) {
+        var r = await fetch('https://photon.komoot.io/api/?limit=6&lat=38.5&lon=-121.5&q=' + encodeURIComponent(q));
+        if (!r.ok || mySeq !== seq) return;
+        var j = await r.json();
+        var items = (j.features || []).filter(function (f) {
+          return f.properties && f.properties.housenumber && f.properties.street;
+        }).map(function (f) {
+          var p = f.properties;
+          return {
+            line: (p.housenumber + ' ' + p.street).trim(),
+            sub: [p.city || p.district, stateCode(p.state), p.postcode].filter(Boolean).join(', '),
+            fill: { city: p.city || p.district || '', state: stateCode(p.state), zip: p.postcode || '' }
+          };
+        }).slice(0, 6);
+        if (mySeq !== seq) return;
+        show(items);
+      }
+      async function lookup(q) {
+        var mySeq = ++seq;
+        try {
+          if (gkey) { if (await lookupGoogle(q, mySeq)) return; }
+          await lookupPhoton(q, mySeq);
+        } catch (e) { list.hidden = true; }
+      }
+      async function pick(it) {
+        input.value = it.line;
+        if (it.fill) {
+          if (it.fill.city) $('f-city').value = it.fill.city;
+          if (it.fill.state) $('f-state').value = it.fill.state;
+          if (it.fill.zip) $('f-zip').value = it.fill.zip;
+        } else if (it.placeId && gkey) {
+          try {
+            var r = await fetch('https://places.googleapis.com/v1/places/' + it.placeId + '?fields=addressComponents', {
+              headers: { 'X-Goog-Api-Key': gkey }
+            });
+            if (r.ok) {
+              var j = await r.json();
+              var get = function (type, short) {
+                var c = (j.addressComponents || []).find(function (x) { return (x.types || []).indexOf(type) > -1; });
+                return c ? (short ? c.shortText : c.longText) : '';
+              };
+              var num = get('street_number'), route = get('route');
+              if (num && route) input.value = num + ' ' + route;
+              if (get('locality')) $('f-city').value = get('locality');
+              if (get('administrative_area_level_1', true)) $('f-state').value = get('administrative_area_level_1', true);
+              if (get('postal_code')) $('f-zip').value = get('postal_code');
+            }
+          } catch (e) { /* keep the typed line */ }
+        }
+        list.hidden = true;
+      }
+      input.addEventListener('input', function () {
+        clearTimeout(timer);
+        var q = input.value.trim();
+        if (q.length < 5) { list.hidden = true; return; }
+        timer = setTimeout(function () { lookup(q); }, 300);
+      });
+      input.addEventListener('keydown', function (e) { if (e.key === 'Escape') list.hidden = true; });
+      input.addEventListener('blur', function () { setTimeout(function () { list.hidden = true; }, 180); });
+      list.addEventListener('mousedown', function (e) {
+        var item = e.target.closest('.adm-cl-item'); if (!item) return;
+        pick(list._items[item.dataset.i]);
+      });
+    })();
+
+    // live total: price + travel − discount
+    function updateTotal() {
+      var price = Number($('f-price').value) || 0;
+      var travel = Number($('f-travel').value) || 0;
+      var code = $('f-discount').value;
+      var disc = 0, note = [];
+      if (travel) note.push('incl. ' + money(travel) + ' travel');
+      if (code) {
+        var d = state.discounts.find(function (x) { return x.code === code; });
+        if (d) {
+          disc = d.kind === 'percent' ? Math.round(price * Number(d.value)) / 100 : Math.min(Number(d.value), price);
+          note.push('\u2212' + money(disc) + ' ' + code);
+        }
+      }
+      $('f-total').textContent = money(price + travel - disc);
+      $('f-total-note').textContent = note.join(' \u00b7 ');
+    }
+    ['f-price', 'f-travel'].forEach(function (id) { $(id).addEventListener('input', updateTotal); });
+    $('f-discount').addEventListener('change', updateTotal);
+    updateTotal();
+
+    // client typeahead — search by name, email, or brokerage
+    (function () {
+      var q = $('f-client-q'), hid = $('f-client'), list = $('f-client-list');
+      function draw(term) {
+        term = (term || '').trim().toLowerCase();
+        var hits = state.clients.filter(function (c) {
+          return !term || (c.name + ' ' + (c.email || '') + ' ' + (c.brokerage || '')).toLowerCase().indexOf(term) > -1;
+        }).slice(0, 8);
+        list.innerHTML = hits.length
+          ? hits.map(function (c) {
+              return '<div class="adm-cl-item" data-id="' + c.id + '"><b>' + esc(c.name) + '</b>' +
+                (c.email || c.brokerage ? '<small>' + esc([c.email, c.brokerage].filter(Boolean).join(' \u00b7 ')) + '</small>' : '') + '</div>';
+            }).join('')
+          : '<div class="adm-cl-item adm-cl-item--empty">No matches \u2014 use + New</div>';
+        list.hidden = false;
+      }
+      q.addEventListener('focus', function () { draw(q.value); });
+      q.addEventListener('input', function () { hid.value = ''; draw(q.value); });
+      q.addEventListener('keydown', function (e) { if (e.key === 'Escape') list.hidden = true; });
+      list.addEventListener('mousedown', function (e) {
+        var item = e.target.closest('.adm-cl-item'); if (!item || !item.dataset.id) return;
+        var c = state.clients.find(function (x) { return x.id == item.dataset.id; });
+        hid.value = c.id; q.value = c.name; list.hidden = true;
+      });
+      q.addEventListener('blur', function () {
+        setTimeout(function () {
+          list.hidden = true;
+          if (!hid.value) q.value = '';           // nothing chosen — clear the text
+        }, 150);
+      });
+    })();
+
     $('f-newclient').addEventListener('click', function () {
       var draftNow = collectProjectForm(b.id);
       clientModal(null, function (newClient) {
@@ -513,7 +698,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
                price: $('f-price').value, status: $('f-status').value,
                travel_fee: $('f-travel').value, travel_note: $('f-travelnote').value,
                discount_code: $('f-discount').value,
-               notes: $('f-notes').value, show_price: $('f-showprice').checked };
+               notes: $('f-notes').value, show_price: $('f-showprice').checked,
+               skip_confirmation: $('f-skipconf').checked };
     }
   }
 
@@ -869,6 +1055,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         (sub ? esc(sub) : 'yourstudio') + '.pixieset.com/123-main-st) and the link just works. Pixieset has no public API, so the collection itself is created in Pixieset or via their Lightroom plugin.</div>' +
       '<form class="adm-form" onsubmit="ADM.settingsSave(event)">' +
         fld('s-pixieset', 'Pixieset subdomain', '<input id="s-pixieset" placeholder="yourstudio" value="' + esc(sub) + '">') +
+        fld('s-gplaces', 'Google Places API key <small style="text-transform:none;letter-spacing:0">(address autocomplete)</small>', '<input id="s-gplaces" placeholder="AIza\u2026" value="' + esc((state.settings || {}).google_places_key || '') + '">') +
         '<div class="adm-field"><label>&nbsp;</label><button class="adm-btn" type="submit">Save</button></div>' +
       '</form>' +
       (sub ? '<div class="adm-confnote ok">&#10003; Predicted links use ' + esc(sub) + '.pixieset.com &mdash; <a href="https://' + esc(sub) + '.pixieset.com" target="_blank" rel="noopener" style="color:inherit">open your gallery home &rarr;</a></div>' : '') +
@@ -1078,7 +1265,9 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       stageSel +
       '<div class="adm-confnote' + (b.confirmed_at ? ' ok' : '') + '">' +
         (b.confirmed_at ? '&#10003; Confirmed ' + dstr(b.confirmed_at) : 'Not confirmed yet — client hasn\'t been notified.') +
-      '</div></div>';
+      '</div>' +
+      (b.skip_confirmation ? '<div class="adm-confnote">Client confirmation email is off for this project.</div>' : '') +
+      '</div>';
 
     var dlinks = dvLinks(b);
     var delivery = '<div class="adm-card"><h2>Delivery' +
@@ -1143,11 +1332,15 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
       if (!b.shoot_date) { alert('Set a shoot date first (Edit).'); return; }
       var who = b.client_name ? b.client_name : 'no client linked';
-      if (!confirm('Send booking confirmation with calendar invite?\n\nClient: ' + who + '\nA copy also goes to you.')) return;
+      var msg = b.skip_confirmation
+        ? 'Confirm this booking?\n\nClient email is OFF for this project — only you get the email + calendar invite.'
+        : 'Send booking confirmation with calendar invite?\n\nClient: ' + who + '\nA copy also goes to you.';
+      if (!confirm(msg)) return;
       try {
         var j = await api('confirm', 'POST', { id: id });
         await reload(); render();
-        var msg = j.clientSent ? 'Confirmation sent to client and you.' : 'Confirmed. No client email on file, so only you received it.';
+        var msg = j.clientSent ? 'Confirmation sent to client and you.'
+          : (b.skip_confirmation ? 'Confirmed — client email skipped, only you received it.' : 'Confirmed. No client email on file, so only you received it.');
         msg += j.calendarWritten ? ' Added to your Google Calendar.' : ' Calendar invite attached to the emails.';
         alert(msg);
       } catch (e) { alert(friendly(e)); }
@@ -1274,7 +1467,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     settingsSave: async function (e) {
       e.preventDefault();
       try {
-        var j = await api('settings', 'PUT', { pixieset_subdomain: $('s-pixieset').value });
+        var j = await api('settings', 'PUT', { pixieset_subdomain: $('s-pixieset').value, google_places_key: $('s-gplaces').value });
         state.settings = j.settings || {}; render();
       } catch (err) { alert(friendly(err)); }
     },

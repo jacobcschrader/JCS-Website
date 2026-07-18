@@ -731,3 +731,30 @@ first link and caches its og:image on bookings.delivery_cover_url
 (misses cached as '-'; a few per pass, fired in the background when
 the Deliveries page opens). Fallbacks: matching portfolio cover by
 title, else a navy JCS monogram tile.
+
+### Project form: client search + CC emails
+
+- The Client field in the project form is now a typeahead search
+  (name, email, or brokerage; top 8 matches with email/brokerage
+  sublines; Esc closes; clearing text clears the selection; "No
+  matches — use + New" hint). Hidden input keeps client_id so the
+  save/draft flow is unchanged.
+- Client form (standalone and inline "+ New" from a project) gained a
+  "CC emails" field — comma-separated co-recipients saved to
+  extra_emails, so every notification reaches all addresses from the
+  moment the client is created.
+- Sorting: Deliveries now orders strictly by Create-delivery time
+  (newest first; legacy items fall back to send time).
+
+### Address autocomplete + skip-confirmation + form polish
+
+- Property address field: Google-style autocomplete. With a Google
+  Places API key saved in Settings it uses Places Autocomplete (New) +
+  Place Details — picking a suggestion fills street, city, state, zip.
+  Without a key it falls back to Photon/OSM (weak US house numbers).
+  Key stored in settings.google_places_key (admin-only API).
+- "Don't email confirmation" checkbox on projects
+  (bookings.skip_confirmation): Confirm & send skips the client email;
+  Jacob still gets his copy + calendar; dialogs/notes reflect it.
+- Client field is a typeahead; client form has CC emails; form shows a
+  live Total (price + travel − discount).

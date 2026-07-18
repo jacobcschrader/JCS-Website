@@ -108,7 +108,7 @@ module.exports = async function handler(req, res) {
     // Goes to every address on the client profile (primary + extras).
     const clientTo = recipientsOf(b.client_email, b.client_extra_emails);
     let clientSent = false;
-    if (clientTo.length) {
+    if (clientTo.length && !b.skip_confirmation) {
       await sendEmail({
         from: SENDERS.enquiry,
         to: clientTo,
@@ -152,7 +152,9 @@ module.exports = async function handler(req, res) {
         headline,
         note: clientSent
           ? `Client confirmation sent to ${escHtml(clientTo.join(", "))}. Calendar invite attached.`
-          : `<span style="color:#8a4d2f;">No client email on file — only you received this.</span>`,
+          : (b.skip_confirmation
+              ? `Client email skipped (project setting) — only you received this. Calendar invite attached.`
+              : `<span style="color:#8a4d2f;">No client email on file — only you received this.</span>`),
         rows: [
           ["Client", b.client_name ? escHtml(b.client_name) : ""],
           ["Property", propertyVal],
