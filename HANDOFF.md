@@ -763,3 +763,5 @@ title, else a navy JCS monogram tile.
 - All email senders are "Jacob C Schrader" (no more JCS Studio); the
   masthead wordmark is a real Cormorant-italic PNG
   (images/email/jcs-wordmark.png) so the JCS font renders in Gmail too.
+- Admin alert() popups replaced with quiet bottom-center toasts
+  (navy = success, red = error); pre-send confirm dialogs kept.

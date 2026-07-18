@@ -244,6 +244,10 @@ small.mut { color: var(--muted); }
   .adm-side__foot { border: 0; padding: 0.9rem 1rem; }
   .adm-table .hide-m { display: none; }
 }
+#adm-toasts { position: fixed; bottom: 1.4rem; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 0.5rem; align-items: center; pointer-events: none; }
+.adm-toast { background: var(--navy, #0f2240); color: #fff; font-size: 0.82rem; line-height: 1.45; padding: 0.65rem 1.1rem; box-shadow: 0 10px 30px rgba(15,34,64,0.28); opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; max-width: min(480px, 90vw); text-align: center; }
+.adm-toast.in { opacity: 1; transform: translateY(0); }
+.adm-toast--err { background: #6e2f2a; }
 </style>
 </head>
 <body>
@@ -326,6 +330,25 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     return String(err.message) === 'db-not-configured'
       ? 'Database not connected — check the Neon integration in Vercel.'
       : 'Something went wrong — try again.';
+  }
+
+  // Quiet toast notifications (replaces alert() popups).
+  function toast(msg, kind) {
+    var host = $('adm-toasts');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'adm-toasts';
+      document.body.appendChild(host);
+    }
+    var t = document.createElement('div');
+    t.className = 'adm-toast' + (kind === 'err' ? ' adm-toast--err' : '');
+    t.textContent = msg;
+    host.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add('in'); });
+    setTimeout(function () {
+      t.classList.remove('in');
+      setTimeout(function () { t.remove(); }, 350);
+    }, kind === 'err' ? 5200 : 3200);
   }
 
   // ================= router =================
@@ -1345,7 +1368,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     go: go,
     confirm: async function (id) {
       var b = state.bookings.find(function (x) { return x.id == id; }); if (!b) return;
-      if (!b.shoot_date) { alert('Set a shoot date first (Edit).'); return; }
+      if (!b.shoot_date) { toast('Set a shoot date first (Edit).', 'err'); return; }
       var who = b.client_name ? b.client_name : 'no client linked';
       var msg = b.skip_confirmation
         ? 'Confirm this booking?\n\nClient email is OFF for this project — only you get the email + calendar invite.'
@@ -1357,36 +1380,36 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         var msg = j.clientSent ? 'Confirmation sent to client and you.'
           : (b.skip_confirmation ? 'Confirmed — client email skipped, only you received it.' : 'Confirmed. No client email on file, so only you received it.');
         msg += j.calendarWritten ? ' Added to your Google Calendar.' : ' Calendar invite attached to the emails.';
-        alert(msg);
-      } catch (e) { alert(friendly(e)); }
+        toast(msg);
+      } catch (e) { toast(friendly(e), 'err'); }
     },
     invSend: async function (id) {
       try {
         await api('invoice', 'POST', { id: id, send: true });
         await reload(); render();
       } catch (e) {
-        alert(String(e.message) === 'no-client-email' ? 'The client has no email on file — add one first.'
-          : String(e.message) === 'no-price' ? 'Set a price first (Edit).' : friendly(e));
+        toast(String(e.message) === 'no-client-email' ? 'The client has no email on file — add one first.'
+          : String(e.message) === 'no-price' ? 'Set a price first (Edit).' : friendly(e), 'err');
       }
     },
     portalOpen: async function (id) {
       try {
         var j = await api('portallink?id=' + id);
         window.open(j.url, '_blank');
-      } catch (e) { alert(friendly(e)); }
+      } catch (e) { toast(friendly(e), 'err'); }
     },
     cliAddEmail: async function (id) {
       var c = state.clients.find(function (x) { return x.id == id; }); if (!c) return;
       var v = ($('cli-newemail').value || '').trim().toLowerCase();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { alert('Enter a valid email address.'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { toast('Enter a valid email address.', 'err'); return; }
       var extras = cliExtras(c);
-      if (v === (c.email || '').toLowerCase() || extras.indexOf(v) > -1) { alert('That email is already on the profile.'); return; }
+      if (v === (c.email || '').toLowerCase() || extras.indexOf(v) > -1) { toast('That email is already on the profile.', 'err'); return; }
       extras.push(v);
       try {
         await api('clients', 'PUT', { id: c.id, name: c.name, email: c.email, phone: c.phone,
           brokerage: c.brokerage, notes: c.notes, extra_emails: JSON.stringify(extras) });
         await reload(); render();
-      } catch (e) { alert(friendly(e)); }
+      } catch (e) { toast(friendly(e), 'err'); }
     },
     cliDelEmail: async function (id, idx) {
       var c = state.clients.find(function (x) { return x.id == id; }); if (!c) return;
@@ -1396,7 +1419,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         await api('clients', 'PUT', { id: c.id, name: c.name, email: c.email, phone: c.phone,
           brokerage: c.brokerage, notes: c.notes, extra_emails: JSON.stringify(extras) });
         await reload(); render();
-      } catch (e) { alert(friendly(e)); }
+      } catch (e) { toast(friendly(e), 'err'); }
     },
     delSaveRow: async function (btn) {
       var id = parseInt(route().split('/')[1], 10); if (!id) return;
@@ -1428,7 +1451,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         try {
           await api('bookings', 'PUT', Object.assign({}, b, { delivery_created_at: new Date().toISOString() }));
           await reload();
-        } catch (e) { alert(friendly(e)); return; }
+        } catch (e) { toast(friendly(e), 'err'); return; }
       }
       go('delivery/' + id);
     },
@@ -1454,19 +1477,19 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         await reload();
         if (!quiet) render();
         return true;
-      } catch (e) { alert(friendly(e)); return false; }
+      } catch (e) { toast(friendly(e), 'err'); return false; }
     },
     delSend: async function (id) {
       if (!(await ADM.delSave(id, true))) { render(); return; }
       var b = state.bookings.find(function (x) { return x.id == id; });
-      if (!b || !dvLinks(b).length) { render(); alert('Add at least one link before sending.'); return; }
+      if (!b || !dvLinks(b).length) { render(); toast('Add at least one link before sending.', 'err'); return; }
       try {
         await api('deliver', 'POST', { id: id });
         await reload(); render();
       } catch (e) {
         render();
-        alert(String(e.message) === 'no-client-email' ? 'The client has no email on file — add one first.'
-          : String(e.message) === 'no-links' ? 'Add at least one link before sending.' : friendly(e));
+        toast(String(e.message) === 'no-client-email' ? 'The client has no email on file — add one first.'
+          : String(e.message) === 'no-links' ? 'Add at least one link before sending.' : friendly(e), 'err');
       }
     },
     deliver: function (id) { ADM.delSend(id); },
@@ -1477,60 +1500,60 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       var el = $('pipe-q'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
     },
     clientFilter: function (v) { state.clientFilter = v; render(); },
-    stage: function (id, s) { setStage(id, s).catch(function (e) { alert(friendly(e)); }); },
+    stage: function (id, s) { setStage(id, s).catch(function (e) { toast(friendly(e), 'err'); }); },
     reqTab: function (t) { state.reqTab = t; render(); },
     settingsSave: async function (e) {
       e.preventDefault();
       try {
         var j = await api('settings', 'PUT', { pixieset_subdomain: $('s-pixieset').value, google_places_key: $('s-gplaces').value });
         state.settings = j.settings || {}; render();
-      } catch (err) { alert(friendly(err)); }
+      } catch (err) { toast(friendly(err), 'err'); }
     },
     discCreate: async function (e) {
       e.preventDefault();
       try {
         await api('discounts', 'POST', { code: $('d-code').value, kind: $('d-kind').value, value: $('d-value').value, note: $('d-note').value });
         await reload(); render();
-      } catch (err) { alert(String(err.message) === 'duplicate-code' ? 'That code already exists.' : friendly(err)); }
+      } catch (err) { toast(String(err.message) === 'duplicate-code' ? 'That code already exists.' : friendly(err), 'err'); }
     },
     discToggle: async function (id) {
       var d = state.discounts.find(function (x) { return x.id == id; }); if (!d) return;
       try { await api('discounts', 'PUT', { id: d.id, code: d.code, kind: d.kind, value: d.value, note: d.note, active: !d.active }); await reload(); render(); }
-      catch (e) { alert(friendly(e)); }
+      catch (e) { toast(friendly(e), 'err'); }
     },
     discDelete: async function (id) {
       if (!confirm('Delete this code? Projects that already used it keep their locked-in discount.')) return;
       try { await api('discounts', 'DELETE', { id: id }); await reload(); render(); }
-      catch (e) { alert(friendly(e)); }
+      catch (e) { toast(friendly(e), 'err'); }
     },
     reqAccept: async function (id) {
       if (!confirm('Accept this request? A client + project are created (no email is sent yet — you set the quote, then Confirm & send).')) return;
       try {
         var j = await api('requests', 'POST', { id: id, action: 'accept' });
         await reload(); go('project/' + j.projectId);
-      } catch (e) { alert(friendly(e)); }
+      } catch (e) { toast(friendly(e), 'err'); }
     },
     reqDecline: async function (id) {
       if (!confirm('Decline this request? A graceful decline email goes to the applicant.')) return;
       try { await api('requests', 'POST', { id: id, action: 'decline' }); await reload(); render(); }
-      catch (e) { alert(friendly(e)); }
+      catch (e) { toast(friendly(e), 'err'); }
     },
     reqDelete: async function (id) {
       if (!confirm('Delete this request permanently?')) return;
       try { await api('requests', 'DELETE', { id: id }); await reload(); render(); }
-      catch (e) { alert(friendly(e)); }
+      catch (e) { toast(friendly(e), 'err'); }
     },
     newClient: function () { clientModal(); },
     editClient: function (id) { clientModal(state.clients.find(function (c) { return c.id == id; })); },
     delClient: async function (id) {
       if (!confirm('Delete this client? Their projects are kept (unlinked).')) return;
-      try { await api('clients', 'DELETE', { id: id }); await reload(); go('clients'); render(); } catch (e) { alert(friendly(e)); }
+      try { await api('clients', 'DELETE', { id: id }); await reload(); go('clients'); render(); } catch (e) { toast(friendly(e), 'err'); }
     },
     newBooking: function (clientId) { bookingModal(null, clientId); },
     editBooking: function (id) { bookingModal(state.bookings.find(function (b) { return b.id == id; })); },
     delBooking: async function (id) {
       if (!confirm('Delete this project?')) return;
-      try { await api('bookings', 'DELETE', { id: id }); await reload(); go('pipeline'); render(); } catch (e) { alert(friendly(e)); }
+      try { await api('bookings', 'DELETE', { id: id }); await reload(); go('pipeline'); render(); } catch (e) { toast(friendly(e), 'err'); }
     }
   };
 
