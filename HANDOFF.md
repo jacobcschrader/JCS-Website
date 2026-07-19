@@ -817,3 +817,9 @@ title, else a navy JCS monogram tile.
 - ONE-TIME SETUP: Vercel → Storage → Create Database → Blob → connect to
   the project (injects BLOB_READ_WRITE_TOKEN), then redeploy. Until then
   uploads show a friendly "Blob storage isn't set up yet" toast.
+
+### Portfolio polish
+- Gallery photos and portfolio project cards are drag-to-reorder (navy
+  insertion line); project order persists via PUT {reorder:[ids]} and is
+  the order on the website. Uploads run 4-in-parallel. Blob store is the
+  PUBLIC "jcs-website-media" store (private stores 503 client uploads).

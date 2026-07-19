@@ -91,6 +91,15 @@ module.exports = async function handler(req, res) {
         RETURNING *`;
       res.status(200).json({ project: row });
 
+    } else if (req.method === "PUT" && Array.isArray(b.reorder)) {
+      // bulk reorder: array of ids in the desired site order
+      const ids = b.reorder.map((x) => parseInt(x, 10)).filter(Boolean).slice(0, 500);
+      for (let i = 0; i < ids.length; i++) {
+        await s`UPDATE site_projects SET sort_order = ${i}, updated_at = now() WHERE id = ${ids[i]}`;
+      }
+      const rows = await s`SELECT * FROM site_projects ORDER BY sort_order ASC, id DESC`;
+      res.status(200).json({ ok: true, projects: rows });
+
     } else if (req.method === "PUT") {
       const id = parseInt(b.id, 10);
       const f = parse(b);

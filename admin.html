@@ -262,9 +262,12 @@ small.mut { color: var(--muted); }
 .sp-ord button { border: 0; background: rgba(255,255,255,0.85); color: var(--navy); width: 22px; height: 20px; font-size: 0.7rem; cursor: pointer; }
 .sp-thumb[draggable] { cursor: grab; }
 .sp-thumb.sp-dragging { opacity: 0.35; }
-.sp-thumb.sp-drop-l::before, .sp-thumb.sp-drop-r::after { content: ""; position: absolute; top: 0; bottom: 0; width: 3px; background: var(--navy); z-index: 2; }
-.sp-thumb.sp-drop-l::before { left: -4px; }
-.sp-thumb.sp-drop-r::after { right: -4px; }
+.sp-thumb.sp-drop-l::before, .sp-thumb.sp-drop-r::after,
+.adm-proj.sp-drop-l::before, .adm-proj.sp-drop-r::after { content: ""; position: absolute; top: 0; bottom: 0; width: 3px; background: var(--navy); z-index: 2; }
+.adm-proj { position: relative; }
+.adm-proj.sp-dragging { opacity: 0.35; }
+.sp-thumb.sp-drop-l::before, .adm-proj.sp-drop-l::before { left: -5px; }
+.sp-thumb.sp-drop-r::after, .adm-proj.sp-drop-r::after { right: -5px; }
 .sp-progress { margin-top: 1rem; font-size: 0.82rem; color: var(--accent, #52688f); }
 #adm-toasts { position: fixed; bottom: 1.4rem; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 0.5rem; align-items: center; pointer-events: none; }
 .adm-toast { background: var(--navy, #0f2240); color: #fff; font-size: 0.82rem; line-height: 1.45; padding: 0.65rem 1.1rem; box-shadow: 0 10px 30px rgba(15,34,64,0.28); opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; max-width: min(480px, 90vw); text-align: center; }
@@ -1111,7 +1114,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         '<small class="mut">' + esc(p.location || '') + '</small></div></a>';
     }).join('');
     return head('Portfolio', '<button class="adm-btn" onclick="ADM.go(\'siteproject/new\')">+ New project</button>') +
-      (db.length ? '<div class="adm-projgrid">' + cards + '</div>'
+      (db.length ? '<div class="adm-projgrid">' + cards + '</div>' +
+        (db.length > 1 ? '<p class="adm-empty" style="margin-top:0.9rem;font-size:0.78rem">Drag cards to set the order they appear on the website.</p>' : '')
         : '<p class="adm-empty">No admin-managed projects yet — hit <b>+ New project</b> to create one. It uploads media straight to the site, no GitHub needed.</p>') +
       (statics.length ? '<h2 style="font-family:var(--serif);font-weight:500;font-size:1.1rem;color:var(--navy);margin:2.2rem 0 1rem">In the repository <small class="mut" style="font-weight:400">(edited via GitHub)</small></h2>' +
         '<div class="adm-projgrid">' + repo + '</div>' : '');
@@ -1752,6 +1756,45 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     },
     spDragEnd: function () {
       state.spDrag = null;
+      document.querySelectorAll('.sp-dragging, .sp-drop-l, .sp-drop-r').forEach(function (el) {
+        el.classList.remove('sp-dragging', 'sp-drop-l', 'sp-drop-r');
+      });
+    },
+    // ---- portfolio list: drag projects to set site order ----
+    ppDragStart: function (e, i) {
+      state.ppDrag = i;
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', String(i)); } catch (err) {}
+      requestAnimationFrame(function () { e.target.classList.add('sp-dragging'); });
+    },
+    ppDragOver: function (e, i) {
+      if (state.ppDrag == null || state.ppDrag === i) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      var t = e.currentTarget, r = t.getBoundingClientRect();
+      t.classList.toggle('sp-drop-l', e.clientX < r.left + r.width / 2);
+      t.classList.toggle('sp-drop-r', e.clientX >= r.left + r.width / 2);
+    },
+    ppDragLeave: function (e) { e.currentTarget.classList.remove('sp-drop-l', 'sp-drop-r'); },
+    ppDrop: async function (e, i) {
+      e.preventDefault();
+      var from = state.ppDrag;
+      state.ppDrag = null;
+      if (from == null || from === i) { render(); return; }
+      var list = state.siteProjects;
+      var after = e.currentTarget.classList.contains('sp-drop-r');
+      var item = list.splice(from, 1)[0];
+      var to = i + (after ? 1 : 0);
+      if (from < to) to--;
+      list.splice(to, 0, item);
+      render();                                  // optimistic \u2014 new order shows instantly
+      try {
+        await api('siteprojects', 'PUT', { reorder: list.map(function (x) { return x.id; }) });
+        toast('Order saved \u2014 the website now shows this order.');
+      } catch (err) { toast(friendly(err), 'err'); await reload(); render(); }
+    },
+    ppDragEnd: function () {
+      state.ppDrag = null;
       document.querySelectorAll('.sp-dragging, .sp-drop-l, .sp-drop-r').forEach(function (el) {
         el.classList.remove('sp-dragging', 'sp-drop-l', 'sp-drop-r');
       });
