@@ -32,9 +32,9 @@ module.exports = async function handler(req, res) {
         vertical_video: r.vertical_url || "",
       };
     });
-    // cache at the edge for a minute — publishing shows within ~60s,
-    // usually instantly on the next hard load
-    res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
+    // no caching — edits, publishes, and reorders from the admin show
+    // on the very next page load
+    res.setHeader("Cache-Control", "no-store");
     res.status(200).json({ projects });
   } catch (e) {
     res.status(200).json({ projects: [] });   // site falls back to static

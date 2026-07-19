@@ -23,6 +23,13 @@
 .dv-hero .btns a:hover { opacity: 0.85; }
 .dv-hero .btns a.solid { background: #fff; color: var(--navy); }
 .dv-hero .btns a.ghost { border: 1px solid rgba(255,255,255,0.4); color: #fff; }
+@media (max-width: 520px) {
+  .dv-hero { padding-top: 5.2rem; padding-bottom: 2.6rem; }
+  .dv-hero h1 { font-size: clamp(1.7rem, 8vw, 2.2rem); }
+  .dv-hero .btns { margin-top: 1.8rem; }
+  .dv-hero .btns a, .dv-review .acts a, .dv-review .acts button { flex: 1 1 100%; text-align: center; }
+  .dv-wrap { padding-top: 2rem; }
+}
 
 .dv-wrap { max-width: 680px; margin: 0 auto; padding: clamp(2.6rem, 6vw, 4rem) clamp(1.25rem, 5vw, 2rem) 6rem; }
 .dv-dels { text-align: center; padding-bottom: clamp(2rem, 5vw, 3rem); border-bottom: 1px solid var(--line); }

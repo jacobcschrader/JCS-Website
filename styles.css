@@ -913,3 +913,54 @@ html.lb-open { overflow: hidden; }
 .press-row img { height: clamp(20px, 2.4vw, 30px); width: auto; opacity: 0.55; filter: grayscale(1) brightness(0.35); transition: opacity 0.35s var(--ease); }
 .press-row img:hover { opacity: 0.85; }
 .press-row .press-row__item { display: inline-flex; align-items: center; }
+
+/* =====================================================================
+   Small-screen layer (≤520px) — phones
+   ===================================================================== */
+html, body { overflow-x: clip; }   /* nothing may cause sideways scroll */
+
+@media (max-width: 520px) {
+  :root { --gut: 1.1rem; }
+
+  /* nav: tighter bar, room for login + CTA + burger */
+  .nav { padding: 0.9rem var(--gut); }
+  .nav__brand { font-size: 1.3rem; }
+
+  /* hero: stacked full-width CTAs, comfortable type */
+  .hero--full .display { font-size: clamp(1.9rem, 8.6vw, 2.3rem); }
+  .hero__sub { font-size: 0.66rem; letter-spacing: 0.18em; }
+  .hero__cta { width: 100%; }
+  .hero__cta .btn { flex: 1 1 100%; justify-content: center; min-width: 0; }
+
+  /* section header rows stack */
+  .sec-head { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .sec-head .link-arrow { margin-bottom: 0; }
+
+  .section { padding: 3.2rem 0; }
+  .display { font-size: clamp(2.1rem, 9.5vw, 2.6rem); }
+  .h-section { font-size: clamp(1.6rem, 7.5vw, 2rem); }
+  .lead { font-size: 1.05rem; }
+
+  /* cards breathe edge-to-edge, comfortable captions */
+  .sw-card { aspect-ratio: 3 / 2; }
+  .svc-card { aspect-ratio: 4 / 3; }
+  .also { gap: 0.5rem 1.1rem; }
+  .also span { font-size: 0.82rem; }
+  .press-row { gap: 1rem 1.6rem; }
+  .press-row img { height: 14px !important; }
+
+  .tcard { padding: 1.4rem; }
+  .footer__top { gap: 1.8rem; }
+  .footer__bottom { flex-direction: column; align-items: center; text-align: center; gap: 0.4rem; }
+
+  /* minimal client bar */
+  .mnav { padding: 0.9rem var(--gut); gap: 0.6rem; }
+  .mnav__brand { font-size: 1.15rem; }
+  .mnav__link { font-size: 0.56rem; letter-spacing: 0.14em; }
+
+  /* project detail */
+  .proj-hero__title { font-size: clamp(1.7rem, 8vw, 2.2rem); }
+  .proj-nav a { max-width: 100%; }
+  .proj-nav { flex-direction: column; gap: 1.2rem; }
+  .proj-nav a.next { text-align: left; align-items: flex-start; margin-left: 0; }
+}

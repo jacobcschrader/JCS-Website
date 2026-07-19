@@ -35,6 +35,13 @@
 .inv-foot a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
 .inv-print { margin-top: 1.6rem; text-align: center; }
 .inv-missing { text-align: center; padding: 4rem 1rem; }
+@media (max-width: 520px) {
+  .inv-card { padding: 1.5rem 1.2rem; }
+  .inv-top { flex-direction: column; }
+  .inv-meta { text-align: left; }
+  .inv-cols { gap: 1.4rem; flex-direction: column; }
+  .inv-total b { font-size: 1.8rem; }
+}
 @media print {
   .mnav, .footer, .inv-print, .page-head { display: none !important; }
   body { background: #fff !important; }

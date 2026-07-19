@@ -823,3 +823,14 @@ title, else a navy JCS monogram tile.
   insertion line); project order persists via PUT {reorder:[ids]} and is
   the order on the website. Uploads run 4-in-parallel. Blob store is the
   PUBLIC "jcs-website-media" store (private stores 503 client uploads).
+
+### Mobile pass (≤520px layer)
+- Global: overflow-x clip (no sideways scroll anywhere); tighter gutters;
+  stacked full-width hero CTAs; sec-head stacks; smaller display scale;
+  press logos 14px; footer bottom stacks; mnav compact.
+- Portal: compact stats (2x2, 1.45rem numerals), full-width hero buttons,
+  tighter rows/panel. Delivery: shorter hero, full-width buttons.
+  Invoice: stacked header/columns, smaller total.
+- Admin: phone layer on top of the 760px shell — tighter main/cards,
+  2-col stats, full-screen modals, 82vw pipeline columns, 1-col delivery
+  grid, 2-col portfolio grid, smaller upload tiles, full-width toasts.
