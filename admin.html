@@ -1099,9 +1099,11 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
   function vPortfolio() {
     var db = state.siteProjects || [];
     var statics = (window.PROJECTS_DATA || []).filter(function (p) { return !p.cms; });
-    var cards = db.map(function (p) {
-      return '<a class="adm-proj" href="#siteproject/' + p.id + '"><div class="ph-wrap">' +
-        (p.cover_url ? '<img src="' + esc(p.cover_url) + '" loading="lazy" alt="">' : '') + '</div>' +
+    var cards = db.map(function (p, i) {
+      return '<a class="adm-proj" href="#siteproject/' + p.id + '" draggable="true"' +
+        ' ondragstart="ADM.ppDragStart(event,' + i + ')" ondragover="ADM.ppDragOver(event,' + i + ')"' +
+        ' ondragleave="ADM.ppDragLeave(event)" ondrop="ADM.ppDrop(event,' + i + ')" ondragend="ADM.ppDragEnd()"><div class="ph-wrap">' +
+        (p.cover_url ? '<img src="' + esc(p.cover_url) + '" loading="lazy" alt="" draggable="false">' : '') + '</div>' +
         '<div class="cap"><b>' + esc(p.title) + '</b>' +
         '<span class="adm-badge adm-badge--' + (p.draft ? 'draft">Draft' : 'live">Live') + '</span> ' +
         '<small class="mut">' + esc(p.location || '') + '</small></div></a>';
