@@ -785,3 +785,14 @@ title, else a navy JCS monogram tile.
   styles.css. Old carousel (.pcar) code remains but home no longer
   uses it. project.html template + all project/*.html regenerated
   nav/footer. Interior page headers rewritten to the new scale.
+
+### v2.1 — exact sizing pass (measured from jacobguthrie.com computed styles)
+
+- Container 1420px; sections ~5.7rem vertical rhythm.
+- Type: hero h1 56px (serif 300, -0.01em, lh 1.12); page-head h1 72px;
+  section h2 52px; eyebrows 11px/0.26em; nav links 11px uppercase/0.2em;
+  buttons 11px/0.2em, 15x26px padding; leads 24px serif 300.
+- Cards: work titles 26px/300, loc 10.5px/0.2em, agent 12px; service
+  cards 3:4 with 24px titles, 12.5px desc; quotes 16.5px serif 300;
+  marquee 26px serif 300; footer tagline 19px serif, links 14px,
+  column heads 11px/0.22em. All serif headings weight 300.

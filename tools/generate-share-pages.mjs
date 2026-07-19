@@ -32,6 +32,9 @@ const projects = (sandbox.window.PROJECTS_DATA || []).filter(p => !p.draft && p.
 // --- build one static page per project from project.html ------------
 const template = readFileSync(join(root, "project.html"), "utf8");
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+// $ is special in String.replace replacements ("$2" -> capture group 2) —
+// double it so prices like "$22,000,000" survive intact.
+const rep = s => String(s).replace(/\$/g, "$$$$");
 mkdirSync(join(root, "project"), { recursive: true });
 
 for (const p of projects) {
@@ -43,15 +46,15 @@ for (const p of projects) {
 
   let out = template
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`)
-    .replace(/(<meta name="description" content=")[^"]*(">)/, `$1${esc(desc)}$2`)
-    .replace(/(<link rel="canonical" href=")[^"]*(">)/, `$1${esc(url)}$2`)
-    .replace(/(<meta property="og:title" content=")[^"]*(">)/, `$1${esc(title)}$2`)
-    .replace(/(<meta property="og:description" content=")[^"]*(">)/, `$1${esc(desc)}$2`)
-    .replace(/(<meta property="og:url" content=")[^"]*(">)/, `$1${esc(url)}$2`)
-    .replace(/(<meta property="og:image" content=")[^"]*(">)/, `$1${esc(img)}$2`)
-    .replace(/(<meta name="twitter:title" content=")[^"]*(">)/, `$1${esc(title)}$2`)
-    .replace(/(<meta name="twitter:description" content=")[^"]*(">)/, `$1${esc(desc)}$2`)
-    .replace(/(<meta name="twitter:image" content=")[^"]*(">)/, `$1${esc(img)}$2`)
+    .replace(/(<meta name="description" content=")[^"]*(">)/, `$1${rep(esc(desc))}$2`)
+    .replace(/(<link rel="canonical" href=")[^"]*(">)/, `$1${rep(esc(url))}$2`)
+    .replace(/(<meta property="og:title" content=")[^"]*(">)/, `$1${rep(esc(title))}$2`)
+    .replace(/(<meta property="og:description" content=")[^"]*(">)/, `$1${rep(esc(desc))}$2`)
+    .replace(/(<meta property="og:url" content=")[^"]*(">)/, `$1${rep(esc(url))}$2`)
+    .replace(/(<meta property="og:image" content=")[^"]*(">)/, `$1${rep(esc(img))}$2`)
+    .replace(/(<meta name="twitter:title" content=")[^"]*(">)/, `$1${rep(esc(title))}$2`)
+    .replace(/(<meta name="twitter:description" content=")[^"]*(">)/, `$1${rep(esc(desc))}$2`)
+    .replace(/(<meta name="twitter:image" content=")[^"]*(">)/, `$1${rep(esc(img))}$2`)
     // cover dimensions vary per project — drop the fixed 1200×630 hints
     .replace(/\n<meta property="og:image:(width|height)" content="\d+">/g, "")
     // the static page knows its own slug (no ?slug= in the URL)
