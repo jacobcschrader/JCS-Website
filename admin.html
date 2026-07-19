@@ -244,6 +244,23 @@ small.mut { color: var(--muted); }
   .adm-side__foot { border: 0; padding: 0.9rem 1rem; }
   .adm-table .hide-m { display: none; }
 }
+.sp-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.9rem; max-width: 640px; }
+.sp-tile { position: relative; aspect-ratio: 4/3; background: var(--paper-warm); border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sp-tile.has { border-style: solid; }
+.sp-tile img, .sp-tile video { width: 100%; height: 100%; object-fit: cover; }
+.sp-tile--empty { cursor: pointer; font-size: 0.78rem; color: var(--muted); transition: border-color 0.25s, color 0.25s; }
+.sp-tile--empty:hover { border-color: var(--navy); color: var(--navy); }
+.sp-tile__label { position: absolute; left: 0; right: 0; bottom: 0; font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: #fff; background: rgba(15,34,64,0.55); padding: 0.25rem 0.5rem; }
+.sp-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.6rem; }
+.sp-thumb { position: relative; aspect-ratio: 1; background: var(--paper-warm); overflow: hidden; }
+.sp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sp-thumb--add { border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.72rem; color: var(--muted); text-align: center; }
+.sp-thumb--add:hover { border-color: var(--navy); color: var(--navy); }
+.sp-x { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border: 0; border-radius: 50%; background: rgba(15,34,64,0.72); color: #fff; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.sp-x:hover { background: #8a2f2f; }
+.sp-ord { position: absolute; bottom: 4px; left: 4px; display: flex; gap: 3px; }
+.sp-ord button { border: 0; background: rgba(255,255,255,0.85); color: var(--navy); width: 22px; height: 20px; font-size: 0.7rem; cursor: pointer; }
+.sp-progress { margin-top: 1rem; font-size: 0.82rem; color: var(--accent, #52688f); }
 #adm-toasts { position: fixed; bottom: 1.4rem; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 0.5rem; align-items: center; pointer-events: none; }
 .adm-toast { background: var(--navy, #0f2240); color: #fff; font-size: 0.82rem; line-height: 1.45; padding: 0.65rem 1.1rem; box-shadow: 0 10px 30px rgba(15,34,64,0.28); opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; max-width: min(480px, 90vw); text-align: center; }
 .adm-toast.in { opacity: 1; transform: translateY(0); }
@@ -292,6 +309,7 @@ small.mut { color: var(--muted); }
 <div id="modal-root"></div>
 
 <script src="projects-data.js"></script>
+<script src="admin-blob.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -302,7 +320,7 @@ small.mut { color: var(--muted); }
   function net(b){ return (Number(b.price) || 0) - (Number(b.discount_value) || 0); }
   function dstr(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
 
-  var state = { clients: [], bookings: [], requests: [], discounts: [], reqTab: 'pending', loaded: false,
+  var state = { clients: [], bookings: [], requests: [], discounts: [], siteProjects: [], sp: null, reqTab: 'pending', loaded: false,
               view: localStorage.getItem('adm-view') || 'pipeline', q: '', clientFilter: '', collapsed: {} };
 var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', delivered:'#7a5fb8', completed:'#3f7a4f', paid:'#1d4d2a' };
   var TYPES = ['Architectural Photography','Film / Videography','Aerial & Drone','Full Campaign (Stills + Film)','Other'];
@@ -364,8 +382,9 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     render();
   }
   async function reload() {
-    var c = await api('clients'), b = await api('bookings'), r = await api('requests'), d = await api('discounts'), st = await api('settings');
+    var c = await api('clients'), b = await api('bookings'), r = await api('requests'), d = await api('discounts'), st = await api('settings'), sp = await api('siteprojects');
     state.clients = c.clients; state.bookings = b.bookings; state.requests = r.requests; state.discounts = d.discounts;
+    state.siteProjects = sp.projects || [];
     state.settings = st.settings || {}; state.loaded = true;
     var pending = state.requests.filter(function (x) { return x.status === 'pending'; }).length;
     var badge = $('req-badge');
@@ -1070,17 +1089,107 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
   }
 
   function vPortfolio() {
-    var projects = (window.PROJECTS_DATA || []);
-    return head('Portfolio') +
-      '<div class="adm-projgrid">' + projects.map(function (p) {
-        var url = p.draft ? '/project?slug=' + encodeURIComponent(p.slug) : '/project/' + p.slug;
-        return '<a class="adm-proj" href="' + url + '" target="_blank"><div class="ph-wrap">' +
-          (p.cover_url ? '<img src="' + esc(p.cover_url) + '" loading="lazy" alt="">' : '') + '</div>' +
-          '<div class="cap"><b>' + esc(p.title) + '</b>' +
-          '<span class="adm-badge adm-badge--' + (p.draft ? 'draft">Draft' : 'live">Live') + '</span> ' +
-          '<small class="mut">' + esc(p.location || '') + '</small></div></a>';
-      }).join('') + '</div>' +
-      '<p class="adm-empty" style="margin-top:1.4rem">These are the published website projects. To add or edit one, stage the media and ask Claude in the JCS-Website session.</p>';
+    var db = state.siteProjects || [];
+    var statics = (window.PROJECTS_DATA || []).filter(function (p) { return !p.cms; });
+    var cards = db.map(function (p) {
+      return '<a class="adm-proj" href="#siteproject/' + p.id + '"><div class="ph-wrap">' +
+        (p.cover_url ? '<img src="' + esc(p.cover_url) + '" loading="lazy" alt="">' : '') + '</div>' +
+        '<div class="cap"><b>' + esc(p.title) + '</b>' +
+        '<span class="adm-badge adm-badge--' + (p.draft ? 'draft">Draft' : 'live">Live') + '</span> ' +
+        '<small class="mut">' + esc(p.location || '') + '</small></div></a>';
+    }).join('');
+    var repo = statics.map(function (p) {
+      return '<a class="adm-proj" href="/project/' + p.slug + '" target="_blank"><div class="ph-wrap">' +
+        (p.cover_url ? '<img src="' + esc(p.cover_url) + '" loading="lazy" alt="">' : '') + '</div>' +
+        '<div class="cap"><b>' + esc(p.title) + '</b>' +
+        '<span class="adm-badge">In repo</span> ' +
+        '<small class="mut">' + esc(p.location || '') + '</small></div></a>';
+    }).join('');
+    return head('Portfolio', '<button class="adm-btn" onclick="ADM.go(\'siteproject/new\')">+ New project</button>') +
+      (db.length ? '<div class="adm-projgrid">' + cards + '</div>'
+        : '<p class="adm-empty">No admin-managed projects yet — hit <b>+ New project</b> to create one. It uploads media straight to the site, no GitHub needed.</p>') +
+      (statics.length ? '<h2 style="font-family:var(--serif);font-weight:500;font-size:1.1rem;color:var(--navy);margin:2.2rem 0 1rem">In the repository <small class="mut" style="font-weight:400">(edited via GitHub)</small></h2>' +
+        '<div class="adm-projgrid">' + repo + '</div>' : '');
+  }
+
+  // ---- portfolio editor ------------------------------------------------
+  function spBlank() {
+    return { id: null, slug: '', title: '', location: '', year: String(new Date().getFullYear()),
+      headline: '', summary: '', shot_for: '', brokerage: '', price: '',
+      cover_url: '', gallery: [], horizontal_url: '', vertical_url: '', draft: true, sort_order: 0,
+      slugTouched: false, busy: '' };
+  }
+  function spInit(idPart) {
+    if (state.sp && String(state.sp.id || 'new') === String(idPart)) return state.sp;
+    if (idPart === 'new') { state.sp = spBlank(); return state.sp; }
+    var row = (state.siteProjects || []).find(function (x) { return String(x.id) === String(idPart); });
+    if (!row) return null;
+    var g = []; try { g = JSON.parse(row.gallery || '[]'); } catch (e) {}
+    state.sp = { id: row.id, slug: row.slug, title: row.title, location: row.location || '',
+      year: row.year || '', headline: row.headline || '', summary: row.summary || '',
+      shot_for: row.shot_for || '', brokerage: row.brokerage || '', price: row.price || '',
+      cover_url: row.cover_url || '', gallery: g, horizontal_url: row.horizontal_url || '',
+      vertical_url: row.vertical_url || '', draft: !!row.draft, sort_order: row.sort_order || 0,
+      slugTouched: true, busy: '' };
+    return state.sp;
+  }
+  function spTile(kind, url, label, video) {
+    if (url) {
+      return '<div class="sp-tile has">' +
+        (video ? '<video src="' + esc(url) + '#t=0.5" muted playsinline preload="metadata"></video>'
+               : '<img src="' + esc(url) + '" alt="">') +
+        '<button type="button" class="sp-x" onclick="ADM.spClear(\'' + kind + '\')" title="Remove">&#10005;</button>' +
+        '<span class="sp-tile__label">' + label + '</span></div>';
+    }
+    return '<label class="sp-tile sp-tile--empty">' +
+      '<input type="file" accept="' + (video ? 'video/mp4,video/quicktime' : 'image/*') + '" hidden onchange="ADM.spUpload(\'' + kind + '\', this)">' +
+      '<span>+ ' + label + '</span></label>';
+  }
+  function vSiteProject(idPart) {
+    var p = spInit(idPart);
+    if (!p) return head('Portfolio', '', true) + '<p class="adm-empty">Project not found.</p>';
+    var thumbs = p.gallery.map(function (u, i) {
+      return '<div class="sp-thumb"><img src="' + esc(u) + '" loading="lazy" alt="">' +
+        '<button type="button" class="sp-x" onclick="ADM.spRemoveImg(' + i + ')" title="Remove">&#10005;</button>' +
+        '<span class="sp-ord">' +
+          (i > 0 ? '<button type="button" onclick="ADM.spMove(' + i + ',-1)" title="Move earlier">&larr;</button>' : '') +
+          (i < p.gallery.length - 1 ? '<button type="button" onclick="ADM.spMove(' + i + ',1)" title="Move later">&rarr;</button>' : '') +
+        '</span></div>';
+    }).join('');
+    return head(p.id ? 'Edit project' : 'New project', '', true) +
+      '<form class="adm-card" onsubmit="ADM.spSave(event)" style="max-width:860px">' +
+        '<div class="adm-form">' +
+        '<div class="adm-field full"><label for="sp-title">Property address / title *</label><input id="sp-title" required value="' + esc(p.title) + '" oninput="ADM.spTitle(this.value)"></div>' +
+        fld('sp-slug', 'URL slug <small style="text-transform:none;letter-spacing:0">(jacobcschrader.com/project?slug=&hellip;)</small>', '<input id="sp-slug" value="' + esc(p.slug) + '" oninput="state.sp.slugTouched=true;state.sp.slug=this.value">') +
+        fld('sp-location', 'Location', '<input id="sp-location" placeholder="Truckee, CA" value="' + esc(p.location) + '">') +
+        fld('sp-year', 'Year', '<input id="sp-year" value="' + esc(p.year) + '">') +
+        fld('sp-price', 'Price', '<input id="sp-price" placeholder="$6,995,000" value="' + esc(p.price) + '">') +
+        fld('sp-headline', 'Headline', '<input id="sp-headline" placeholder="Martis Camp Estate" value="' + esc(p.headline) + '">') +
+        fld('sp-shotfor', 'Shot for', '<input id="sp-shotfor" placeholder="Eric Navarro" value="' + esc(p.shot_for) + '">') +
+        fld('sp-brokerage', 'Brokerage', '<input id="sp-brokerage" placeholder="Compass" value="' + esc(p.brokerage) + '">') +
+        '<div class="adm-field full"><label for="sp-summary">Description <small style="text-transform:none;letter-spacing:0">(optional)</small></label><textarea id="sp-summary">' + esc(p.summary) + '</textarea></div>' +
+        '</div>' +
+
+        '<h2 style="margin-top:1.6rem">Cover &amp; films</h2>' +
+        '<div class="sp-tiles">' +
+          spTile('cover', p.cover_url, 'Cover photo', false) +
+          spTile('horizontal', p.horizontal_url, 'Horizontal film', true) +
+          spTile('vertical', p.vertical_url, 'Vertical reel', true) +
+        '</div>' +
+
+        '<h2 style="margin-top:1.6rem">Gallery <small class="mut" style="font-weight:400;text-transform:none;letter-spacing:0">(' + p.gallery.length + ' photos — order shown is the order on the site)</small></h2>' +
+        '<div class="sp-thumbs">' + thumbs +
+          '<label class="sp-thumb sp-thumb--add"><input type="file" accept="image/*" multiple hidden onchange="ADM.spUpload(\'gallery\', this)"><span>+ Add photos</span></label>' +
+        '</div>' +
+        (p.busy ? '<div class="sp-progress">' + esc(p.busy) + '</div>' : '') +
+
+        '<div style="display:flex;align-items:center;gap:1.4rem;flex-wrap:wrap;margin-top:1.8rem;border-top:1px solid var(--line);padding-top:1.4rem">' +
+          '<label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;cursor:pointer"><input type="checkbox" id="sp-live" style="width:auto"' + (p.draft ? '' : ' checked') + '> Published <small class="mut">(visible on the website)</small></label>' +
+          '<span class="grow"></span>' +
+          (p.id ? '<button type="button" class="adm-btn adm-btn--ghost" onclick="ADM.spDelete()" style="color:#8a2f2f">Delete</button>' : '') +
+          '<button class="adm-btn" type="submit">' + (p.id ? 'Save changes' : 'Create project') + '</button>' +
+        '</div>' +
+      '</form>';
   }
 
   function vSettings() {
@@ -1345,7 +1454,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     var r = route(), m = $('main');
     var section = r.split('/')[0];
     var owns = { dash:'dash', requests:'requests', pipeline:'pipeline', project:'pipeline', deliveries:'deliveries', delivery:'deliveries',
-                 clients:'clients', client:'clients', portfolio:'portfolio', settings:'settings' }[section] || 'dash';
+                 clients:'clients', client:'clients', portfolio:'portfolio', siteproject:'portfolio', settings:'settings' }[section] || 'dash';
     document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.r === owns); });
     if (section === 'requests') m.innerHTML = vRequests();
     else if (section === 'pipeline') { m.innerHTML = vPipeline(); wirePipeline(); }
@@ -1354,7 +1463,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     else if (section === 'delivery') m.innerHTML = vDeliveryEdit(r.split('/')[1]);
     else if (section === 'clients') m.innerHTML = vClients();
     else if (section === 'client') m.innerHTML = vClientDetail(r.split('/')[1]);
-    else if (section === 'portfolio') m.innerHTML = vPortfolio();
+    else if (section === 'portfolio') { state.sp = null; m.innerHTML = vPortfolio(); }
+    else if (section === 'siteproject') m.innerHTML = vSiteProject(r.split('/')[1]);
     else if (section === 'settings') m.innerHTML = vSettings();
     else m.innerHTML = vDash();
   }
@@ -1500,6 +1610,121 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       var el = $('pipe-q'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
     },
     clientFilter: function (v) { state.clientFilter = v; render(); },
+
+    // ---- portfolio CMS ----
+    spTitle: function (v) {
+      state.sp.title = v;
+      if (!state.sp.slugTouched) {
+        state.sp.slug = v.toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 80);
+        var el = $('sp-slug'); if (el) el.value = state.sp.slug;
+      }
+    },
+    spCollect: function () {
+      var p = state.sp;
+      p.title = $('sp-title').value; p.slug = $('sp-slug').value;
+      p.location = $('sp-location').value; p.year = $('sp-year').value;
+      p.price = $('sp-price').value; p.headline = $('sp-headline').value;
+      p.shot_for = $('sp-shotfor').value; p.brokerage = $('sp-brokerage').value;
+      p.summary = $('sp-summary').value; p.draft = !$('sp-live').checked;
+    },
+    spResize: function (file, max, q) {
+      return new Promise(function (resolve) {
+        var img = new Image();
+        img.onload = function () {
+          var w = img.naturalWidth, h = img.naturalHeight;
+          var scale = Math.min(1, max / Math.max(w, h));
+          if (scale === 1 && file.type === 'image/jpeg') { resolve(file); return; }
+          var c = document.createElement('canvas');
+          c.width = Math.round(w * scale); c.height = Math.round(h * scale);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          c.toBlob(function (b) { resolve(b || file); }, 'image/jpeg', q);
+        };
+        img.onerror = function () { resolve(file); };
+        img.src = URL.createObjectURL(file);
+      });
+    },
+    spUpload: async function (kind, input) {
+      var files = Array.prototype.slice.call(input.files || []);
+      if (!files.length) return;
+      ADM.spCollect();
+      var p = state.sp;
+      var dir = 'site/' + (p.slug || 'project');
+      for (var i = 0; i < files.length; i++) {
+        var f = files[i], blob = f, name = f.name;
+        var isVideo = /^video\//.test(f.type);
+        p.busy = 'Uploading ' + (i + 1) + ' of ' + files.length + ' — ' + name + '\u2026'; render();
+        try {
+          if (!isVideo) {
+            blob = await ADM.spResize(f, 2400, 0.82);
+            name = name.replace(/\.[^.]+$/, '') + '.jpg';
+          }
+          var r = await VercelBlobClient.upload(dir + '/' + name, blob, {
+            access: 'public',
+            handleUploadUrl: '/api/admin/upload',
+            contentType: isVideo ? f.type : 'image/jpeg',
+            multipart: blob.size > 20 * 1024 * 1024
+          });
+          if (kind === 'gallery') p.gallery.push(r.url);
+          else if (kind === 'cover') p.cover_url = r.url;
+          else if (kind === 'horizontal') p.horizontal_url = r.url;
+          else if (kind === 'vertical') p.vertical_url = r.url;
+        } catch (e) {
+          p.busy = ''; render();
+          toast(/blob-not-configured|No token/i.test(String(e && e.message))
+            ? 'Blob storage isn\u2019t set up yet \u2014 in Vercel: Storage \u2192 Create \u2192 Blob, connect it to the project, then redeploy.'
+            : 'Upload failed \u2014 ' + String((e && e.message) || 'try again.'), 'err');
+          return;
+        }
+      }
+      p.busy = ''; render();
+      toast(files.length + (files.length === 1 ? ' file' : ' files') + ' uploaded.');
+    },
+    spClear: function (kind) {
+      ADM.spCollect();
+      if (kind === 'cover') state.sp.cover_url = '';
+      else if (kind === 'horizontal') state.sp.horizontal_url = '';
+      else if (kind === 'vertical') state.sp.vertical_url = '';
+      render();
+    },
+    spRemoveImg: function (i) { ADM.spCollect(); state.sp.gallery.splice(i, 1); render(); },
+    spMove: function (i, dir) {
+      ADM.spCollect();
+      var g = state.sp.gallery, j = i + dir;
+      if (j < 0 || j >= g.length) return;
+      var t = g[i]; g[i] = g[j]; g[j] = t;
+      render();
+    },
+    spSave: async function (e) {
+      e.preventDefault();
+      ADM.spCollect();
+      var p = state.sp;
+      if (!p.title) { toast('Give the project a title.', 'err'); return; }
+      if (!p.draft && !p.cover_url) { toast('Add a cover photo before publishing.', 'err'); return; }
+      var body = { id: p.id, slug: p.slug, title: p.title, location: p.location, year: p.year,
+        headline: p.headline, summary: p.summary, shot_for: p.shot_for, brokerage: p.brokerage,
+        price: p.price, cover_url: p.cover_url, gallery: JSON.stringify(p.gallery),
+        horizontal_url: p.horizontal_url, vertical_url: p.vertical_url,
+        draft: p.draft, sort_order: p.sort_order };
+      try {
+        await api('siteprojects', p.id ? 'PUT' : 'POST', body);
+        await reload();
+        state.sp = null;
+        go('portfolio'); render();
+        toast(p.draft ? 'Saved as draft.' : 'Saved \u2014 live on the website.');
+      } catch (err) {
+        toast(String(err.message) === 'slug-taken' ? 'That URL slug is already used \u2014 pick another.' : friendly(err), 'err');
+      }
+    },
+    spDelete: async function () {
+      var p = state.sp;
+      if (!p || !p.id) return;
+      if (!confirm('Delete this project and all its uploaded media? This can\u2019t be undone.')) return;
+      try {
+        await api('siteprojects', 'DELETE', { id: p.id });
+        await reload(); state.sp = null; go('portfolio'); render();
+        toast('Project deleted.');
+      } catch (e) { toast(friendly(e), 'err'); }
+    },
     stage: function (id, s) { setStage(id, s).catch(function (e) { toast(friendly(e), 'err'); }); },
     reqTab: function (t) { state.reqTab = t; render(); },
     settingsSave: async function (e) {

@@ -75,11 +75,42 @@ window.PROJECTS_DATA = RAW_PROJECTS.map(buildProject);
 // Carousel + grid only need a few fields; published projects live at
 // their static /project/<slug> pages (see tools/generate-share-pages.mjs).
 // Drafts are excluded — clients only ever see finished work.
-window.PROJECTS = window.PROJECTS_DATA.filter(function (p) { return !p.draft; }).map(function (p) {
+function toCard(p) {
   return {
     title: p.title,
     loc: p.location,
     file: "/project/" + p.slug,
     img: p.cover_url || ""
   };
-});
+}
+window.PROJECTS = window.PROJECTS_DATA.filter(function (p) { return !p.draft; }).map(toCard);
+
+// ---------------------------------------------------------------------
+//  Admin-managed projects (portfolio CMS) — fetched from the database
+//  and merged IN FRONT of the static repo projects. Every consumer
+//  (home grid, projects page, project detail) awaits PROJECTS_READY,
+//  so new work published from /admin appears with no deploy.
+//  Static project pages keep their /project/<slug> URLs; CMS projects
+//  render on the dynamic page at /project?slug=<slug>.
+// ---------------------------------------------------------------------
+window.PROJECTS_READY = (function () {
+  return fetch("/api/site-projects")
+    .then(function (r) { return r.ok ? r.json() : { projects: [] }; })
+    .then(function (d) {
+      var dbProjects = (d.projects || []).map(function (p) {
+        p.cms = true;
+        return p;
+      });
+      if (!dbProjects.length) return;
+      var slugs = {};
+      dbProjects.forEach(function (p) { slugs[p.slug] = true; })
+      var statics = window.PROJECTS_DATA.filter(function (p) { return !slugs[p.slug]; });
+      window.PROJECTS_DATA = dbProjects.concat(statics);
+      window.PROJECTS = window.PROJECTS_DATA.filter(function (p) { return !p.draft; }).map(function (p) {
+        var c = toCard(p);
+        if (p.cms) c.file = "/project?slug=" + encodeURIComponent(p.slug);
+        return c;
+      });
+    })
+    .catch(function () { /* offline / API down — static projects still show */ });
+})();

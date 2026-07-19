@@ -177,7 +177,8 @@ window.addEventListener('DOMContentLoaded', function () {
 
   grid.innerHTML = data.map(function (p) {
     var agent = [p.shot_for, p.brokerage].filter(Boolean).join(' · ');
-    return '<a class="sw-card reveal" href="/project/' + esc(p.slug) + '">' +
+    var href = p.cms ? '/project?slug=' + encodeURIComponent(p.slug) : '/project/' + esc(p.slug);
+    return '<a class="sw-card reveal" href="' + href + '">' +
       '<img src="' + esc(p.cover_url) + '" alt="' + esc(p.title) + ' — ' + esc(p.location) + '" loading="lazy" decoding="async">' +
       '<span class="sw-card__loc">' + esc(p.location) + '</span>' +
       '<span class="sw-card__body"><span class="sw-card__title">' + esc(p.title) + '</span>' +

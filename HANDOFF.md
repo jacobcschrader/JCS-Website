@@ -796,3 +796,24 @@ title, else a navy JCS monogram tile.
   cards 3:4 with 24px titles, 12.5px desc; quotes 16.5px serif 300;
   marquee 26px serif 300; footer tagline 19px serif, links 14px,
   column heads 11px/0.22em. All serif headings weight 300.
+
+### Portfolio CMS — create/edit website projects from /admin
+
+- Admin → Portfolio: "+ New project" editor — fields (title/slug/location/
+  year/price/headline/shot for/brokerage/description), cover + horizontal
+  film + vertical reel tiles, multi-upload gallery with reorder/remove,
+  Published toggle (draft by default). Save → live on the site instantly,
+  no deploy. Repo-based projects listed read-only below.
+- Media: browser → Vercel Blob directly (admin-blob.js bundle of
+  @vercel/blob/client; images client-resized to 2400px JPEG). Token
+  broker: /api/admin/upload (auth-gated handleUpload). Removing media or
+  deleting a project also deletes its blobs.
+- Data: site_projects table (db.js); admin CRUD /api/admin/siteprojects;
+  public /api/site-projects (published only, 60s edge cache) — 8th
+  Vercel function. projects-data.js PROJECTS_READY fetches + merges DB
+  projects ahead of the static ones; home grid, /projects, and
+  /project?slug=… all await it. CMS projects use the dynamic
+  /project?slug= URL (static /project/<slug> pages stay for repo ones).
+- ONE-TIME SETUP: Vercel → Storage → Create Database → Blob → connect to
+  the project (injects BLOB_READ_WRITE_TOKEN), then redeploy. Until then
+  uploads show a friendly "Blob storage isn't set up yet" toast.

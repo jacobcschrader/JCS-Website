@@ -18,6 +18,8 @@ const routes = {
   settings: require("../_lib/admin/settings.js"),
   portallink: require("../_lib/admin/portal-link.js"),
   covers: require("../_lib/admin/covers.js"),
+  siteprojects: require("../_lib/admin/site-projects.js"),
+  upload: require("../_lib/admin/upload.js"),
 };
 
 module.exports = function handler(req, res) {

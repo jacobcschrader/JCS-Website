@@ -80,6 +80,7 @@
   var root = document.getElementById("proj");
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
   function qs(k){ return new URLSearchParams(location.search).get(k); }
+  function projUrl(p){ return p.cms ? '/project?slug='+encodeURIComponent(p.slug) : '/project/'+encodeURIComponent(p.slug); }
   var slug = qs("slug");
 
   function message(html){
@@ -141,8 +142,8 @@
     var hasGallery = galleryUrls.length > 0;
 
     var nav = '<div class="proj-nav">'+
-      (prev ? '<a href="/project/'+encodeURIComponent(prev.slug)+'"><small>Previous</small><b>'+esc(prev.title)+'</b></a>' : '<span></span>')+
-      (next ? '<a class="next" href="/project/'+encodeURIComponent(next.slug)+'"><small>Next</small><b>'+esc(next.title)+'</b></a>' : '')+
+      (prev ? '<a href="'+projUrl(prev)+'"><small>Previous</small><b>'+esc(prev.title)+'</b></a>' : '<span></span>')+
+      (next ? '<a class="next" href="'+projUrl(next)+'"><small>Next</small><b>'+esc(next.title)+'</b></a>' : '')+
       '</div>';
 
     root.innerHTML =
@@ -225,7 +226,9 @@
     renderProject(proj, idx > -1 ? pub[idx - 1] : null, idx > -1 ? pub[idx + 1] : null);
   }
 
-  // Projects come from the local data file (projects-data.js).
+  // Static projects load instantly; admin-managed ones land when the
+  // API merge (PROJECTS_READY) resolves.
+  if (window.PROJECTS_READY) { try { await window.PROJECTS_READY; } catch (e) {} }
   showFromList(window.PROJECTS_DATA || []);
 })();
 </script>

@@ -111,6 +111,29 @@ function ensureSchema() {
         key   text PRIMARY KEY,
         value text NOT NULL DEFAULT ''
       )`;
+      // Portfolio projects (admin-managed CMS) — media lives in Vercel
+      // Blob; the public site merges these with the static repo projects.
+      await s`CREATE TABLE IF NOT EXISTS site_projects (
+        id             serial PRIMARY KEY,
+        slug           text NOT NULL,
+        title          text NOT NULL,
+        location       text DEFAULT '',
+        year           text DEFAULT '',
+        headline       text DEFAULT '',
+        summary        text DEFAULT '',
+        shot_for       text DEFAULT '',
+        brokerage      text DEFAULT '',
+        price          text DEFAULT '',
+        cover_url      text DEFAULT '',
+        gallery        text DEFAULT '[]',
+        horizontal_url text DEFAULT '',
+        vertical_url   text DEFAULT '',
+        draft          boolean NOT NULL DEFAULT true,
+        sort_order     integer NOT NULL DEFAULT 0,
+        created_at     timestamptz NOT NULL DEFAULT now(),
+        updated_at     timestamptz NOT NULL DEFAULT now()
+      )`;
+      await s`CREATE UNIQUE INDEX IF NOT EXISTS site_projects_slug ON site_projects (slug)`;
       // Work-with-me applications (public /book form).
       await s`CREATE TABLE IF NOT EXISTS requests (
         id          serial PRIMARY KEY,
