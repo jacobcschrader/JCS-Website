@@ -846,3 +846,12 @@ title, else a navy JCS monogram tile.
   design-work mockup grid was dropped).
 - Navs/footers site-wide: Work / Services / About / Contact.
   Home service cards -> /services#photography / #films. Sitemap updated.
+
+### Services page v2 (Guthrie-style)
+- Numbered editorial sections with one short paragraph each:
+  01 Photography (split text/image, aerial folded in, tag pills),
+  02 Films (short intro + the four film cards),
+  03 Social Reels (9:16 autoplay cards — currently the Clear Creek
+  vertical; add more by duplicating the block),
+  04 Design (split, tag pills replace the four long blocks),
+  "Also available" strip, CTA. New CSS: .svcx / .svc-tags.

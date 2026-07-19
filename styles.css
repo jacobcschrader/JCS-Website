@@ -964,3 +964,14 @@ html, body { overflow-x: clip; }   /* nothing may cause sideways scroll */
   .proj-nav { flex-direction: column; gap: 1.2rem; }
   .proj-nav a.next { text-align: left; align-items: flex-start; margin-left: 0; }
 }
+
+/* Services page — numbered editorial sections, split text/media */
+.svcx { display: grid; grid-template-columns: 1fr 1.15fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+.svcx--rev .svcx__media { order: -1; }
+@media (max-width: 860px) { .svcx { grid-template-columns: 1fr; } .svcx--rev .svcx__media { order: 0; } }
+.svcx__num { font-size: 0.6875rem; letter-spacing: 0.26em; text-transform: uppercase; font-weight: 600; color: var(--accent); }
+.svcx h2 { margin: 0.9rem 0 1.1rem; max-width: 16ch; }
+.svcx p { color: var(--muted); max-width: 46ch; line-height: 1.75; margin: 0 0 1.4rem; }
+.svcx__media img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4 / 3; display: block; }
+.svc-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.svc-tags span { font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; color: var(--ink); border: 1px solid var(--line); padding: 0.45rem 0.85rem; white-space: nowrap; }
