@@ -67,16 +67,16 @@ a { color: inherit; text-decoration: none; }
 .section--navy .eyebrow { color: var(--muted-light); }
 
 /* Typography */
-h1, h2, h3, h4 { font-family: var(--serif); font-weight: 300; line-height: 1.08; letter-spacing: -0.01em; color: var(--navy); }
+h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.06; letter-spacing: -0.01em; color: var(--navy); }
 .section--navy h1, .section--navy h2, .section--navy h3 { color: #fff; }
 
 .display {
   font-size: clamp(2.7rem, 5.5vw, 4.5rem);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.04;
   text-wrap: balance;
 }
-.h-section { font-size: clamp(2rem, 3.6vw, 3.25rem); font-weight: 300; line-height: 1.08; text-wrap: balance; }
+.h-section { font-size: clamp(2rem, 3.6vw, 3.25rem); font-weight: 400; line-height: 1.08; text-wrap: balance; }
 .h-card { font-size: clamp(1.3rem, 2vw, 1.65rem); }
 
 .lead {
@@ -578,7 +578,7 @@ html.is-loaded .hero-in > *:nth-child(4) { transition-delay: 0.60s; }
 .proj-card:hover .ph img { transform: scale(1.04); }
 .proj-card__cap { padding-top: 1.1rem; }
 .proj-card__title {
-  font-family: var(--serif); font-weight: 300; font-size: clamp(1.3rem, 1.8vw, 1.625rem);
+  font-family: var(--serif); font-weight: 400; font-size: clamp(1.3rem, 1.8vw, 1.625rem);
   color: var(--navy); line-height:1.15; position:relative; display:inline-block;
 }
 .proj-card__title::after { content:""; position:absolute; left:0; bottom:-3px; width:0; height:1px; background:var(--navy); transition:width 0.4s var(--ease); }
@@ -851,7 +851,7 @@ html.lb-open { overflow: hidden; }
 /* Hero v2 — centered, small-caps subline */
 .hero__kicker { font-size: 0.7rem; letter-spacing: 0.34em; text-transform: uppercase; font-weight: 500; color: rgba(255,255,255,0.78); }
 .hero__sub { font-size: 0.8125rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 500; color: rgba(255,255,255,0.75); margin-top: 1.7rem; }
-.hero--full .display { font-size: clamp(2.3rem, 4.2vw, 3.5rem); line-height: 1.12; font-weight: 300; }
+.hero--full .display { font-size: clamp(2.3rem, 4.2vw, 3.5rem); line-height: 1.12; font-weight: 400; }
 .btn--hero-solid { background: #fff; border-color: #fff; color: var(--ink); }
 .btn--hero-solid:hover { background: transparent; color: #fff; }
 
@@ -865,7 +865,7 @@ html.lb-open { overflow: hidden; }
 .sw-card:hover img { transform: scale(1.05); }
 .sw-card__loc { position: absolute; top: 1.1rem; left: 1.25rem; z-index: 2; font-size: 0.656rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; color: rgba(255,255,255,0.82); }
 .sw-card__body { position: absolute; left: 1.25rem; right: 1.25rem; bottom: 1.1rem; z-index: 2; }
-.sw-card__title { font-family: var(--serif); font-size: clamp(1.35rem, 1.8vw, 1.625rem); font-weight: 300; color: #fff; line-height: 1.08; }
+.sw-card__title { font-family: var(--serif); font-size: clamp(1.35rem, 1.8vw, 1.625rem); font-weight: 400; color: #fff; line-height: 1.08; }
 .sw-card__agent { font-size: 0.75rem; color: rgba(255,255,255,0.72); margin-top: 0.3rem; }
 
 /* Services — image cards + "also available" strip */
@@ -877,7 +877,7 @@ html.lb-open { overflow: hidden; }
 .svc-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,22,39,0.08) 40%, rgba(9,22,39,0.68) 100%); }
 .svc-card:hover img { transform: scale(1.05); }
 .svc-card__body { position: absolute; left: 1.2rem; right: 1.2rem; bottom: 1.15rem; z-index: 2; }
-.svc-card__title { font-family: var(--serif); font-size: 1.5rem; font-weight: 300; color: #fff; line-height: 1.12; }
+.svc-card__title { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; color: #fff; line-height: 1.12; }
 .svc-card__desc { font-size: 0.78rem; color: rgba(255,255,255,0.75); margin-top: 0.35rem; line-height: 1.5; }
 .also { display: flex; align-items: baseline; gap: 1rem 1.8rem; flex-wrap: wrap; border-top: 1px solid var(--line); margin-top: clamp(2rem, 4vw, 3rem); padding-top: 1.5rem; }
 .also__label { font-size: 0.64rem; letter-spacing: 0.26em; text-transform: uppercase; font-weight: 600; color: var(--accent); }
@@ -908,3 +908,8 @@ html.lb-open { overflow: hidden; }
 /* Press row — serif wordmarks */
 .press-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 1.4rem clamp(2rem, 5vw, 4rem); }
 .press-row span { font-family: var(--serif); font-size: clamp(1.05rem, 1.8vw, 1.4rem); font-style: italic; color: var(--muted); opacity: 0.8; white-space: nowrap; }
+
+/* Press logos — grayscale wordmark images, quiet until hover */
+.press-row img { height: clamp(20px, 2.4vw, 30px); width: auto; opacity: 0.55; filter: grayscale(1) brightness(0.35); transition: opacity 0.35s var(--ease); }
+.press-row img:hover { opacity: 0.85; }
+.press-row .press-row__item { display: inline-flex; align-items: center; }
