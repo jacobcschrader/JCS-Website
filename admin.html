@@ -1649,10 +1649,12 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       ADM.spCollect();
       var p = state.sp;
       var dir = 'site/' + (p.slug || 'project');
-      for (var i = 0; i < files.length; i++) {
+      var done = 0, failed = [], results = new Array(files.length);
+      p.busy = 'Uploading 0 of ' + files.length + '\u2026'; render();
+
+      async function one(i) {
         var f = files[i], blob = f, name = f.name;
         var isVideo = /^video\//.test(f.type);
-        p.busy = 'Uploading ' + (i + 1) + ' of ' + files.length + ' — ' + name + '\u2026'; render();
         try {
           if (!isVideo) {
             blob = await ADM.spResize(f, 2400, 0.82);
@@ -1664,20 +1666,33 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
             contentType: isVideo ? f.type : 'image/jpeg',
             multipart: blob.size > 20 * 1024 * 1024
           });
-          if (kind === 'gallery') p.gallery.push(r.url);
-          else if (kind === 'cover') p.cover_url = r.url;
-          else if (kind === 'horizontal') p.horizontal_url = r.url;
-          else if (kind === 'vertical') p.vertical_url = r.url;
+          results[i] = r.url;
         } catch (e) {
-          p.busy = ''; render();
-          toast(/blob-not-configured|No token/i.test(String(e && e.message))
-            ? 'Blob storage isn\u2019t set up yet \u2014 in Vercel: Storage \u2192 Create \u2192 Blob, connect it to the project, then redeploy.'
-            : 'Upload failed \u2014 ' + String((e && e.message) || 'try again.'), 'err');
-          return;
+          failed.push(f.name + ' (' + String((e && e.message) || 'error').slice(0, 60) + ')');
         }
+        done++;
+        var el = document.querySelector('.sp-progress');
+        var msg = 'Uploading ' + done + ' of ' + files.length + '\u2026';
+        p.busy = msg;
+        if (el) el.textContent = msg;   // update in place \u2014 no re-render mid-flight
       }
+
+      // 4 uploads in parallel \u2014 resize + transfer overlap instead of queueing
+      var next = 0;
+      async function worker() { while (next < files.length) { var i = next++; await one(i); } }
+      await Promise.all([worker(), worker(), worker(), worker()]);
+
+      // keep the user's selection order regardless of finish order
+      results.forEach(function (url) {
+        if (!url) return;
+        if (kind === 'gallery') p.gallery.push(url);
+        else if (kind === 'cover') p.cover_url = url;
+        else if (kind === 'horizontal') p.horizontal_url = url;
+        else if (kind === 'vertical') p.vertical_url = url;
+      });
       p.busy = ''; render();
-      toast(files.length + (files.length === 1 ? ' file' : ' files') + ' uploaded.');
+      if (failed.length) toast(failed.length + ' failed: ' + failed[0] + (failed.length > 1 ? ' \u2026' : ''), 'err');
+      else toast(files.length + (files.length === 1 ? ' file' : ' files') + ' uploaded.');
     },
     spClear: function (kind) {
       ADM.spCollect();
