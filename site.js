@@ -127,8 +127,11 @@ window.addEventListener('DOMContentLoaded', function () {
       if (activated) return;
       activated = true;
       host.classList.add('has-video');
-      clip.btn = makeButton(clip);
-      host.appendChild(clip.btn);
+      // data-nosound: silent clips (e.g. the home hero) get no mute button
+      if (!host.hasAttribute('data-nosound')) {
+        clip.btn = makeButton(clip);
+        host.appendChild(clip.btn);
+      }
     }
     video.addEventListener('loadeddata', activate);
     video.addEventListener('playing', activate);

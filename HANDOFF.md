@@ -855,3 +855,8 @@ title, else a navy JCS monogram tile.
   vertical; add more by duplicating the block),
   04 Design (split, tag pills replace the four long blocks),
   "Also available" strip, CTA. New CSS: .svcx / .svc-tags.
+
+### Homepage hero video
+- videos/hero.mp4 (35MB, 1080p CRF27 faststart, audio stripped) from the
+  1.28GB 4K master; poster images/posters/hero.jpg. Hero uses
+  data-nosound — site.js skips the mute button for silent clips.
