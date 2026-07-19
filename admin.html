@@ -260,6 +260,11 @@ small.mut { color: var(--muted); }
 .sp-x:hover { background: #8a2f2f; }
 .sp-ord { position: absolute; bottom: 4px; left: 4px; display: flex; gap: 3px; }
 .sp-ord button { border: 0; background: rgba(255,255,255,0.85); color: var(--navy); width: 22px; height: 20px; font-size: 0.7rem; cursor: pointer; }
+.sp-thumb[draggable] { cursor: grab; }
+.sp-thumb.sp-dragging { opacity: 0.35; }
+.sp-thumb.sp-drop-l::before, .sp-thumb.sp-drop-r::after { content: ""; position: absolute; top: 0; bottom: 0; width: 3px; background: var(--navy); z-index: 2; }
+.sp-thumb.sp-drop-l::before { left: -4px; }
+.sp-thumb.sp-drop-r::after { right: -4px; }
 .sp-progress { margin-top: 1rem; font-size: 0.82rem; color: var(--accent, #52688f); }
 #adm-toasts { position: fixed; bottom: 1.4rem; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 0.5rem; align-items: center; pointer-events: none; }
 .adm-toast { background: var(--navy, #0f2240); color: #fff; font-size: 0.82rem; line-height: 1.45; padding: 0.65rem 1.1rem; box-shadow: 0 10px 30px rgba(15,34,64,0.28); opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; max-width: min(480px, 90vw); text-align: center; }
@@ -1149,7 +1154,10 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     var p = spInit(idPart);
     if (!p) return head('Portfolio', '', true) + '<p class="adm-empty">Project not found.</p>';
     var thumbs = p.gallery.map(function (u, i) {
-      return '<div class="sp-thumb"><img src="' + esc(u) + '" loading="lazy" alt="">' +
+      return '<div class="sp-thumb" draggable="true"' +
+        ' ondragstart="ADM.spDragStart(event,' + i + ')" ondragover="ADM.spDragOver(event,' + i + ')"' +
+        ' ondragleave="ADM.spDragLeave(event)" ondrop="ADM.spDrop(event,' + i + ')" ondragend="ADM.spDragEnd()">' +
+        '<img src="' + esc(u) + '" loading="lazy" alt="" draggable="false">' +
         '<button type="button" class="sp-x" onclick="ADM.spRemoveImg(' + i + ')" title="Remove">&#10005;</button>' +
         '<span class="sp-ord">' +
           (i > 0 ? '<button type="button" onclick="ADM.spMove(' + i + ',-1)" title="Move earlier">&larr;</button>' : '') +
@@ -1708,6 +1716,45 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       if (j < 0 || j >= g.length) return;
       var t = g[i]; g[i] = g[j]; g[j] = t;
       render();
+    },
+    spDragStart: function (e, i) {
+      state.spDrag = i;
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', String(i)); } catch (err) {}
+      requestAnimationFrame(function () { e.target.classList.add('sp-dragging'); });
+    },
+    spDragOver: function (e, i) {
+      if (state.spDrag == null || state.spDrag === i) return;
+      e.preventDefault();                       // allow dropping here
+      e.dataTransfer.dropEffect = 'move';
+      var t = e.currentTarget;
+      // show the insertion side: before or after this thumb
+      var r = t.getBoundingClientRect();
+      t.classList.toggle('sp-drop-l', e.clientX < r.left + r.width / 2);
+      t.classList.toggle('sp-drop-r', e.clientX >= r.left + r.width / 2);
+    },
+    spDragLeave: function (e) {
+      e.currentTarget.classList.remove('sp-drop-l', 'sp-drop-r');
+    },
+    spDrop: function (e, i) {
+      e.preventDefault();
+      var from = state.spDrag;
+      state.spDrag = null;
+      if (from == null || from === i) { render(); return; }
+      ADM.spCollect();
+      var g = state.sp.gallery;
+      var after = e.currentTarget.classList.contains('sp-drop-r');
+      var item = g.splice(from, 1)[0];
+      var to = i + (after ? 1 : 0);
+      if (from < to) to--;                      // account for the removal shift
+      g.splice(to, 0, item);
+      render();
+    },
+    spDragEnd: function () {
+      state.spDrag = null;
+      document.querySelectorAll('.sp-dragging, .sp-drop-l, .sp-drop-r').forEach(function (el) {
+        el.classList.remove('sp-dragging', 'sp-drop-l', 'sp-drop-r');
+      });
     },
     spSave: async function (e) {
       e.preventDefault();
