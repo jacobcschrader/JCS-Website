@@ -62,7 +62,7 @@ function urlsOf(row) {
 
 // Best-effort Blob cleanup — never blocks the save.
 async function delBlobs(urls) {
-  if (!urls.length || !process.env.BLOB_READ_WRITE_TOKEN) return;
+  if (!urls.length || (!process.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_STORE_ID)) return;
   try {
     const { del } = require("@vercel/blob");
     await del(urls);

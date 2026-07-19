@@ -11,7 +11,9 @@ const { handleUpload } = require("@vercel/blob/client");
 module.exports = async function handler(req, res) {
   if (!requireAuth(req, res)) return;
   if (req.method !== "POST") { res.status(405).json({ error: "method-not-allowed" }); return; }
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  // Newer stores authenticate via BLOB_STORE_ID + Vercel OIDC instead of
+  // a BLOB_READ_WRITE_TOKEN env — accept either.
+  if (!process.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_STORE_ID) {
     res.status(500).json({ error: "blob-not-configured" });
     return;
   }
