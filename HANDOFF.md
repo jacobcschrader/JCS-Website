@@ -834,3 +834,15 @@ title, else a navy JCS monogram tile.
 - Admin: phone layer on top of the 760px shell — tighter main/cards,
   2-col stats, full-screen modals, 82vw pipeline columns, 1-col delivery
   grid, 2-col portfolio grid, smaller upload tiles, full-width toasts.
+
+### Services page merge
+- architecture.html + films.html + design.html merged into
+  services.html (/services):
+  film hero with Photography/Films jump pills, the four audience
+  photography blocks (#photography), the four cinematic film cards
+  (#films), CTA. Old URLs 301-redirect via vercel.json
+  (/architecture, /films, /design -> /services); old files deleted.
+  #design section carries the four design blocks (the placeholder
+  design-work mockup grid was dropped).
+- Navs/footers site-wide: Work / Services / About / Contact.
+  Home service cards -> /services#photography / #films. Sitemap updated.
