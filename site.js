@@ -163,6 +163,38 @@ window.addEventListener('DOMContentLoaded', function () {
 })();
 
 /* ---------------------------------------------------------------------
+   Selected Work grid (home) — first six published projects as
+   text-on-image cards: location eyebrow, serif title, agent · brokerage.
+   --------------------------------------------------------------------- */
+(async function () {
+  var grid = document.getElementById('sw-grid');
+  if (!grid) return;
+  if (window.PROJECTS_READY) { try { await window.PROJECTS_READY; } catch (e) {} }
+  var data = (window.PROJECTS_DATA || []).filter(function (p) { return !p.draft && p.cover_url; }).slice(0, 6);
+  if (!data.length) { grid.parentElement.parentElement.style.display = 'none'; return; }
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+
+  grid.innerHTML = data.map(function (p) {
+    var agent = [p.shot_for, p.brokerage].filter(Boolean).join(' · ');
+    return '<a class="sw-card reveal" href="/project/' + esc(p.slug) + '">' +
+      '<img src="' + esc(p.cover_url) + '" alt="' + esc(p.title) + ' — ' + esc(p.location) + '" loading="lazy" decoding="async">' +
+      '<span class="sw-card__loc">' + esc(p.location) + '</span>' +
+      '<span class="sw-card__body"><span class="sw-card__title">' + esc(p.title) + '</span>' +
+      (agent ? '<span class="sw-card__agent" style="display:block">' + esc(agent) + '</span>' : '') +
+      '</span></a>';
+  }).join('');
+
+  // the reveal observer has already run — trigger these directly
+  requestAnimationFrame(function () {
+    grid.querySelectorAll('.reveal').forEach(function (el, i) {
+      el.style.transitionDelay = Math.min(i, 6) * 65 + 'ms';
+      el.classList.add('in');
+    });
+  });
+})();
+
+/* ---------------------------------------------------------------------
    Projects carousel (coverflow) — builds from window.PROJECTS, peeking
    neighbours, arrows, click-to-center, swipe, and seamless infinite loop.
    --------------------------------------------------------------------- */

@@ -765,3 +765,23 @@ title, else a navy JCS monogram tile.
   (images/email/jcs-wordmark.png) so the JCS font renders in Gmail too.
 - Admin alert() popups replaced with quiet bottom-center toasts
   (navy = success, red = error); pre-send confirm dialogs kept.
+
+### Frontend v2 — Guthrie-template redesign (JCS navy)
+
+- Whole public site restructured on the jacobguthrie.com template,
+  keeping the JCS navy + warm-paper palette and Cormorant/Inter type.
+- Nav (all pages): brand left · Work/Services/Films/Design/About/Contact
+  center · Client Login + navy "Book a Shoot" button right.
+- Home: full-screen looping film hero (Ninebark) with centered serif
+  headline ("Homes, artfully told."), small-caps subline, white +
+  ghost CTAs; Selected Work text-on-image grid (first 6 projects,
+  built by site.js into #sw-grid); Services image cards + "Also
+  available" strip; Approach split; Trusted-By marquee band;
+  white testimonial cards w/ monogram avatars; press row; CTA band;
+  columned navy footer (Studio / Connect).
+- Typography scale raised site-wide (.display up to 5rem, .h-section
+  3.1rem); eyebrows are dash-less slate small-caps (--accent #52688f).
+- New CSS lives in the "v2 — editorial template layer" block of
+  styles.css. Old carousel (.pcar) code remains but home no longer
+  uses it. project.html template + all project/*.html regenerated
+  nav/footer. Interior page headers rewritten to the new scale.
