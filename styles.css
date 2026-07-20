@@ -927,23 +927,40 @@ html, body { overflow-x: clip; }   /* nothing may cause sideways scroll */
   :root { --gut: 1.1rem; }
 
   /* nav: tighter bar, room for login + CTA + burger */
-  .nav { padding: 0.9rem var(--gut); }
-  .nav__brand { font-size: 1.3rem; }
+  .nav { padding: 0.8rem var(--gut); }
+  .nav__brand { font-size: 1.2rem; }
 
-  /* hero: stacked full-width CTAs, comfortable type */
-  .hero--full .display { font-size: clamp(1.9rem, 8.6vw, 2.3rem); }
-  .hero__sub { font-size: 0.66rem; letter-spacing: 0.18em; }
-  .hero__cta { width: 100%; }
-  .hero__cta .btn { flex: 1 1 100%; justify-content: center; min-width: 0; }
+  /* buttons: phone-sized everywhere */
+  .btn { font-size: 0.6rem; letter-spacing: 0.16em; padding: 0.7rem 1.25rem; }
+  .nav__cta { padding: 0.55rem 0.85rem; font-size: 0.56rem; }
+
+  /* hero: compact type, inline centered buttons */
+  .hero--full .display { font-size: clamp(1.7rem, 7.8vw, 2rem); }
+  .hero__sub { font-size: 0.58rem; letter-spacing: 0.16em; margin-top: 1.2rem; }
+  .hero__cta { gap: 0.6rem; margin-top: 1.8rem !important; }
+  .hero__cta .btn { flex: 0 1 auto; min-width: 0; justify-content: center; }
 
   /* section header rows stack */
-  .sec-head { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .sec-head { flex-direction: column; align-items: flex-start; gap: 0.8rem; margin-bottom: 1.6rem; }
   .sec-head .link-arrow { margin-bottom: 0; }
 
-  .section { padding: 3.2rem 0; }
-  .display { font-size: clamp(2.1rem, 9.5vw, 2.6rem); }
-  .h-section { font-size: clamp(1.6rem, 7.5vw, 2rem); }
-  .lead { font-size: 1.05rem; }
+  .section { padding: 2.7rem 0; }
+  .display { font-size: clamp(1.9rem, 8.4vw, 2.3rem); }
+  .h-section { font-size: clamp(1.4rem, 6.6vw, 1.75rem); }
+  .lead { font-size: 0.98rem; }
+  .eyebrow { font-size: 0.6rem; letter-spacing: 0.2em; }
+  .page-head { padding-top: 6rem; }
+  .jumps a { font-size: 0.62rem; padding: 0.5rem 0.95rem; }
+  .link-arrow { font-size: 0.62rem; }
+  .svcx h2, .approach__text .h-section { max-width: none; }
+  .svcx p, .approach__text p { font-size: 0.92rem; line-height: 1.7; }
+  .svc-tags span { font-size: 0.58rem; padding: 0.35rem 0.65rem; }
+  .tcard blockquote { font-size: 0.95rem; }
+  .trusted__logo { font-size: 1.05rem; }
+  .footer__top { grid-template-columns: 1fr 1fr; }
+  .footer__top > div:first-child { grid-column: 1 / -1; }
+  .footer a { font-size: 0.8rem; padding: 0.22rem 0; }
+  .footer h4 { font-size: 0.6rem; margin-bottom: 0.7rem; }
 
   /* cards breathe edge-to-edge, comfortable captions */
   .sw-card { aspect-ratio: 3 / 2; }
