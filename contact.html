@@ -45,6 +45,14 @@
 .bk-field textarea { min-height: 110px; resize: vertical; }
 .bk-field input:focus, .bk-field textarea:focus { border-color: var(--navy); background: #fff; }
 .bk-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.45rem 1rem; }
+/* Service pills — tap to select, editorial instead of checkboxes */
+.bk-pills { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.bk-pill input { display: none; }
+.bk-pill span { display: inline-block; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500;
+  color: var(--ink); border: 1px solid var(--line); padding: 0.6rem 1.05rem; cursor: pointer; user-select: none;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease); }
+.bk-pill span:hover { border-color: var(--navy); }
+.bk-pill input:checked + span { background: var(--navy); border-color: var(--navy); color: #fff; }
 .bk-checks label { display: flex; align-items: center; gap: 0.55rem; font-size: 0.9rem; color: var(--ink); cursor: pointer; }
 .bk-group { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin: 1.1rem 0 0.5rem; }
 .bk-nav { display: flex; gap: 0.9rem; margin-top: 1.8rem; }
@@ -139,15 +147,25 @@
     <section data-step="3" hidden>
       <h2 class="bk-h">The work.</h2>
       <p class="bk-sub">What does this property need? Select everything of interest — we'll refine together.</p>
-      <div class="bk-checks" style="margin-top:0.4rem">
-        <label><input type="checkbox" class="b-svc" value="Flash / Ambient Photography"> Flash / Ambient Photography</label>
-        <label><input type="checkbox" class="b-svc" value="Aerial Photography"> Aerial Photography</label>
-        <label><input type="checkbox" class="b-svc" value="Vertical / Vignette Images"> Vertical / Vignette Images</label>
-        <label><input type="checkbox" class="b-svc" value="Twilight Coverage"> Twilight Coverage</label>
-        <label><input type="checkbox" class="b-svc" value="Cinematic Film"> Cinematic Film</label>
-        <label><input type="checkbox" class="b-svc" value="Social Reel"> Social Reel</label>
-        <label><input type="checkbox" class="b-svc" value="Floor Plan Schematics"> Floor Plan Schematics</label>
-        <label><input type="checkbox" class="b-svc" value="Property Website"> Property Website</label>
+      <div class="bk-group" style="margin-top:0.4rem">Photography</div>
+      <div class="bk-pills">
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Flash / Ambient Photography"><span>Flash / Ambient Photography</span></label>
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Aerial Photography"><span>Aerial Photography</span></label>
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Vertical / Vignette Images"><span>Vertical / Vignette Images</span></label>
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Twilight Coverage"><span>Twilight Coverage</span></label>
+      </div>
+      <div class="bk-group">Videography</div>
+      <div class="bk-pills">
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Cinematic Film"><span>Cinematic Film</span></label>
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Social Reel"><span>Social Reel</span></label>
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Twilight Film"><span>Twilight Film</span></label>
+      </div>
+      <div class="bk-group">More</div>
+      <div class="bk-pills">
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Floor Plan Schematics"><span>Floor Plan Schematics</span></label>
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Property Website"><span>Property Website</span></label>
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Virtual Staging"><span>Virtual Staging</span></label>
+        <label class="bk-pill"><input type="checkbox" class="b-svc" value="Zillow 3D Tour"><span>3D Tour</span></label>
       </div>
       <div class="bk-field full" style="margin-top:1.3rem">
         <label for="b-message">About the property &amp; the vision</label>
