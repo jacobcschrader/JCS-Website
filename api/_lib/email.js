@@ -28,7 +28,9 @@ async function sendEmail({ from, to, subject, text, html, replyTo, cc, attachmen
   const payload = { from: from || FROM, to: Array.isArray(to) ? to : [to], subject };
   if (text) payload.text = text;
   if (html) payload.html = html;
-  if (replyTo) payload.reply_to = replyTo;
+  // Every reply lands in Jacob's real inbox — the @jacobcschrader.com
+  // senders are send-only identities with no mailbox behind them.
+  payload.reply_to = replyTo || OWNER;
   if (cc && cc.length) payload.cc = Array.isArray(cc) ? cc : [cc];
   if (attachments) payload.attachments = attachments; // [{ filename, content(base64), content_type }]
 
