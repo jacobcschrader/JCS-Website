@@ -325,6 +325,7 @@ small.mut { color: var(--muted); }
       <a data-r="requests">Requests<span class="adm-count adm-hidden" id="req-badge"></span></a>
       <a data-r="pipeline">Projects</a>
       <a data-r="deliveries">Deliveries</a>
+      <a data-r="proposals">Proposals</a>
       <a data-r="clients">Clients</a>
       <a data-r="portfolio">Portfolio</a>
       <a data-r="settings">Settings</a>
@@ -349,7 +350,7 @@ small.mut { color: var(--muted); }
   function net(b){ return (Number(b.price) || 0) - (Number(b.discount_value) || 0); }
   function dstr(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
 
-  var state = { clients: [], bookings: [], requests: [], discounts: [], siteProjects: [], sp: null, reqTab: 'pending', loaded: false,
+  var state = { clients: [], bookings: [], requests: [], discounts: [], siteProjects: [], proposals: [], sp: null, reqTab: 'pending', loaded: false,
               view: localStorage.getItem('adm-view') || 'pipeline', q: '', clientFilter: '', collapsed: {} };
 var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', delivered:'#7a5fb8', completed:'#3f7a4f', paid:'#1d4d2a' };
   var TYPES = ['Architectural Photography','Film / Videography','Aerial & Drone','Full Campaign (Stills + Film)','Other'];
@@ -411,9 +412,10 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     render();
   }
   async function reload() {
-    var c = await api('clients'), b = await api('bookings'), r = await api('requests'), d = await api('discounts'), st = await api('settings'), sp = await api('siteprojects');
+    var c = await api('clients'), b = await api('bookings'), r = await api('requests'), d = await api('discounts'), st = await api('settings'), sp = await api('siteprojects'), pr = await api('proposals');
     state.clients = c.clients; state.bookings = b.bookings; state.requests = r.requests; state.discounts = d.discounts;
     state.siteProjects = sp.projects || [];
+    state.proposals = pr.proposals || [];
     state.settings = st.settings || {}; state.loaded = true;
     var pending = state.requests.filter(function (x) { return x.status === 'pending'; }).length;
     var badge = $('req-badge');
@@ -917,6 +919,17 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       '</div></div>';
   }
 
+  // "Status: Vacant · Listing: For Sale · …" from the wizard's details JSON.
+  function reqDetails(r) {
+    try {
+      var d = JSON.parse(r.details || '{}');
+      var L = { status: 'Status', listing_type: 'Listing', faces: 'Faces',
+                view_home: 'View home', access: 'Access', homeowner_home: 'Homeowner home' };
+      return Object.keys(L).filter(function (k) { return d[k]; })
+        .map(function (k) { return L[k] + ': ' + esc(d[k]); }).join(' · ');
+    } catch (e) { return ''; }
+  }
+
   function vRequests() {
     var tabs = ['pending', 'accepted', 'declined', 'all'];
     var list = state.requests.filter(function (r) { return state.reqTab === 'all' || r.status === state.reqTab; });
@@ -938,6 +951,14 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
                 (loc ? ' · ' + esc(loc) : '') + (r.sqft ? ' · ' + Number(r.sqft).toLocaleString() + ' sqft' : '') +
                 (r.target_date ? ' · needed by ' + dstr(r.target_date) : '') + '</div>' +
               (r.services ? '<div style="font-size:0.82rem;color:var(--muted)">' + esc(r.services) + '</div>' : '') +
+              (r.addons ? '<div style="font-size:0.82rem;color:var(--muted)">Add-ons: ' + esc(r.addons) + '</div>' : '') +
+              (reqDetails(r) ? '<div style="font-size:0.8rem;color:var(--muted);margin-top:0.25rem">' + reqDetails(r) + '</div>' : '') +
+              ((r.estimated_total || r.launch_date || r.signature)
+                ? '<div style="font-size:0.82rem;color:var(--ink);margin-top:0.35rem">' +
+                  (r.estimated_total ? '<b style="font-family:var(--serif);font-size:0.95rem;color:var(--navy)">' + money(r.estimated_total) + '</b> estimated' : '') +
+                  (r.launch_date ? (r.estimated_total ? ' · ' : '') + 'launch ' + dstr(r.launch_date) : '') +
+                  (r.signature ? ((r.estimated_total || r.launch_date) ? ' · ' : '') + '✍ signed ' + esc(r.signature) : '') + '</div>'
+                : '') +
               (r.message ? '<div class="adm-notes" style="margin-top:0.6rem">' + esc(r.message) + '</div>' : '') +
               '<div style="margin-top:0.7rem;display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center">' +
                 '<div style="font-size:0.84rem;color:var(--muted)">' + esc(r.email) + (r.phone ? ' · ' + esc(r.phone) : '') + '</div>' +
@@ -1227,6 +1248,91 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
       '</form>';
   }
 
+  // ================= proposals =================
+  function propTotal(p) {
+    var t = 0;
+    try { JSON.parse(p.items || '[]').forEach(function (it) { if (typeof it.price === 'number') t += it.price; }); } catch (e) {}
+    return t;
+  }
+  function propUrl(p) { return 'https://www.jacobcschrader.com/proposals/' + p.slug; }
+  function propBadge(p) {
+    if (p.accepted_at) return '<span class="adm-badge adm-badge--paid">Accepted</span>';
+    if (p.sent_at) return '<span class="adm-badge adm-badge--accepted">Sent</span>';
+    return '<span class="adm-badge adm-badge--pending">Draft</span>';
+  }
+
+  function vProposals() {
+    var list = state.proposals;
+    return head('Proposals', '<button class="adm-btn" onclick="ADM.propNew()">+ New proposal</button>') +
+      '<div class="adm-card">' + (list.length
+        ? list.map(function (p) {
+            var t = propTotal(p);
+            return '<div style="padding:1.05rem 0;border-bottom:1px solid var(--line-soft);display:flex;gap:0.9rem;align-items:baseline;flex-wrap:wrap;cursor:pointer" onclick="ADM.go(\'proposal/' + p.id + '\')">' +
+              '<b style="font-family:var(--serif);font-size:1.1rem;color:var(--navy)">' + esc(p.title) + '</b>' +
+              (p.client_name ? '<small class="mut">' + esc(p.client_name) + '</small>' : '') +
+              propBadge(p) +
+              '<span style="flex:1"></span>' +
+              (t ? '<span style="font-family:var(--serif);color:var(--navy)">' + money(t) + '</span>' : '') +
+              '<small class="mut">' + dstr(p.created_at) + '</small></div>';
+          }).join('')
+        : '<p class="adm-empty">No proposals yet. Create one, add the scope, then send your client their private link — proposal.jacobcschrader.com/&lt;property&gt;.</p>') +
+      '</div>';
+  }
+
+  function propItemRow(it, i) {
+    it = it || {};
+    return '<div class="adm-prop-item" data-i="' + i + '" style="display:grid;grid-template-columns:110px 1fr 110px auto;gap:0.5rem;align-items:start;padding:0.55rem 0;border-bottom:1px solid var(--line-soft)">' +
+      '<input class="pi-group" placeholder="Group" value="' + esc(it.group || '') + '">' +
+      '<span><input class="pi-name" placeholder="Line item — e.g. Photography" value="' + esc(it.name || '') + '" style="width:100%;box-sizing:border-box">' +
+      '<input class="pi-desc" placeholder="One-line description (optional)" value="' + esc(it.desc || '') + '" style="width:100%;box-sizing:border-box;margin-top:0.35rem;font-size:0.8rem">' +
+      '<input class="pi-badge" placeholder="Badge (optional — e.g. INCLUDES DRONE)" value="' + esc(it.badge || '') + '" style="width:100%;box-sizing:border-box;margin-top:0.35rem;font-size:0.72rem"></span>' +
+      '<input class="pi-price" type="number" min="0" step="50" placeholder="$ (blank = Included)" oninput="ADM.propLiveTotal()" value="' + (it.price === '' || it.price == null ? '' : esc(it.price)) + '">' +
+      '<span style="display:flex;gap:0.25rem;padding-top:0.4rem">' +
+        '<button type="button" class="adm-btn adm-btn--ghost" style="padding:0.3rem 0.55rem" title="Move up" onclick="ADM.propItemMove(' + i + ',-1)">&uarr;</button>' +
+        '<button type="button" class="adm-btn adm-btn--ghost" style="padding:0.3rem 0.55rem" title="Move down" onclick="ADM.propItemMove(' + i + ',1)">&darr;</button>' +
+        '<button type="button" class="adm-btn--danger adm-btn" style="padding:0.3rem 0.55rem" title="Remove" onclick="ADM.propItemDel(' + i + ')">&times;</button>' +
+      '</span></div>';
+  }
+
+  function vProposalEdit(id) {
+    var p = state.proposals.find(function (x) { return x.id == id; });
+    if (!p) return head('Proposal', '', true) + '<p class="adm-empty">Proposal not found.</p>';
+    var items = [];
+    try { items = JSON.parse(p.items || '[]'); } catch (e) {}
+    state.propItems = items;   // working copy for the row editor
+    var t = propTotal(p);
+    return head(p.title, propBadge(p) +
+        '<button class="adm-btn adm-btn--ghost" onclick="ADM.propPreview(' + p.id + ')">Preview</button>' +
+        '<button class="adm-btn adm-btn--ghost" onclick="ADM.propCopy(' + p.id + ')">Copy link</button>' +
+        '<button class="adm-btn" onclick="ADM.propSend(' + p.id + ')">' + (p.sent_at ? 'Resend' : 'Send to client') + '</button>', true) +
+      '<div class="adm-card"><h2>The property</h2><div class="adm-form">' +
+        fld('pp-title', 'Property / title *', '<input id="pp-title" required value="' + esc(p.title) + '">') +
+        fld('pp-location', 'Location <small style="text-transform:none;letter-spacing:0">(e.g. Danville, California)</small>', '<input id="pp-location" value="' + esc(p.location || '') + '">') +
+        fld('pp-slug', 'Link slug <small style="text-transform:none;letter-spacing:0">(proposal.jacobcschrader.com/&hellip;)</small>', '<input id="pp-slug" value="' + esc(p.slug) + '">') +
+        fld('pp-client', 'Prepared for', '<input id="pp-client" placeholder="Marie Morgenstern" value="' + esc(p.client_name || '') + '">') +
+        fld('pp-email', 'Client email', '<input id="pp-email" type="email" placeholder="client@brokerage.com" value="' + esc(p.client_email || '') + '">') +
+        '<div class="adm-field full"><label for="pp-intro">Intro line <small style="text-transform:none;letter-spacing:0">(under &ldquo;Scope &amp; Investment&rdquo; — optional)</small></label>' +
+          '<input id="pp-intro" placeholder="A full marketing suite that ensures maximum exposure." value="' + esc(p.intro || '') + '"></div>' +
+      '</div></div>' +
+      '<div class="adm-card" style="margin-top:1.2rem"><h2>Scope &amp; investment</h2>' +
+        '<p class="mut" style="font-size:0.8rem;margin:0.2rem 0 0.8rem">Group labels (Photography, Film&hellip;) render as section headings. Leave the price blank to show &ldquo;Included&rdquo;.</p>' +
+        '<div id="pp-items">' + state.propItems.map(propItemRow).join('') + '</div>' +
+        '<div style="display:flex;gap:0.8rem;align-items:center;margin-top:0.9rem">' +
+          '<button type="button" class="adm-btn adm-btn--ghost" onclick="ADM.propItemAdd()">+ Add line item</button>' +
+          '<span style="flex:1"></span>' +
+          '<span style="font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">Campaign total</span>' +
+          '<b id="pp-total" style="font-family:var(--serif);font-size:1.25rem;color:var(--navy)">' + money(t) + '</b>' +
+        '</div>' +
+        '<div class="adm-field full" style="margin-top:1rem"><label for="pp-note">Note under the total <small style="text-transform:none;letter-spacing:0">(optional)</small></label>' +
+          '<input id="pp-note" placeholder="A full marketing suite that ensures maximum exposure." value="' + esc(p.note || '') + '"></div>' +
+        '<div style="margin-top:1.3rem;display:flex;gap:0.8rem;flex-wrap:wrap">' +
+          '<button class="adm-btn" onclick="ADM.propSave(' + p.id + ')">Save proposal</button>' +
+          '<button class="adm-btn--danger adm-btn" onclick="ADM.propDelete(' + p.id + ')">Delete</button>' +
+        '</div>' +
+        (p.sent_at ? '<p class="mut" style="font-size:0.78rem;margin-top:0.9rem">Sent ' + dstr(p.sent_at) + (p.sends > 1 ? ' · ' + p.sends + '×' : '') + (p.accepted_at ? ' · accepted ' + dstr(p.accepted_at) + (p.accepted_by ? ' by ' + esc(p.accepted_by) : '') : '') + '</p>' : '') +
+      '</div>';
+  }
+
   function vSettings() {
     var list = state.discounts;
     var sub = (state.settings || {}).pixieset_subdomain || '';
@@ -1489,6 +1595,7 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     var r = route(), m = $('main');
     var section = r.split('/')[0];
     var owns = { dash:'dash', requests:'requests', pipeline:'pipeline', project:'pipeline', deliveries:'deliveries', delivery:'deliveries',
+                 proposals:'proposals', proposal:'proposals',
                  clients:'clients', client:'clients', portfolio:'portfolio', siteproject:'portfolio', settings:'settings' }[section] || 'dash';
     document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.r === owns); });
     if (section === 'requests') m.innerHTML = vRequests();
@@ -1496,6 +1603,8 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
     else if (section === 'project') m.innerHTML = vBookingDetail(r.split('/')[1]);
     else if (section === 'deliveries') { m.innerHTML = vDeliveries(); ADM.coversBackfill(); }
     else if (section === 'delivery') m.innerHTML = vDeliveryEdit(r.split('/')[1]);
+    else if (section === 'proposals') m.innerHTML = vProposals();
+    else if (section === 'proposal') m.innerHTML = vProposalEdit(r.split('/')[1]);
     else if (section === 'clients') m.innerHTML = vClients();
     else if (section === 'client') m.innerHTML = vClientDetail(r.split('/')[1]);
     else if (section === 'portfolio') { state.sp = null; m.innerHTML = vPortfolio(); }
@@ -1542,6 +1651,96 @@ var STAGE_COLOR = { upcoming:'#4a6da8', editing:'#b98a2f', revisions:'#b9652f', 
         var j = await api('portallink?id=' + id);
         window.open(j.url, '_blank');
       } catch (e) { toast(friendly(e), 'err'); }
+    },
+
+    // ---- proposals ----
+    propNew: function () {
+      openModal('New proposal',
+        fld('f-ptitle', 'Property / title *', '<input id="f-ptitle" required placeholder="465 Headwaters Way">') +
+        fld('f-ploc', 'Location', '<input id="f-ploc" placeholder="Danville, California">') +
+        fld('f-pclient', 'Prepared for', '<input id="f-pclient" placeholder="Client name">') +
+        fld('f-pemail', 'Client email', '<input id="f-pemail" type="email" placeholder="client@brokerage.com">'),
+        async function () {
+          var j = await api('proposals', 'POST', {
+            title: $('f-ptitle').value, location: $('f-ploc').value,
+            client_name: $('f-pclient').value, client_email: $('f-pemail').value,
+            items: [
+              { group: 'Photography', name: 'Photography', desc: 'Editorial flash-and-ambient stills of the full property — interiors, exteriors, grounds, and aerial coverage.', price: '', badge: 'Includes drone' }
+            ]
+          });
+          await reload(); go('proposal/' + j.proposal.id);
+        });
+    },
+    propReadItems: function () {
+      return Array.prototype.map.call(document.querySelectorAll('#pp-items .adm-prop-item'), function (row) {
+        var v = function (cls) { var el = row.querySelector(cls); return el ? el.value : ''; };
+        var price = v('.pi-price');
+        return { group: v('.pi-group'), name: v('.pi-name'), desc: v('.pi-desc'),
+                 badge: v('.pi-badge'), price: price === '' ? '' : Number(price) };
+      }).filter(function (it) { return it.name; });
+    },
+    propLiveTotal: function () {
+      var t = 0;
+      ADM.propReadItems().forEach(function (it) { if (typeof it.price === 'number') t += it.price; });
+      var el = $('pp-total'); if (el) el.textContent = money(t);
+    },
+    propSave: async function (id, quiet) {
+      try {
+        await api('proposals', 'PUT', {
+          id: id,
+          title: $('pp-title').value, slug: $('pp-slug').value, location: $('pp-location').value,
+          client_name: $('pp-client').value, client_email: $('pp-email').value,
+          intro: $('pp-intro').value, note: $('pp-note').value,
+          items: ADM.propReadItems()
+        });
+        await reload();
+        if (!quiet) { render(); toast('Proposal saved.'); }
+      } catch (e) { toast(friendly(e), 'err'); throw e; }
+    },
+    propItemAdd: function () {
+      state.propItems = ADM.propReadItems();
+      state.propItems.push({ group: '', name: '', desc: '', price: '', badge: '' });
+      $('pp-items').innerHTML = state.propItems.map(propItemRow).join('');
+    },
+    propItemDel: function (i) {
+      state.propItems = ADM.propReadItems();
+      state.propItems.splice(i, 1);
+      $('pp-items').innerHTML = state.propItems.map(propItemRow).join('');
+      ADM.propLiveTotal();
+    },
+    propItemMove: function (i, dir) {
+      state.propItems = ADM.propReadItems();
+      var j = i + dir;
+      if (j < 0 || j >= state.propItems.length) return;
+      var t = state.propItems[i]; state.propItems[i] = state.propItems[j]; state.propItems[j] = t;
+      $('pp-items').innerHTML = state.propItems.map(propItemRow).join('');
+    },
+    propCopy: function (id) {
+      var p = state.proposals.find(function (x) { return x.id == id; }); if (!p) return;
+      var url = 'https://proposal.jacobcschrader.com/' + p.slug;
+      (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
+        .then(function () { toast('Link copied — ' + url); })
+        .catch(function () { prompt('Copy the proposal link:', url); });
+    },
+    propPreview: async function (id) {
+      var p = state.proposals.find(function (x) { return x.id == id; }); if (!p) return;
+      try { await ADM.propSave(id, true); } catch (e) { return; }
+      window.open('/proposal?slug=' + encodeURIComponent(($('pp-slug') ? $('pp-slug').value : p.slug)) + '&preview=1', '_blank');
+    },
+    propSend: async function (id) {
+      var p = state.proposals.find(function (x) { return x.id == id; }); if (!p) return;
+      try { await ADM.propSave(id, true); } catch (e) { return; }
+      p = state.proposals.find(function (x) { return x.id == id; });
+      var to = p.client_email || prompt('Send the proposal to which email?') || '';
+      if (!to) return;
+      if (!confirm('Send the proposal for ' + p.title + ' to ' + to + '?')) return;
+      try {
+        await api('proposals', 'POST', { id: id, action: 'send', email: to });
+        await reload(); render();
+        toast('Proposal sent to ' + to + '.');
+      } catch (e) {
+        toast(String(e.message) === 'no-client-email' ? 'Add a valid client email first.' : friendly(e), 'err');
+      }
     },
     cliAddEmail: async function (id) {
       var c = state.clients.find(function (x) { return x.id == id; }); if (!c) return;

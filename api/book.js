@@ -32,6 +32,13 @@ module.exports = async function handler(req, res) {
     target_date: field(b.target_date, 10) || null,
     services: field(b.services, 1000),
     message: field(b.message, 5000),
+    // Booking-wizard extras (all optional so the old payload still works).
+    launch_date: field(b.launch_date, 10) || null,
+    addons: field(b.addons, 1000),
+    estimated_total: b.estimated_total != null && b.estimated_total !== ""
+      ? Number(b.estimated_total) || null : null,
+    details: field(b.details, 3000),
+    signature: field(b.signature, 200),
   };
   if (!f.name || !f.title || !f.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) {
     res.status(400).json({ error: "missing-fields" });
@@ -41,11 +48,22 @@ module.exports = async function handler(req, res) {
   try {
     const s = await db();
     const [row] = await s`
-      INSERT INTO requests (name, email, phone, brokerage, title, city, state, zip, sqft, target_date, services, message)
-      VALUES (${f.name}, ${f.email}, ${f.phone}, ${f.brokerage}, ${f.title}, ${f.city}, ${f.state}, ${f.zip}, ${f.sqft}, ${f.target_date}, ${f.services}, ${f.message})
+      INSERT INTO requests (name, email, phone, brokerage, title, city, state, zip, sqft, target_date, services, message,
+                            launch_date, addons, estimated_total, details, signature, signed_at)
+      VALUES (${f.name}, ${f.email}, ${f.phone}, ${f.brokerage}, ${f.title}, ${f.city}, ${f.state}, ${f.zip}, ${f.sqft}, ${f.target_date}, ${f.services}, ${f.message},
+              ${f.launch_date}, ${f.addons}, ${f.estimated_total}, ${f.details}, ${f.signature}, ${f.signature ? new Date() : null})
       RETURNING id`;
 
     const loc = [f.city, [f.state, f.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+    // Property-details JSON → readable "Label · value" lines for email.
+    let detailLines = "";
+    try {
+      const d = JSON.parse(f.details || "{}");
+      const L = { status: "Status", listing_type: "Listing", faces: "Front faces",
+                  view_home: "View home", access: "Access", homeowner_home: "Homeowner home" };
+      detailLines = Object.keys(L).filter((k) => d[k])
+        .map((k) => `${L[k]}: ${escHtml(d[k])}`).join("<br>");
+    } catch (e) { /* optional */ }
     const rows = [
       ["Client", escHtml(f.name)],
       ["Email", `<a href="mailto:${escHtml(f.email)}" style="color:#33507e;">${escHtml(f.email)}</a>`],
@@ -54,7 +72,12 @@ module.exports = async function handler(req, res) {
       ["Property", escHtml(f.title) + (loc ? `<br><span style="color:#8a94a6;">${escHtml(loc)}</span>` : "")],
       ["Sqft", f.sqft ? Number(f.sqft).toLocaleString() : ""],
       ["Services", f.services ? escHtml(f.services) : ""],
-      ["Target date", f.target_date ? escHtml(f.target_date) : ""],
+      ["Add-ons", f.addons ? escHtml(f.addons) : ""],
+      ["Est. total", f.estimated_total ? "$" + Number(f.estimated_total).toLocaleString() : ""],
+      ["Shoot date", f.target_date ? escHtml(f.target_date) : ""],
+      ["Launch date", f.launch_date ? escHtml(f.launch_date) : ""],
+      ["Details", detailLines],
+      ["Signed", f.signature ? escHtml(f.signature) : ""],
     ];
 
     // ---- to Jacob -----------------------------------------------------
@@ -93,7 +116,10 @@ module.exports = async function handler(req, res) {
           rows: [
             ["Property", escHtml(f.title) + (loc ? `<br><span style="color:#8a94a6;">${escHtml(loc)}</span>` : "")],
             ["Services", f.services ? escHtml(f.services) : ""],
-            ["Target date", f.target_date ? escHtml(f.target_date) : ""],
+            ["Add-ons", f.addons ? escHtml(f.addons) : ""],
+            ["Est. total", f.estimated_total ? "$" + Number(f.estimated_total).toLocaleString() : ""],
+            ["Shoot date", f.target_date ? escHtml(f.target_date) : ""],
+            ["Launch date", f.launch_date ? escHtml(f.launch_date) : ""],
           ],
           cta: { label: "View the Work", url: "https://www.jacobcschrader.com/projects" },
           audience: "client",

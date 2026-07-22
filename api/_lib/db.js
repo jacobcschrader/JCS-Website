@@ -153,6 +153,36 @@ function ensureSchema() {
         project_id  integer,
         created_at  timestamptz NOT NULL DEFAULT now()
       )`;
+      // Guthrie-style booking wizard fields (idempotent): live-priced
+      // add-ons, estimated total, property details JSON, e-signature.
+      await s`ALTER TABLE requests ADD COLUMN IF NOT EXISTS launch_date date`;
+      await s`ALTER TABLE requests ADD COLUMN IF NOT EXISTS addons text DEFAULT ''`;
+      await s`ALTER TABLE requests ADD COLUMN IF NOT EXISTS estimated_total numeric`;
+      await s`ALTER TABLE requests ADD COLUMN IF NOT EXISTS details text DEFAULT ''`;
+      await s`ALTER TABLE requests ADD COLUMN IF NOT EXISTS signature text DEFAULT ''`;
+      await s`ALTER TABLE requests ADD COLUMN IF NOT EXISTS signed_at timestamptz`;
+      // Client proposals (admin-authored) — public page at
+      // /proposals/<slug> and proposal.jacobcschrader.com/<slug>.
+      // items is a JSON array of { group, name, desc, price, badge }.
+      await s`CREATE TABLE IF NOT EXISTS proposals (
+        id           serial PRIMARY KEY,
+        slug         text NOT NULL,
+        title        text NOT NULL,
+        location     text DEFAULT '',
+        client_name  text DEFAULT '',
+        client_email text DEFAULT '',
+        intro        text DEFAULT '',
+        items        text DEFAULT '[]',
+        note         text DEFAULT '',
+        status       text NOT NULL DEFAULT 'draft',
+        sent_at      timestamptz,
+        sends        integer DEFAULT 0,
+        accepted_at  timestamptz,
+        accepted_by  text DEFAULT '',
+        created_at   timestamptz NOT NULL DEFAULT now(),
+        updated_at   timestamptz NOT NULL DEFAULT now()
+      )`;
+      await s`CREATE UNIQUE INDEX IF NOT EXISTS proposals_slug ON proposals (slug)`;
     })();
   }
   return _ready;

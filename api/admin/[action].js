@@ -17,6 +17,7 @@ const routes = {
   invoice: require("../_lib/admin/invoice.js"),
   settings: require("../_lib/admin/settings.js"),
   portallink: require("../_lib/admin/portal-link.js"),
+  proposals: require("../_lib/admin/proposals.js"),
   covers: require("../_lib/admin/covers.js"),
   siteprojects: require("../_lib/admin/site-projects.js"),
   upload: require("../_lib/admin/upload.js"),

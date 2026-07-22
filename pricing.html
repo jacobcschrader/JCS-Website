@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>2026 Pricing &amp; Services — Jacob Schrader</title>
+<meta name="description" content="Pricing & services for real estate, architecture & design photography and film by Jacob Schrader.">
+<link rel="canonical" href="https://www.jacobcschrader.com/pricing">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jacob Schrader">
+<meta property="og:title" content="2026 Pricing &amp; Services — Jacob Schrader">
+<meta property="og:description" content="A comprehensive look at services, pricing, and offerings.">
+<meta property="og:url" content="https://www.jacobcschrader.com/pricing">
+<meta property="og:image" content="https://www.jacobcschrader.com/images/og/og-default.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/styles.css">
+<style>
+/* ================= Pricing page ================= */
+.pz-top { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex;
+  align-items: center; justify-content: space-between; padding: 1.15rem clamp(1.25rem, 4vw, 2.6rem);
+  transition: background 0.4s var(--ease), box-shadow 0.4s var(--ease); }
+.pz-top.solid { background: var(--paper-warm); box-shadow: 0 1px 0 var(--line-soft); }
+.pz-brand { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1.5rem;
+  color: #fff; letter-spacing: 0.04em; transition: color 0.4s var(--ease); }
+.pz-top.solid .pz-brand { color: var(--navy); }
+.pz-book { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600;
+  color: #fff; border: 1px solid rgba(255,255,255,0.55); padding: 0.8rem 1.5rem;
+  transition: all 0.3s var(--ease); }
+.pz-book:hover { background: #fff; color: var(--navy); }
+.pz-top.solid .pz-book { color: #fff; background: var(--navy); border-color: var(--navy); }
+
+.pz-hero { position: relative; min-height: 88vh; display: flex; align-items: center;
+  justify-content: center; text-align: center; color: #fff; overflow: hidden; }
+.pz-hero__bg { position: absolute; inset: 0; background-size: cover; background-position: center;
+  filter: brightness(0.42); }
+.pz-hero__in { position: relative; max-width: 760px; padding: 8rem clamp(1.25rem, 5vw, 2rem) 5rem; }
+.pz-hero .eyebrow { color: rgba(255,255,255,0.65); }
+.pz-hero h1 { color: #fff; font-size: clamp(2.8rem, 6.5vw, 4.6rem); margin: 1.3rem 0 1.6rem; }
+.pz-hero p { font-family: var(--serif); font-size: clamp(1.05rem, 1.6vw, 1.25rem); line-height: 1.65;
+  color: rgba(255,255,255,0.85); max-width: 56ch; margin: 0 auto 1.1rem; }
+.pz-hero .fine { font-family: var(--sans); font-size: 0.85rem; color: rgba(255,255,255,0.6); }
+.pz-hero .btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2.6rem; }
+.pz-hero .btns a { display: inline-block; font-size: 0.66rem; letter-spacing: 0.22em;
+  text-transform: uppercase; font-weight: 600; padding: 1.05rem 2.1rem; transition: all 0.3s var(--ease); }
+.pz-hero .btns .solid { background: #fff; color: var(--navy); }
+.pz-hero .btns .solid:hover { background: rgba(255,255,255,0.88); }
+.pz-hero .btns .ghost { border: 1px solid rgba(255,255,255,0.45); color: #fff; }
+.pz-hero .btns .ghost:hover { border-color: #fff; }
+
+.pz-wrap { max-width: 860px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2rem); }
+.pz-intro { text-align: center; padding: clamp(4rem, 9vw, 6.5rem) 0 clamp(2.5rem, 5vw, 4rem); }
+.pz-intro h2 { font-size: clamp(2rem, 4vw, 2.9rem); margin: 1.1rem 0 1rem; }
+.pz-intro p { font-size: 0.95rem; color: var(--muted); max-width: 58ch; margin: 0 auto; }
+
+.pz-svc { border-top: 1px solid var(--line); padding: clamp(2.6rem, 6vw, 4rem) 0; }
+.pz-svc__head { display: flex; align-items: baseline; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+.pz-svc h3 { font-size: clamp(1.7rem, 3vw, 2.3rem); margin: 0; }
+.pz-svc .from { text-align: right; }
+.pz-svc .from b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.5rem; color: var(--navy); }
+.pz-svc .from small { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+  font-weight: 600; color: var(--muted); }
+.pz-svc__desc { font-family: var(--serif); font-size: 1.12rem; line-height: 1.6; color: var(--muted);
+  max-width: 58ch; margin: 1rem 0 1.4rem; }
+.pz-inc { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
+  color: var(--accent); line-height: 1.9; }
+.pz-adds { margin-top: 1.3rem; }
+.pz-adds b { display: block; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+  font-weight: 600; color: var(--muted); margin-bottom: 0.6rem; }
+.pz-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.pz-chip { font-size: 0.78rem; color: var(--ink); border: 1px solid var(--line); padding: 0.5rem 0.9rem; }
+.pz-chip i { font-style: normal; color: var(--navy); font-weight: 500; }
+
+.pz-toggle { margin-top: 1.6rem; background: none; border: 0; cursor: pointer; font-family: var(--sans);
+  font-size: 0.64rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600;
+  color: var(--navy); display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0; }
+.pz-toggle .pm { font-size: 1rem; line-height: 1; transition: transform 0.3s var(--ease); }
+.pz-toggle.open .pm { transform: rotate(45deg); }
+.pz-table { display: none; margin-top: 1.2rem; border-top: 1px solid var(--line); }
+.pz-table.open { display: block; }
+.pz-trow { display: flex; justify-content: space-between; gap: 1.5rem; padding: 0.7rem 0.15rem;
+  border-bottom: 1px solid var(--line-soft); font-size: 0.88rem; }
+.pz-trow span { color: var(--muted); }
+.pz-trow b { font-family: var(--serif); font-weight: 500; font-size: 1rem; color: var(--navy); }
+.pz-examples { display: inline-block; margin-top: 1.5rem; font-size: 0.64rem; letter-spacing: 0.2em;
+  text-transform: uppercase; font-weight: 600; color: var(--muted); transition: color 0.3s var(--ease); }
+.pz-examples:hover { color: var(--navy); }
+
+.pz-finetext { font-size: 0.82rem; color: var(--muted); line-height: 1.75; border-top: 1px solid var(--line);
+  padding: clamp(2rem, 4vw, 2.8rem) 0; }
+
+.pz-extra { border-top: 1px solid var(--line); padding: clamp(2.6rem, 6vw, 4rem) 0; }
+.pz-extra h3 { font-size: clamp(1.7rem, 3vw, 2.3rem); margin: 0.9rem 0 0.8rem; }
+.pz-extra .lead-sm { font-family: var(--serif); font-size: 1.1rem; color: var(--muted); margin-bottom: 2rem; }
+
+.pz-cta { background: var(--navy); color: #fff; text-align: center;
+  padding: clamp(4.5rem, 10vw, 7rem) clamp(1.25rem, 5vw, 2rem); margin-top: clamp(3rem, 6vw, 4.5rem); }
+.pz-cta .eyebrow { color: rgba(255,255,255,0.6); }
+.pz-cta h2 { color: #fff; font-size: clamp(2.2rem, 4.6vw, 3.4rem); margin: 1.2rem 0 1.1rem; }
+.pz-cta p { font-family: var(--serif); font-size: 1.1rem; color: rgba(255,255,255,0.8);
+  max-width: 52ch; margin: 0 auto 2.4rem; line-height: 1.65; }
+.pz-cta .btn-w { display: inline-block; background: #fff; color: var(--navy); font-size: 0.66rem;
+  letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; padding: 1.05rem 2.3rem;
+  transition: opacity 0.3s var(--ease); }
+.pz-cta .btn-w:hover { opacity: 0.88; }
+.pz-cta .contact { margin-top: 2rem; font-size: 0.78rem; letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.55); }
+.pz-cta .contact a { color: rgba(255,255,255,0.8); }
+
+.pz-conf { text-align: center; font-size: 0.72rem; color: var(--muted); line-height: 1.8;
+  max-width: 62ch; margin: 0 auto; padding: 2.4rem clamp(1.25rem, 5vw, 2rem) 3rem; }
+
+@media (max-width: 560px) {
+  .pz-hero { min-height: 76vh; }
+  .pz-svc .from { text-align: left; }
+}
+</style>
+</head>
+<body>
+
+<nav class="pz-top" id="pz-top">
+  <a class="pz-brand" href="https://www.jacobcschrader.com/">JCS</a>
+  <a class="pz-book" href="/book">Book a Shoot</a>
+</nav>
+
+<header class="pz-hero">
+  <div class="pz-hero__bg" style="background-image:url('/images/posters/hero.jpg')"></div>
+  <div class="pz-hero__in">
+    <span class="eyebrow">Jacob Schrader &middot; Photographer &amp; Filmmaker</span>
+    <h1 id="pz-title">Pricing &amp; Services</h1>
+    <p>Thank you for your interest in working together. Below you&rsquo;ll find a comprehensive look at my offerings, pricing, and services.</p>
+    <p>Services are offered &agrave; la carte, and multiple services can be captured on the same day when time allows.</p>
+    <p class="fine">Availability is limited &mdash; I take on a select number of projects each season, first come, first served. For anything not listed here, please inquire.</p>
+    <div class="btns">
+      <a class="solid" href="/book">Book a Shoot &rarr;</a>
+      <a class="ghost" href="#services">View Services</a>
+    </div>
+  </div>
+</header>
+
+<div class="pz-wrap">
+  <section class="pz-intro" id="services">
+    <span class="eyebrow">&Agrave; La Carte</span>
+    <h2>Real estate media services.</h2>
+    <p>Pricing is based on square footage and the services selected. Open any service for the full rate table.</p>
+  </section>
+
+  <div id="pz-services"></div>
+
+  <p class="pz-finetext">Photography &amp; film pricing increases with square footage. For homes larger than
+    <span id="pz-cap">8,000</span> sqft, please inquire directly &mdash; the figures above are starting points, and your
+    exact quote is based on the home&rsquo;s size and the add-ons you choose. Your date is reserved on confirmation.</p>
+
+  <section class="pz-extra">
+    <span class="eyebrow">Also Available</span>
+    <h3>Additional services.</h3>
+    <p class="lead-sm">Stand-alone services and add-ons &mdash; available with any shoot or booked on their own.</p>
+    <div id="pz-alacarte"></div>
+    <div class="pz-adds" style="margin-top:2.2rem"><b>Zillow 3D Tour &middot; by square footage</b></div>
+    <div class="pz-table open" id="pz-zillow"></div>
+  </section>
+</div>
+
+<section class="pz-cta">
+  <span class="eyebrow">Let&rsquo;s Work Together</span>
+  <h2>Ready to shoot?</h2>
+  <p>Pick the services you need and I&rsquo;ll handle the rest &mdash; from capture to final delivery. Same-day photo/film bundling is available when time allows.</p>
+  <a class="btn-w" href="/book">Book a Shoot &rarr;</a>
+  <div class="contact">
+    <a href="tel:+14088248719">(408) 824-8719</a> &nbsp;&middot;&nbsp;
+    <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a> &nbsp;&middot;&nbsp;
+    <a href="https://www.jacobcschrader.com">jacobcschrader.com</a>
+  </div>
+</section>
+
+<p class="pz-conf">This pricing page is intended for the named recipient. Rates, packages, and materials are
+  proprietary to JCS LLC and may not be forwarded, shared, or reproduced without prior written consent.</p>
+
+<script src="/pricing-data.js"></script>
+<script>
+(function () {
+  var P = window.JCS_PRICING;
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
+  var money = function (n) { return '$' + Number(n).toLocaleString(); };
+
+  document.getElementById('pz-title').innerHTML = P.year + ' Pricing &amp; Services';
+  document.getElementById('pz-cap').textContent = P.sqftCap.toLocaleString();
+  document.title = P.year + ' Pricing & Services — Jacob Schrader';
+
+  // Service sections
+  var host = document.getElementById('pz-services');
+  host.innerHTML = P.services.filter(function (s) { return s.key !== 'custom'; }).map(function (svc, i) {
+    var from = svc.quote
+      ? '<b style="font-size:1.1rem">Let&rsquo;s talk</b><small>Quoted per project</small>'
+      : '<b>From ' + money(svc.tiers[0]) + '</b><small>By square footage</small>';
+    var chips = svc.addons.length
+      ? '<div class="pz-adds"><b>Additional services</b><div class="pz-chips">' +
+        svc.addons.map(function (a) {
+          return '<span class="pz-chip">' + esc(a.name) + ' <i>+' + money(a.price) + (a.unit ? '/' + a.unit : '') + '</i></span>';
+        }).join('') + '</div></div>'
+      : '';
+    var table = svc.quote ? '' :
+      '<button class="pz-toggle" data-t="t' + i + '"><span class="pm">+</span> View full pricing</button>' +
+      '<div class="pz-table" id="t' + i + '">' +
+      svc.tiers.map(function (p, ti) {
+        return '<div class="pz-trow"><span>' + P.tierLabels[ti] + '</span><b>' + money(p) + '</b></div>';
+      }).join('') + '</div>';
+    return '<section class="pz-svc">' +
+      '<div class="pz-svc__head"><h3>' + esc(svc.name) + '</h3><div class="from">' + from + '</div></div>' +
+      '<p class="pz-svc__desc">' + esc(svc.desc) + '</p>' +
+      (svc.includes ? '<div class="pz-inc">Includes &mdash; ' + esc(svc.includes) + '</div>' : '') +
+      chips + table +
+      '<div><a class="pz-examples" href="https://www.jacobcschrader.com/projects">View Examples &rarr;</a></div>' +
+      '</section>';
+  }).join('');
+
+  document.querySelectorAll('.pz-toggle').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = document.getElementById(b.dataset.t);
+      var open = !t.classList.contains('open');
+      t.classList.toggle('open', open);
+      b.classList.toggle('open', open);
+    });
+  });
+
+  // À la carte + Zillow tiers
+  document.getElementById('pz-alacarte').innerHTML = '<div class="pz-table open">' +
+    P.alacarte.map(function (x) {
+      return '<div class="pz-trow"><span>' + esc(x.name) + '</span><b>' + money(x.price) + '</b></div>';
+    }).join('') + '</div>';
+  var z = P.extras.find(function (x) { return x.tiers; });
+  if (z) document.getElementById('pz-zillow').innerHTML = z.tiers.map(function (p, ti) {
+    return '<div class="pz-trow"><span>' + P.tierLabels[ti] + '</span><b>' + money(p) + '</b></div>';
+  }).join('');
+
+  // Solid top bar after the hero
+  var top = document.getElementById('pz-top');
+  addEventListener('scroll', function () {
+    top.classList.toggle('solid', scrollY > innerHeight * 0.7);
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

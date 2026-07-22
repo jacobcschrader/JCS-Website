@@ -51,11 +51,25 @@ module.exports = async function handler(req, res) {
           RETURNING *`;
       }
       const location = [r.city, [r.state, r.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+      // Booking-wizard extras flow into the project: estimated total →
+      // price, add-ons + property details + signature → notes.
+      const noteBits = [];
+      if (r.message) noteBits.push("From application: " + r.message);
+      if (r.addons) noteBits.push("Add-ons: " + r.addons);
+      try {
+        const d = JSON.parse(r.details || "{}");
+        const L = { status: "Status", listing_type: "Listing", faces: "Front faces",
+                    view_home: "View home", access: "Access", homeowner_home: "Homeowner home" };
+        const lines = Object.keys(L).filter((k) => d[k]).map((k) => `${L[k]}: ${d[k]}`);
+        if (lines.length) noteBits.push(lines.join(" · "));
+      } catch (e) { /* optional */ }
+      if (r.launch_date) noteBits.push("Launch date: " + String(r.launch_date).slice(0, 10));
+      if (r.signature) noteBits.push("Terms signed by " + r.signature);
       const [project] = await s`
-        INSERT INTO bookings (client_id, title, location, city, state, zip, sqft, shoot_date, deliverables, notes, status)
+        INSERT INTO bookings (client_id, title, location, city, state, zip, sqft, shoot_date, deliverables, notes, status, price)
         VALUES (${client.id}, ${r.title}, ${location}, ${r.city}, ${r.state}, ${r.zip}, ${r.sqft},
                 ${r.target_date}, ${r.services || ""},
-                ${r.message ? "From application: " + r.message : ""}, ${"upcoming"})
+                ${noteBits.join("\n")}, ${"upcoming"}, ${r.estimated_total || null})
         RETURNING id`;
       const [updated] = await s`
         UPDATE requests SET status = 'accepted', project_id = ${project.id} WHERE id = ${id} RETURNING *`;

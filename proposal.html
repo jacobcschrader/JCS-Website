@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Project Proposal — Jacob Schrader</title>
+<meta name="description" content="A private project proposal from Jacob Schrader.">
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/styles.css">
+<style>
+/* ================= Private proposal ================= */
+body { background: var(--paper-warm); }
+.pp-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
+.pp-reveal.in { opacity: 1; transform: none; }
+
+.pp-hero { text-align: center; padding: clamp(6rem, 16vh, 10rem) clamp(1.25rem, 5vw, 2rem) clamp(3.4rem, 8vw, 5.5rem);
+  border-bottom: 1px solid var(--line); }
+.pp-hero .eyebrow { display: inline-flex; }
+.pp-hero h1 { font-size: clamp(2.8rem, 7vw, 5rem); margin: 1.6rem 0 1.3rem; }
+.pp-hero .for { font-family: var(--serif); font-size: clamp(1.05rem, 1.8vw, 1.3rem); color: var(--muted); }
+.pp-hero .date { margin-top: 2.2rem; font-size: 0.62rem; letter-spacing: 0.24em; text-transform: uppercase;
+  font-weight: 600; color: var(--accent); }
+
+.pp-wrap { max-width: 760px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2rem); }
+.pp-section { padding: clamp(3.4rem, 8vw, 5.5rem) 0; }
+.pp-section + .pp-section { border-top: 1px solid var(--line); }
+.pp-head { text-align: center; margin-bottom: clamp(2.2rem, 5vw, 3.4rem); }
+.pp-head h2 { font-size: clamp(1.9rem, 4vw, 2.8rem); margin-top: 1rem; }
+.pp-head p { font-family: var(--serif); font-size: 1.08rem; color: var(--muted); max-width: 52ch; margin: 0.8rem auto 0; }
+
+.pp-group { font-size: 0.62rem; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 600;
+  color: var(--accent); margin: 2.6rem 0 0.4rem; }
+.pp-group:first-child { margin-top: 0; }
+.pp-item { display: flex; justify-content: space-between; align-items: baseline; gap: 2rem;
+  padding: 1.3rem 0; border-bottom: 1px solid var(--line-soft); }
+.pp-item__t b { font-family: var(--serif); font-weight: 500; font-size: 1.3rem; color: var(--navy); }
+.pp-item__t .badge { display: inline-block; margin-left: 0.7rem; font-size: 0.54rem; letter-spacing: 0.18em;
+  text-transform: uppercase; font-weight: 600; color: var(--accent); border: 1px solid var(--line);
+  padding: 0.25rem 0.55rem; vertical-align: 0.15em; }
+.pp-item__t p { font-size: 0.86rem; color: var(--muted); line-height: 1.65; margin: 0.35rem 0 0; max-width: 46ch; }
+.pp-item .pr { font-family: var(--serif); font-size: 1.2rem; color: var(--navy); white-space: nowrap; }
+.pp-total { display: flex; justify-content: space-between; align-items: baseline; gap: 2rem;
+  padding: 1.7rem 0 0.4rem; }
+.pp-total b { font-family: var(--serif); font-weight: 500; font-size: 1.45rem; color: var(--navy); }
+.pp-total .pr { font-family: var(--serif); font-size: 2rem; color: var(--navy); }
+.pp-note { text-align: center; font-family: var(--serif); font-size: 1.05rem; color: var(--muted);
+  margin-top: 1.6rem; }
+
+.pp-films { display: grid; gap: 1.6rem; }
+.pp-films video { width: 100%; display: block; background: #0a1526; aspect-ratio: 16 / 9; }
+.pp-films .cap { font-size: 0.78rem; color: var(--muted); margin-top: 0.6rem; }
+.pp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }
+.pp-grid img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; display: block; }
+.pp-grid img:first-child { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+@media (max-width: 560px) { .pp-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.pp-quote { text-align: center; padding: 0.6rem 0 1.8rem; }
+.pp-quote .mark { font-family: var(--serif); font-size: 3.4rem; line-height: 0.6; color: var(--line); }
+.pp-quote blockquote { font-family: var(--serif); font-size: clamp(1.05rem, 1.9vw, 1.25rem); line-height: 1.7;
+  color: var(--ink); max-width: 58ch; margin: 1rem auto 1.3rem; }
+.pp-quote .who { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; color: var(--navy); }
+.pp-quote .firm { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-top: 0.25rem; }
+
+.pp-cta { background: var(--navy); color: #fff; text-align: center; margin-top: clamp(2rem, 5vw, 3rem);
+  padding: clamp(4.5rem, 10vw, 7rem) clamp(1.25rem, 5vw, 2rem); }
+.pp-cta .eyebrow { color: rgba(255,255,255,0.6); }
+.pp-cta h2 { color: #fff; font-size: clamp(2.2rem, 4.8vw, 3.4rem); margin: 1.2rem 0 1rem; }
+.pp-cta p { font-family: var(--serif); font-size: 1.1rem; color: rgba(255,255,255,0.8);
+  max-width: 46ch; margin: 0 auto 2.4rem; line-height: 1.65; }
+.pp-cta .act { display: inline-block; background: #fff; color: var(--navy); font-size: 0.68rem;
+  letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; padding: 1.1rem 2.4rem;
+  border: 0; cursor: pointer; font-family: var(--sans); transition: opacity 0.3s var(--ease); }
+.pp-cta .act:hover { opacity: 0.88; }
+.pp-cta .contact { margin-top: 2.2rem; font-size: 0.76rem; letter-spacing: 0.14em; color: rgba(255,255,255,0.55); }
+.pp-cta .contact a { color: rgba(255,255,255,0.8); }
+#pp-accept-form { max-width: 380px; margin: 0 auto; }
+#pp-accept-form input { width: 100%; box-sizing: border-box; text-align: center; font-family: var(--serif);
+  font-style: italic; font-size: 1.25rem; color: #fff; background: transparent;
+  border: 1px solid rgba(255,255,255,0.4); padding: 0.85rem 1rem; outline: none; margin-bottom: 1rem; }
+#pp-accept-form input::placeholder { color: rgba(255,255,255,0.45); }
+#pp-accept-form input:focus { border-color: #fff; }
+#pp-accept-form small { display: block; font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-bottom: 1.2rem; }
+.pp-accepted { display: inline-flex; align-items: center; gap: 0.7rem; background: rgba(223,238,226,0.14);
+  border: 1px solid rgba(223,238,226,0.4); color: #dfeee2; font-size: 0.68rem; letter-spacing: 0.18em;
+  text-transform: uppercase; font-weight: 600; padding: 0.9rem 1.6rem; }
+
+.pp-missing { text-align: center; padding: 11rem 1.5rem 6rem; }
+.pp-missing h1 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.8rem;
+  color: var(--navy); margin: 0 0 0.7rem; }
+.pp-missing p { font-size: 0.88rem; color: var(--muted); }
+.pp-missing a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
+
+.pp-foot { text-align: center; font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); padding: 2.4rem 1rem 3rem; }
+</style>
+</head>
+<body>
+
+<div id="pp-page" hidden>
+  <header class="pp-hero">
+    <span class="eyebrow" id="pp-eyebrow">Private Proposal</span>
+    <h1 id="pp-title"></h1>
+    <p class="for" id="pp-for"></p>
+    <div class="date" id="pp-date"></div>
+  </header>
+
+  <div class="pp-wrap">
+    <section class="pp-section">
+      <div class="pp-head pp-reveal">
+        <span class="eyebrow">Scope &amp; Investment</span>
+        <h2 id="pp-intro-h">A full marketing suite.</h2>
+        <p id="pp-intro" hidden></p>
+      </div>
+      <div id="pp-items" class="pp-reveal"></div>
+      <div class="pp-total pp-reveal"><b>The complete campaign</b><span class="pr" id="pp-total"></span></div>
+      <p class="pp-note pp-reveal" id="pp-note" hidden></p>
+    </section>
+
+    <section class="pp-section" id="pp-film-sec" hidden>
+      <div class="pp-head pp-reveal">
+        <span class="eyebrow">The Film</span>
+        <h2>Films that tell a story.</h2>
+        <p>Recent listing films &mdash; slow, editorial, and built to convey the feeling of arriving.</p>
+      </div>
+      <div class="pp-films pp-reveal" id="pp-films"></div>
+    </section>
+
+    <section class="pp-section" id="pp-photo-sec" hidden>
+      <div class="pp-head pp-reveal">
+        <span class="eyebrow">The Photography</span>
+        <h2 id="pp-photo-h">Recent work.</h2>
+        <p id="pp-photo-sub"></p>
+      </div>
+      <div class="pp-grid pp-reveal" id="pp-photos"></div>
+    </section>
+
+    <section class="pp-section">
+      <div class="pp-head pp-reveal"><span class="eyebrow">What They Say</span></div>
+      <div class="pp-quote pp-reveal">
+        <div class="mark">&ldquo;</div>
+        <blockquote>The quality belongs in a design magazine. Precise, professional, and a pleasure to have in our clients&rsquo; homes.</blockquote>
+        <div class="who">Dan Malloy</div><div class="firm">Serhant</div>
+      </div>
+      <div class="pp-quote pp-reveal">
+        <div class="mark">&ldquo;</div>
+        <blockquote>Every frame is considered. From walkthrough to delivery, working with Jacob feels like working with a partner, not a vendor.</blockquote>
+        <div class="who">Erin Lail</div><div class="firm">Sotheby&rsquo;s International Realty</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="pp-cta">
+    <span class="eyebrow">Next Step</span>
+    <h2>I&rsquo;d love to work with you.</h2>
+    <p id="pp-cta-copy">Reserve the dates and I&rsquo;ll take it from there &mdash; capture to final delivery.</p>
+    <div id="pp-cta-open">
+      <button class="act" id="pp-reserve">Reserve the Dates &rarr;</button>
+    </div>
+    <form id="pp-accept-form" hidden>
+      <input id="pp-name" required placeholder="Type your full name">
+      <small>Typing your name serves as your acceptance of this proposal.</small>
+      <button class="act" type="submit" id="pp-confirm">Confirm &amp; Reserve</button>
+    </form>
+    <div id="pp-done" hidden>
+      <span class="pp-accepted">&#10003;&nbsp; Dates reserved<span id="pp-done-date" style="text-transform:none;letter-spacing:0.04em;font-weight:400"></span></span>
+      <p style="margin-top:1.6rem;margin-bottom:0">Thank you &mdash; I&rsquo;ll be in touch within 24 hours to lock in the schedule.</p>
+    </div>
+    <div class="contact">
+      <a href="tel:+14088248719">(408) 824-8719</a> &nbsp;&middot;&nbsp;
+      <a id="pp-mail" href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a>
+    </div>
+  </section>
+
+  <p class="pp-foot">JCS &middot; Jacob Schrader &middot; jacobcschrader.com</p>
+</div>
+
+<div class="pp-missing" id="pp-missing" hidden>
+  <h1>This proposal isn&rsquo;t available.</h1>
+  <p>The link may be incomplete or the proposal may have been retired.<br>
+     Reach me at <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a> and I&rsquo;ll send a fresh one.</p>
+</div>
+
+<script src="/projects-data.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
+  var money = function (n) { return '$' + Number(n).toLocaleString(); };
+
+  // Slug: /proposal?slug=x · proposals.jacobcschrader.com path · /proposals/x
+  function slug() {
+    var q = new URLSearchParams(location.search).get('slug');
+    if (q) return q;
+    var parts = location.pathname.split('/').filter(Boolean);
+    if (!parts.length) return '';
+    var last = parts[parts.length - 1];
+    return (last === 'proposal' || last === 'proposals') ? '' : last;
+  }
+
+  var SLUG = slug(), DATA = null;
+
+  function reveal() {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.pp-reveal').forEach(function (el) { io.observe(el); });
+  }
+
+  function paint(p) {
+    DATA = p;
+    document.title = p.title + ' — Project Proposal | JCS';
+    $('pp-eyebrow').textContent = 'Private Proposal' + (p.location ? ' · ' + p.location : '');
+    $('pp-title').textContent = p.title;
+    $('pp-for').innerHTML = 'A bespoke listing campaign' + (p.client_name ? ', prepared for <b style="font-weight:500;color:var(--navy)">' + esc(p.client_name) + '</b>.' : '.');
+    var d = p.sent_at || p.created_at;
+    $('pp-date').textContent = 'JCS · ' + (d ? new Date(d).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '');
+    if (p.intro) { $('pp-intro').textContent = p.intro; $('pp-intro').hidden = false; }
+
+    // Line items, grouped
+    var items = p.items || [], html = '', lastGroup = null, total = 0;
+    items.forEach(function (it) {
+      var g = (it.group || '').toUpperCase();
+      if (g && g !== lastGroup) { html += '<div class="pp-group">' + esc(g) + '</div>'; lastGroup = g; }
+      var pr = (it.price === '' || it.price == null) ? 'Included' : money(it.price);
+      if (typeof it.price === 'number') total += it.price;
+      html += '<div class="pp-item"><div class="pp-item__t"><b>' + esc(it.name) + '</b>' +
+        (it.badge ? '<span class="badge">' + esc(it.badge) + '</span>' : '') +
+        (it.desc ? '<p>' + esc(it.desc) + '</p>' : '') + '</div>' +
+        '<span class="pr">' + pr + '</span></div>';
+    });
+    $('pp-items').innerHTML = html;
+    $('pp-total').textContent = money(total);
+    if (p.note) { $('pp-note').textContent = p.note; $('pp-note').hidden = false; }
+
+    if (p.accepted_at) showAccepted(p.accepted_at);
+
+    $('pp-mail').href = 'mailto:jacxbschrader@gmail.com?subject=' +
+      encodeURIComponent(p.title + " — I'm in") + '&body=' +
+      encodeURIComponent("I'm in — let's book " + p.title + '.');
+
+    $('pp-page').hidden = false;
+    portfolio();
+    reveal();
+  }
+
+  function showAccepted(when) {
+    $('pp-cta-open').hidden = true;
+    $('pp-accept-form').hidden = true;
+    $('pp-done').hidden = false;
+    $('pp-cta-copy').hidden = true;
+    if (when) $('pp-done-date').textContent = ' — ' + new Date(when).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  // Sample films + stills from the live portfolio (CMS-aware).
+  function portfolio() {
+    var go = function () {
+      var all = (window.PROJECTS_DATA || []).filter(function (p) { return !p.draft; });
+      var films = all.map(function (p) {
+        return { t: p.title, loc: p.location, url: p.horizontal_video || p.horizontal_url || '', poster: p.cover_url || '' };
+      }).filter(function (f) { return f.url; }).slice(0, 2);
+      if (films.length) {
+        $('pp-films').innerHTML = films.map(function (f) {
+          return '<div><video controls preload="none" playsinline poster="' + esc(f.poster) + '" src="' + esc(f.url) + '"></video>' +
+            '<div class="cap">' + esc(f.t) + (f.loc ? ' &middot; ' + esc(f.loc) : '') + '</div></div>';
+        }).join('');
+        $('pp-film-sec').hidden = false;
+      }
+      var ph = all.find(function (p) { return (p.gallery && p.gallery.length >= 5); });
+      if (ph) {
+        var gallery = typeof ph.gallery === 'string' ? JSON.parse(ph.gallery || '[]') : ph.gallery;
+        var imgs = [ph.cover_url].concat(gallery).filter(Boolean).slice(0, 7);
+        $('pp-photo-h').textContent = 'Recent work — ' + (ph.headline || ph.title) + '.';
+        $('pp-photo-sub').textContent = ph.title + (ph.shot_for ? ' — shot for ' + ph.shot_for + (ph.brokerage ? ' · ' + ph.brokerage : '') : '') + '.';
+        $('pp-photos').innerHTML = imgs.map(function (u) { return '<img loading="lazy" src="' + esc(u) + '" alt="">'; }).join('');
+        $('pp-photo-sec').hidden = false;
+      }
+      reveal();
+    };
+    (window.PROJECTS_READY || Promise.resolve()).then(go).catch(go);
+  }
+
+  // Accept flow
+  $('pp-reserve').addEventListener('click', function () {
+    $('pp-cta-open').hidden = true;
+    $('pp-accept-form').hidden = false;
+    $('pp-name').value = (DATA && DATA.client_name) || '';
+    $('pp-name').focus();
+  });
+  $('pp-accept-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var name = $('pp-name').value.trim();
+    if (name.length < 3) { $('pp-name').style.borderColor = '#e88'; return; }
+    var btn = $('pp-confirm'); btn.disabled = true; btn.textContent = 'Reserving…';
+    try {
+      var r = await fetch('/api/proposal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: SLUG, action: 'accept', name: name })
+      });
+      if (!r.ok) throw new Error();
+      var j = await r.json();
+      showAccepted(j.accepted_at || Date.now());
+    } catch (err) {
+      btn.disabled = false; btn.textContent = 'Confirm & Reserve';
+      alert('Something went wrong — please try again, or email jacxbschrader@gmail.com.');
+    }
+  });
+
+  // Load
+  if (!SLUG) { $('pp-missing').hidden = false; return; }
+  fetch('/api/proposal?slug=' + encodeURIComponent(SLUG) + (location.search.indexOf('preview') > -1 ? '&preview=1' : ''))
+    .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+    .then(paint)
+    .catch(function () { $('pp-missing').hidden = false; });
+})();
+</script>
+</body>
+</html>

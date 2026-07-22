@@ -860,3 +860,46 @@ title, else a navy JCS monogram tile.
 - videos/hero.mp4 (35MB, 1080p CRF27 faststart, audio stripped) from the
   1.28GB 4K master; poster images/posters/hero.jpg. Hero uses
   data-nosound — site.js skips the mute button for silent clips.
+
+## 2026-07-22 — Booking wizard, pricing page, proposals (Guthrie parity)
+
+### Booking form v2 (book.html — /book + form.jacobcschrader.com)
+- Replaced the /contact 3-step card form with a full-screen 7-step wizard
+  modeled on form.jacobguthrie.com: Services (sqft + à-la-carte cards,
+  live tier pricing) → Add-ons (filtered by service + extras) → Property
+  → Details (status/listing/facing/view/access/homeowner) → Timing
+  (shoot + launch dates) → Review (contact + booking summary) →
+  Agreement (JCS terms + typed e-signature). Sticky estimated-total bar,
+  per-step validation, honeypot kept. contact.html deleted; /contact
+  301s to /book; all nav/footer links updated (sitemap too).
+- /api/book + requests table extended: launch_date, addons,
+  estimated_total, details (JSON), signature, signed_at. Accepting a
+  request now carries the estimated total into the project's price and
+  the wizard details into its notes.
+
+### Pricing engine + page (pricing-data.js, pricing.html — /pricing +
+### pricing.jacobcschrader.com)
+- pricing-data.js: single source of truth — 6 services with 7 sqft tiers
+  (0–8k, inquire above), per-service add-ons, extras, à-la-carte;
+  ⚠️ seeded with PLACEHOLDER numbers pending Jacob's real 2026 rates.
+- pricing.html: photo-hero editorial page (2026 Pricing & Services),
+  per-service sections with add-on chips + expandable tier tables,
+  additional-services block, navy CTA, confidentiality note. noindex.
+
+### Proposals (admin + proposal.html — /proposals/<slug> +
+### proposal.jacobcschrader.com/<slug>)
+- New proposals table (slug unique, items JSON, draft/sent/accepted).
+- Admin → Proposals: list + editor (property, slug, client, intro,
+  grouped line items w/ blank-price = "Included", note, live total),
+  Preview (draft-safe via ?preview=1 + admin cookie), Copy link,
+  Send to client (branded email, stamps sent_at/sends).
+- Public page: PRIVATE PROPOSAL hero, Scope & Investment groups,
+  campaign total, auto-pulled portfolio films/photos, testimonials,
+  "Reserve the Dates" accept (typed name → accepted + email to Jacob,
+  9th Vercel function api/proposal.js).
+
+### Routing (vercel.json)
+- Host redirects: form./pricing. roots → /book, /pricing (redirects run
+  pre-filesystem; rewriting "/" is impossible — index.html wins).
+- Rewrites: /proposals/:slug and proposal-host /:slug → /proposal.
+- NOTE for Jacob: add the three subdomains in Vercel → Settings → Domains.

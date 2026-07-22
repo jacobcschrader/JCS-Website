@@ -15,7 +15,7 @@ Three surfaces: public site, /admin SPA (admin.html), client pages
 (portal/delivery/invoice). Owner: Jacob Schrader (jacxbschrader@gmail.com).
 
 ## Hard rules
-- **Max 12 Vercel functions** (currently 8). New admin endpoints go inside
+- **Max 12 Vercel functions** (currently 9). New admin endpoints go inside
   `api/admin/[action].js` router + `api/_lib/admin/*.js` — never new
   top-level files under `api/`.
 - **Never commit secrets.** Env var values live only in Vercel. The Google
@@ -24,6 +24,9 @@ Three surfaces: public site, /admin SPA (admin.html), client pages
   commit + push. Env-var changes require a redeploy to take effect.
 - All email goes through `sendEmail`/`jcsEmail` in `api/_lib/email.js`.
   Reply-to is always Jacob's gmail. Subjects: `{Property} | {Event}`.
+- **Public prices live ONLY in `pricing-data.js`** (drives /book and
+  /pricing). Never hardcode a price into a page. Current numbers are
+  PLACEHOLDERS pending Jacob's real rates.
 - DB schema is created idempotently in `api/_lib/db.js` — add new
   tables/columns there (CREATE/ALTER IF NOT EXISTS), no migrations.
 - After editing RAW_PROJECTS in `projects-data.js`, run

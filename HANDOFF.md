@@ -1,5 +1,10 @@
 # jacobcschrader.com — Project Handoff
 
+> **⚠️ 2026-07-22:** `pricing-data.js` is seeded with PLACEHOLDER numbers
+> (structure from the Guthrie reference). Jacob must replace them with his
+> real 2026 rates before promoting /book and /pricing. The booking-form
+> terms (book.html step 7) also await Jacob's/legal review.
+
 The complete guide to Jacob Schrader's photography-business platform.
 Chronological build history lives in `docs/CHANGELOG.md`. This file is the
 current-state reference.
@@ -32,7 +37,16 @@ prepare commits but cannot push).
 index.html                 Home (video hero, work grid, services, approach,
                            marquee, testimonials, press, CTA)
 projects.html              Work grid          services.html   Photography/Films/Reels/Design
-about.html  contact.html   About / 3-step booking form ("Book a Shoot")
+about.html                 About
+book.html                  7-step booking wizard (Guthrie-style, live sqft
+                           pricing) — /book + form.jacobcschrader.com.
+                           Replaced contact.html (301 /contact → /book).
+pricing.html               Shareable pricing page — /pricing +
+                           pricing.jacobcschrader.com (noindex)
+pricing-data.js            THE pricing source of truth (services, sqft
+                           tiers, add-ons) — powers book.html + pricing.html
+proposal.html              Private client proposal page — /proposals/<slug>
+                           + proposal.jacobcschrader.com/<slug> (noindex)
 project.html               Dynamic project page (renders ?slug=…)
 project/<slug>.html        Static share pages (generated — see §4)
 portal.html delivery.html invoice.html   Client pages (minimal .mnav chrome)
@@ -135,6 +149,15 @@ toggle, delete (cleans Blob media).
 - **Requests:** /contact submissions; accept → creates client+project.
 - **Toasts** replaced all alert() popups (navy success, red error).
 
+- **Proposals:** create in Admin → Proposals (+ New proposal). Editor:
+  property/slug/client, intro, grouped line items (blank price renders
+  "Included"), note, live campaign total. Buttons: Preview (opens
+  /proposal?slug=…&preview=1 — drafts visible only with admin session),
+  Copy link (proposal.jacobcschrader.com/<slug>), Send to client (branded
+  email, stamps sent_at, draft→sent). Client "Reserve the Dates" → typed
+  name → status accepted + email to Jacob. Public page auto-pulls 2
+  portfolio films + a photo set + testimonials.
+
 ## 6. Client experience
 
 - **Portal:** cookie session via emailed magic link (30-day HMAC token;
@@ -145,18 +168,21 @@ toggle, delete (cleans Blob media).
 - **Delivery page:** navy hero, link buttons, Approve Delivery /
   Request Changes (feedback demotes project to Revisions + emails Jacob).
 
-## 7. API map (8 functions of Vercel Hobby's 12)
+## 7. API map (9 functions of Vercel Hobby's 12)
 
 ```
 api/admin/[action].js   Router → api/_lib/admin/*: login logout me clients
                         bookings confirm requests discounts deliver invoice
-                        settings portallink covers siteprojects upload
-api/book.js             Public booking form → request + 2 emails
+                        settings portallink proposals covers siteprojects upload
+api/book.js             Public booking wizard → request + 2 emails (now also
+                        addons, estimated_total, details JSON, e-signature)
 api/calendar.js         .ics feed (signed); exports sigFor
 api/cron.js             Daily stage advance (optional CRON_SECRET)
 api/delivery.js         Delivery data + approve/changes actions
 api/invoice.js          Invoice data
 api/portal.js           Magic link, session, portal data
+api/proposal.js         Public proposal by slug + accept action (drafts 404
+                        unless ?preview=1 with admin session)
 api/site-projects.js    Public published projects (Cache-Control: no-store)
 ```
 
@@ -164,7 +190,16 @@ api/site-projects.js    Public published projects (Cache-Control: no-store)
 first use), email.js, auth.js, portal-auth.js, ics.js, gcal.js, links.js.
 
 **DB tables:** clients, bookings (~40 cols incl. delivery_*/invoice_*),
-site_projects, discounts, settings (key/value), requests.
+site_projects, discounts, settings (key/value), requests (+ launch_date,
+addons, estimated_total, details JSON, signature, signed_at), proposals
+(slug unique, items JSON, status draft/sent/accepted).
+
+**Subdomains (vercel.json):** host-based redirects send the roots of
+form./pricing.jacobcschrader.com to /book and /pricing (redirects run
+before the filesystem; rewriting "/" can't work because index.html wins).
+proposal.jacobcschrader.com/<slug> host-rewrites to /proposal, and
+/proposals/<slug> path-rewrites everywhere. ⚠️ The three subdomains must
+be added once in Vercel → Project → Settings → Domains.
 
 ## 8. Email system
 
@@ -208,6 +243,15 @@ Google Places key is NOT an env var — stored in admin Settings (DB).
 
 ## 11. Outstanding / known items
 
+- **Placeholder pricing** in pricing-data.js — swap in Jacob's real 2026
+  numbers (see banner at top of this file).
+- **Booking-form terms** (book.html step 7) need Jacob's/legal review —
+  esp. the payment clause (currently "due on final invoice").
+- **Add subdomains in Vercel** (Settings → Domains): form., pricing.,
+  proposal.jacobcschrader.com — redirects/rewrites are already live.
+- Static project share pages still link /contact in their navs — the
+  /contact → /book redirect covers it; regenerate via
+  `node tools/generate-share-pages.mjs` when Node is available locally.
 - About page portrait is still the placeholder ("Portrait · Replace").
 - Google Calendar service account not configured (gcal.js header has steps).
 - CRON_SECRET optional hardening not set.
