@@ -1,5 +1,9 @@
 # CLAUDE.md — jacobcschrader.com
 
+This repo is the `website/` component of the **JCS Terminal** workspace
+(`~/Desktop/JCS Terminal/`); workspace-wide conventions and the brand kit
+live at the workspace root.
+
 Read `HANDOFF.md` before non-trivial work — it's the full current-state
 reference (architecture, admin, client portal, CMS, email, gotchas).
 `docs/CHANGELOG.md` has the chronological build history.
