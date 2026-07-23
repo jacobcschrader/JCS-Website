@@ -946,3 +946,14 @@ title, else a navy JCS monogram tile.
   (rewrites run pre-filesystem there, which vercel.json rewrites can't
   do) and routes proposal.<slug>. vercel.json host redirects removed;
   /contact→/book + /proposals/:slug rules kept.
+
+## 2026-07-23 — Pricing page true parity pass
+- Deeper measurement of pricing.jacobguthrie.com at full width revealed
+  the real layout my first pass missed (reveal animations had hidden it):
+  solid bone top bar in flow, LEFT-aligned ~860px hero with 84px serif
+  title + italic accent word, centered ~990px container, TWO-column card
+  grid (26px gap), photo overlays (ring icon + caps label linking to
+  examples), muted includes-line, 50px Title Case section heading,
+  scroll fade-ins. pricing.html rebuilt to match; hero photo switched to
+  posters/3-n-la-senda.jpg (warm interior, brightness .72) to mirror the
+  reference's mood. Verified locally at 1280px.
