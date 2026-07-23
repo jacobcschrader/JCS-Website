@@ -903,3 +903,25 @@ title, else a navy JCS monogram tile.
   pre-filesystem; rewriting "/" is impossible — index.html wins).
 - Rewrites: /proposals/:slug and proposal-host /:slug → /proposal.
 - NOTE for Jacob: add the three subdomains in Vercel → Settings → Domains.
+
+### Pricing restructured to Jacob's sheet (same day, later)
+- Extracted the service taxonomy from Jacob's JCS-Pricing.numbers
+  (Spotlight text + raw IWA/Snappy decode — the sheet's price cells were
+  still blank, so dollar figures remain placeholders): 5 sqft brackets
+  ending at 5,000+, Flash/Ambient as the only size-priced photo service,
+  Aerial/Vertical/Twilight as flat add-ons, flat Cinematic Film + Social
+  Reel (+ Twilight Videography add-on), Zillow 3D by size, Floor Plan /
+  Virtual Staging / Virtual Twilight / Property Website extras.
+- pricing-data.js API: priceAt(serviceOrExtra, sqft), flat `price` OR
+  `tiers`, no sqft cap (top bracket open-ended); book.html + pricing.html
+  updated (flat-rate display, 5-row tables, cap copy removed).
+
+### Booking form visual parity pass (same day, later)
+- Rebuilt book.html's design system to replicate form.jacobguthrie.com
+  measured via computed styles, keeping JCS palette + type: 16px-radius
+  flat white cards / 14px add-on rows / 12px inputs / 11px buttons /
+  22px 7px-radius ticks, hairline borders rgba(navy,.22) (.12 for
+  header/footer), 3px pill progress track under the header bar, 30px
+  Cormorant-300 step headings, 19px serif subcopy, serif slate (--accent)
+  prices, blurred bone sticky footer (rgba paper .92 + blur 10px), navy
+  11px-radius Continue button. Verified steps 1/2/4/7 in the browser.
