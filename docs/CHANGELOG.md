@@ -933,3 +933,16 @@ title, else a navy JCS monogram tile.
   Video 250; Zillow 3D 250/300/350/400/500; Floor Plan 50, Virtual
   Staging 25/img, Virtual Twilight 25/img (now per-image), Property
   Website 350. Placeholder banners removed from CLAUDE.md/HANDOFF.md.
+
+### Pricing page v2 (Guthrie design parity) + bare-root subdomains
+- pricing.html rebuilt to mirror pricing.jacobguthrie.com (measured):
+  narrow ~620px editorial column, square-cornered white cards with a
+  photo lead (images/svc/*), 24px serif titles, serif slate "From $"
+  + BY SQUARE FOOTAGE caps, caps includes-line, plain-text add-on rows,
+  native <details> VIEW FULL PRICING tables, ink VIEW EXAMPLES buttons,
+  bone CTA w/ 50px serif, dark navy footer w/ confidentiality note.
+- NEW middleware.js (Edge Middleware — not one of the 12 functions):
+  serves form./pricing. subdomain ROOTS with no path in the URL
+  (rewrites run pre-filesystem there, which vercel.json rewrites can't
+  do) and routes proposal.<slug>. vercel.json host redirects removed;
+  /contact→/book + /proposals/:slug rules kept.

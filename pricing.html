@@ -19,103 +19,123 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/styles.css">
 <style>
-/* ================= Pricing page ================= */
+/* ============ Pricing page — pricing.jacobguthrie.com design system,
+   JCS palette + type. Square corners, hairline card borders, photo-led
+   service cards in a narrow editorial column, ink CTAs, dark footer. == */
+:root {
+  --hairline: rgba(15, 34, 64, 0.12);
+}
+body { background: var(--paper-warm); color: var(--ink); }
+
+/* Top bar */
 .pz-top { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex;
-  align-items: center; justify-content: space-between; padding: 1.15rem clamp(1.25rem, 4vw, 2.6rem);
+  align-items: center; justify-content: space-between; padding: 0.85rem clamp(1.25rem, 4vw, 2.4rem);
   transition: background 0.4s var(--ease), box-shadow 0.4s var(--ease); }
-.pz-top.solid { background: var(--paper-warm); box-shadow: 0 1px 0 var(--line-soft); }
+.pz-top.solid { background: var(--paper-warm); box-shadow: 0 1px 0 var(--hairline); }
 .pz-brand { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1.5rem;
   color: #fff; letter-spacing: 0.04em; transition: color 0.4s var(--ease); }
 .pz-top.solid .pz-brand { color: var(--navy); }
-.pz-book { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600;
-  color: #fff; border: 1px solid rgba(255,255,255,0.55); padding: 0.8rem 1.5rem;
-  transition: all 0.3s var(--ease); }
-.pz-book:hover { background: #fff; color: var(--navy); }
-.pz-top.solid .pz-book { color: #fff; background: var(--navy); border-color: var(--navy); }
+.pz-book { font-family: var(--sans); font-size: 0.6875rem; letter-spacing: 0.2em; text-transform: uppercase;
+  font-weight: 500; color: var(--paper-warm); background: var(--navy); padding: 0.875rem 1.5rem;
+  transition: opacity 0.3s var(--ease); }
+.pz-book:hover { opacity: 0.85; }
 
-.pz-hero { position: relative; min-height: 88vh; display: flex; align-items: center;
+/* Hero — full-bleed photo, centered */
+.pz-hero { position: relative; min-height: 92vh; display: flex; align-items: center;
   justify-content: center; text-align: center; color: #fff; overflow: hidden; }
 .pz-hero__bg { position: absolute; inset: 0; background-size: cover; background-position: center;
-  filter: brightness(0.42); }
-.pz-hero__in { position: relative; max-width: 760px; padding: 8rem clamp(1.25rem, 5vw, 2rem) 5rem; }
+  filter: brightness(0.4); }
+.pz-hero__in { position: relative; max-width: 720px; padding: 7rem clamp(1.25rem, 5vw, 2rem) 4.5rem; }
 .pz-hero .eyebrow { color: rgba(255,255,255,0.65); }
-.pz-hero h1 { color: #fff; font-size: clamp(2.8rem, 6.5vw, 4.6rem); margin: 1.3rem 0 1.6rem; }
-.pz-hero p { font-family: var(--serif); font-size: clamp(1.05rem, 1.6vw, 1.25rem); line-height: 1.65;
-  color: rgba(255,255,255,0.85); max-width: 56ch; margin: 0 auto 1.1rem; }
-.pz-hero .fine { font-family: var(--sans); font-size: 0.85rem; color: rgba(255,255,255,0.6); }
-.pz-hero .btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2.6rem; }
-.pz-hero .btns a { display: inline-block; font-size: 0.66rem; letter-spacing: 0.22em;
-  text-transform: uppercase; font-weight: 600; padding: 1.05rem 2.1rem; transition: all 0.3s var(--ease); }
-.pz-hero .btns .solid { background: #fff; color: var(--navy); }
-.pz-hero .btns .solid:hover { background: rgba(255,255,255,0.88); }
-.pz-hero .btns .ghost { border: 1px solid rgba(255,255,255,0.45); color: #fff; }
+.pz-hero h1 { color: #fff; font-weight: 300; letter-spacing: -0.005em;
+  font-size: clamp(2.4rem, 5.5vw, 2.95rem); line-height: 1.02; margin: 1.2rem 0 1.4rem; }
+.pz-hero .lead-serif { font-family: var(--serif); font-size: 1.1875rem; line-height: 1.55;
+  color: rgba(255,255,255,0.94); max-width: 54ch; margin: 0 auto 1rem; }
+.pz-hero p.sans { font-family: var(--sans); font-size: 1rem; line-height: 1.65;
+  color: rgba(255,255,255,0.8); max-width: 58ch; margin: 0 auto 0.9rem; }
+.pz-hero p.fine { font-family: var(--sans); font-size: 0.875rem; color: rgba(255,255,255,0.62);
+  max-width: 60ch; margin: 0 auto; }
+.pz-hero .btns { display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap; margin-top: 2.4rem; }
+.pz-hero .btns a { display: inline-block; font-family: var(--sans); font-size: 0.6875rem;
+  letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; padding: 0.875rem 1.5rem;
+  transition: all 0.3s var(--ease); }
+.pz-hero .btns .solid { background: var(--paper-warm); color: var(--ink); }
+.pz-hero .btns .solid:hover { opacity: 0.88; }
+.pz-hero .btns .ghost { border: 1px solid rgba(255,255,255,0.55); color: #fff; }
 .pz-hero .btns .ghost:hover { border-color: #fff; }
 
-.pz-wrap { max-width: 860px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2rem); }
-.pz-intro { text-align: center; padding: clamp(4rem, 9vw, 6.5rem) 0 clamp(2.5rem, 5vw, 4rem); }
-.pz-intro h2 { font-size: clamp(2rem, 4vw, 2.9rem); margin: 1.1rem 0 1rem; }
-.pz-intro p { font-size: 0.95rem; color: var(--muted); max-width: 58ch; margin: 0 auto; }
+/* Editorial column */
+.pz-container { max-width: 1020px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2.4rem); }
+.pz-col { max-width: 620px; }
 
-.pz-svc { border-top: 1px solid var(--line); padding: clamp(2.6rem, 6vw, 4rem) 0; }
-.pz-svc__head { display: flex; align-items: baseline; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
-.pz-svc h3 { font-size: clamp(1.7rem, 3vw, 2.3rem); margin: 0; }
-.pz-svc .from { text-align: right; }
-.pz-svc .from b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.5rem; color: var(--navy); }
-.pz-svc .from small { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
-  font-weight: 600; color: var(--muted); }
-.pz-svc__desc { font-family: var(--serif); font-size: 1.12rem; line-height: 1.6; color: var(--muted);
-  max-width: 58ch; margin: 1rem 0 1.4rem; }
-.pz-inc { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
-  color: var(--accent); line-height: 1.9; }
-.pz-adds { margin-top: 1.3rem; }
-.pz-adds b { display: block; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
-  font-weight: 600; color: var(--muted); margin-bottom: 0.6rem; }
-.pz-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.pz-chip { font-size: 0.78rem; color: var(--ink); border: 1px solid var(--line); padding: 0.5rem 0.9rem; }
-.pz-chip i { font-style: normal; color: var(--navy); font-weight: 500; }
+.pz-sechead { padding: clamp(3.5rem, 8vw, 5.5rem) 0 clamp(1.8rem, 4vw, 2.6rem); }
+.pz-sechead h2 { font-size: clamp(1.9rem, 3.4vw, 2.35rem); font-weight: 300; margin: 0.9rem 0 0.7rem; }
+.pz-sechead p { font-size: 1rem; color: var(--muted); max-width: 52ch; }
 
-.pz-toggle { margin-top: 1.6rem; background: none; border: 0; cursor: pointer; font-family: var(--sans);
-  font-size: 0.64rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600;
-  color: var(--navy); display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0; }
-.pz-toggle .pm { font-size: 1rem; line-height: 1; transition: transform 0.3s var(--ease); }
-.pz-toggle.open .pm { transform: rotate(45deg); }
-.pz-table { display: none; margin-top: 1.2rem; border-top: 1px solid var(--line); }
-.pz-table.open { display: block; }
-.pz-trow { display: flex; justify-content: space-between; gap: 1.5rem; padding: 0.7rem 0.15rem;
-  border-bottom: 1px solid var(--line-soft); font-size: 0.88rem; }
+/* Service card — white, square, hairline, photo-led */
+.pz-card { background: #fff; border: 1px solid var(--hairline); padding: 1.375rem 1.375rem 1.625rem;
+  margin-bottom: clamp(1.6rem, 3.5vw, 2.4rem); }
+.pz-card__img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; margin-bottom: 1.25rem; }
+.pz-card h3 { font-size: 1.5rem; font-weight: 500; margin: 0 0 0.35rem; }
+.pz-card .desc { font-size: 0.875rem; color: var(--muted); line-height: 1.6; margin: 0; }
+.pz-card .fromrow { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap; margin: 1.1rem 0 0.9rem; }
+.pz-card .from { font-family: var(--serif); font-weight: 400; font-size: 1.7rem; color: var(--accent); }
+.pz-card .fromnote { font-family: var(--sans); font-size: 0.74rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--muted); }
+.pz-caps { font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 500;
+  color: var(--ink); }
+.pz-inc { font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500;
+  color: var(--accent); line-height: 1.9; margin-bottom: 1rem; }
+.pz-addons { margin: 0 0 1.1rem; }
+.pz-addons .pz-caps { display: block; margin-bottom: 0.4rem; }
+.pz-addons p { font-size: 0.875rem; color: var(--muted); line-height: 1.9; margin: 0; }
+.pz-addons p i { font-style: normal; color: var(--ink); font-weight: 500; }
+
+details.pz-details { border-top: 1px solid var(--hairline); }
+details.pz-details summary { list-style: none; cursor: pointer; display: flex; align-items: center;
+  justify-content: space-between; padding: 0.85rem 0.1rem; font-family: var(--sans);
+  font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500;
+  color: var(--accent); }
+details.pz-details summary::-webkit-details-marker { display: none; }
+details.pz-details summary .pm { font-size: 1.05rem; line-height: 1; transition: transform 0.3s var(--ease); }
+details.pz-details[open] summary .pm { transform: rotate(45deg); }
+.pz-trow { display: flex; justify-content: space-between; gap: 1.5rem; padding: 0.65rem 0.1rem;
+  border-top: 1px solid rgba(15, 34, 64, 0.07); font-size: 0.875rem; }
 .pz-trow span { color: var(--muted); }
-.pz-trow b { font-family: var(--serif); font-weight: 500; font-size: 1rem; color: var(--navy); }
-.pz-examples { display: inline-block; margin-top: 1.5rem; font-size: 0.64rem; letter-spacing: 0.2em;
-  text-transform: uppercase; font-weight: 600; color: var(--muted); transition: color 0.3s var(--ease); }
-.pz-examples:hover { color: var(--navy); }
+.pz-trow b { font-family: var(--serif); font-weight: 500; font-size: 1.05rem; color: var(--accent); }
+.pz-examples { display: inline-block; margin-top: 1.25rem; background: var(--navy); color: var(--paper-warm);
+  font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+  font-weight: 500; padding: 0.75rem 1.25rem; transition: opacity 0.3s var(--ease); }
+.pz-examples:hover { opacity: 0.85; }
 
-.pz-finetext { font-size: 0.82rem; color: var(--muted); line-height: 1.75; border-top: 1px solid var(--line);
-  padding: clamp(2rem, 4vw, 2.8rem) 0; }
+.pz-finetext { font-size: 0.8125rem; color: var(--muted); line-height: 1.75;
+  padding: 0.5rem 0 clamp(2.5rem, 6vw, 4rem); max-width: 62ch; }
 
-.pz-extra { border-top: 1px solid var(--line); padding: clamp(2.6rem, 6vw, 4rem) 0; }
-.pz-extra h3 { font-size: clamp(1.7rem, 3vw, 2.3rem); margin: 0.9rem 0 0.8rem; }
-.pz-extra .lead-sm { font-family: var(--serif); font-size: 1.1rem; color: var(--muted); margin-bottom: 2rem; }
+/* CTA */
+.pz-cta { text-align: center; padding: clamp(3.5rem, 9vw, 6.5rem) clamp(1.25rem, 5vw, 2rem) clamp(4rem, 9vw, 6.5rem);
+  border-top: 1px solid var(--hairline); }
+.pz-cta h2 { font-weight: 300; font-size: clamp(2.4rem, 5vw, 3.125rem); margin: 1.1rem 0 1rem; }
+.pz-cta p { font-family: var(--sans); font-size: 1rem; color: var(--muted); max-width: 52ch;
+  margin: 0 auto 2.2rem; line-height: 1.7; }
+.pz-cta .btn-ink { display: inline-block; background: var(--navy); color: var(--paper-warm);
+  font-family: var(--sans); font-size: 0.6875rem; letter-spacing: 0.2em; text-transform: uppercase;
+  font-weight: 500; padding: 0.875rem 1.6rem; transition: opacity 0.3s var(--ease); }
+.pz-cta .btn-ink:hover { opacity: 0.85; }
+.pz-cta .contact { margin-top: 1.9rem; font-size: 0.78rem; letter-spacing: 0.1em; color: var(--muted); }
+.pz-cta .contact a { color: var(--ink); }
 
-.pz-cta { background: var(--navy); color: #fff; text-align: center;
-  padding: clamp(4.5rem, 10vw, 7rem) clamp(1.25rem, 5vw, 2rem); margin-top: clamp(3rem, 6vw, 4.5rem); }
-.pz-cta .eyebrow { color: rgba(255,255,255,0.6); }
-.pz-cta h2 { color: #fff; font-size: clamp(2.2rem, 4.6vw, 3.4rem); margin: 1.2rem 0 1.1rem; }
-.pz-cta p { font-family: var(--serif); font-size: 1.1rem; color: rgba(255,255,255,0.8);
-  max-width: 52ch; margin: 0 auto 2.4rem; line-height: 1.65; }
-.pz-cta .btn-w { display: inline-block; background: #fff; color: var(--navy); font-size: 0.66rem;
-  letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; padding: 1.05rem 2.3rem;
-  transition: opacity 0.3s var(--ease); }
-.pz-cta .btn-w:hover { opacity: 0.88; }
-.pz-cta .contact { margin-top: 2rem; font-size: 0.78rem; letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.55); }
-.pz-cta .contact a { color: rgba(255,255,255,0.8); }
-
-.pz-conf { text-align: center; font-size: 0.72rem; color: var(--muted); line-height: 1.8;
-  max-width: 62ch; margin: 0 auto; padding: 2.4rem clamp(1.25rem, 5vw, 2rem) 3rem; }
+/* Dark footer */
+.pz-foot { background: var(--navy); color: rgba(246,244,239,0.8); padding: clamp(2.8rem, 6vw, 4rem) 0 2.6rem; }
+.pz-foot a { color: rgba(246,244,239,0.9); }
+.pz-foot .links { display: flex; gap: 1.6rem; flex-wrap: wrap; font-size: 0.8125rem;
+  letter-spacing: 0.06em; margin-bottom: 1.1rem; }
+.pz-foot .line { font-size: 0.8125rem; color: rgba(246,244,239,0.6); margin-bottom: 0.4rem; }
+.pz-foot .conf { font-size: 0.75rem; color: rgba(246,244,239,0.5); line-height: 1.8;
+  border-top: 1px solid rgba(246,244,239,0.14); margin-top: 1.8rem; padding-top: 1.6rem; max-width: 74ch; }
 
 @media (max-width: 560px) {
-  .pz-hero { min-height: 76vh; }
-  .pz-svc .from { text-align: left; }
+  .pz-hero { min-height: 78vh; }
+  .pz-card { padding: 1.1rem 1.1rem 1.35rem; }
 }
 </style>
 </head>
@@ -131,8 +151,8 @@
   <div class="pz-hero__in">
     <span class="eyebrow">Jacob Schrader &middot; Photographer &amp; Filmmaker</span>
     <h1 id="pz-title">Pricing &amp; Services</h1>
-    <p>Thank you for your interest in working together. Below you&rsquo;ll find a comprehensive look at my offerings, pricing, and services.</p>
-    <p>Services are offered &agrave; la carte, and multiple services can be captured on the same day when time allows.</p>
+    <p class="lead-serif">Thank you for your interest in working together. Below you&rsquo;ll find a comprehensive look at my offerings, pricing, and services.</p>
+    <p class="sans">Services are offered &agrave; la carte, and multiple services can be captured on the same day when time allows.</p>
     <p class="fine">Availability is limited &mdash; I take on a select number of projects each season, first come, first served. For anything not listed here, please inquire.</p>
     <div class="btns">
       <a class="solid" href="/book">Book a Shoot &rarr;</a>
@@ -141,43 +161,60 @@
   </div>
 </header>
 
-<div class="pz-wrap">
-  <section class="pz-intro" id="services">
-    <span class="eyebrow">&Agrave; La Carte</span>
-    <h2>Real estate media services.</h2>
-    <p>Pricing is based on square footage and the services selected. Open any service for the full rate table.</p>
-  </section>
+<div class="pz-container">
+  <div class="pz-col">
+    <section class="pz-sechead" id="services">
+      <span class="eyebrow">&Agrave; La Carte</span>
+      <h2>Real estate media services.</h2>
+      <p>Pricing is based on square footage and the services selected. Open any service for the full rate table.</p>
+    </section>
 
-  <div id="pz-services"></div>
+    <div id="pz-services"></div>
 
-  <p class="pz-finetext">Photography pricing scales with square footage; homes over 5,000 sqft use the top
-    bracket. The figures above are starting points &mdash; your exact quote is based on the home&rsquo;s size and the
-    add-ons you choose, and unusual properties are always welcome to inquire. Your date is reserved on confirmation.</p>
+    <section class="pz-sechead" style="padding-top: clamp(1.5rem, 4vw, 2.5rem)">
+      <span class="eyebrow">Also Available</span>
+      <h2 style="font-size: clamp(1.6rem, 2.8vw, 1.9rem)">Additional services.</h2>
+      <p>Stand-alone services and add-ons &mdash; available with any shoot or booked on their own.</p>
+    </section>
+    <div class="pz-card">
+      <span class="pz-caps" style="display:block;margin-bottom:0.5rem">&Agrave; La Carte</span>
+      <div id="pz-alacarte"></div>
+      <span class="pz-caps" style="display:block;margin:1.5rem 0 0.5rem">Zillow 3D Tour &middot; By Square Footage</span>
+      <div id="pz-zillow"></div>
+    </div>
 
-  <section class="pz-extra">
-    <span class="eyebrow">Also Available</span>
-    <h3>Additional services.</h3>
-    <p class="lead-sm">Stand-alone services and add-ons &mdash; available with any shoot or booked on their own.</p>
-    <div id="pz-alacarte"></div>
-    <div class="pz-adds" style="margin-top:2.2rem"><b>Zillow 3D Tour &middot; by square footage</b></div>
-    <div class="pz-table open" id="pz-zillow"></div>
-  </section>
+    <p class="pz-finetext">Photography pricing scales with square footage; homes over 5,000 sqft use the top
+      bracket. The figures above are starting points &mdash; your exact quote is based on the home&rsquo;s size and
+      the add-ons you choose, and unusual properties are always welcome to inquire. Your date is reserved on
+      confirmation.</p>
+  </div>
 </div>
 
 <section class="pz-cta">
   <span class="eyebrow">Let&rsquo;s Work Together</span>
   <h2>Ready to shoot?</h2>
   <p>Pick the services you need and I&rsquo;ll handle the rest &mdash; from capture to final delivery. Same-day photo/film bundling is available when time allows.</p>
-  <a class="btn-w" href="/book">Book a Shoot &rarr;</a>
+  <a class="btn-ink" href="/book">Book a Shoot &rarr;</a>
   <div class="contact">
     <a href="tel:+14088248719">(408) 824-8719</a> &nbsp;&middot;&nbsp;
-    <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a> &nbsp;&middot;&nbsp;
-    <a href="https://www.jacobcschrader.com">jacobcschrader.com</a>
+    <a href="mailto:jacxbschrader@gmail.com">jacxbschrader@gmail.com</a>
   </div>
 </section>
 
-<p class="pz-conf">This pricing page is intended for the named recipient. Rates, packages, and materials are
-  proprietary to JCS LLC and may not be forwarded, shared, or reproduced without prior written consent.</p>
+<footer class="pz-foot">
+  <div class="pz-container">
+    <div class="links">
+      <a href="https://www.jacobcschrader.com">jacobcschrader.com</a>
+      <a href="https://www.jacobcschrader.com/projects">Portfolio</a>
+      <a href="https://www.instagram.com/byjcs_/" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://www.jacobcschrader.com/portal">Client Portal</a>
+    </div>
+    <div class="line">jacxbschrader@gmail.com &nbsp;|&nbsp; (408) 824-8719</div>
+    <div class="line">Based in Danville, California &mdash; available worldwide.</div>
+    <p class="conf">This pricing page is intended for the named recipient. Rates, packages, and materials are
+      proprietary to JCS LLC and may not be forwarded, shared, or reproduced without prior written consent.</p>
+  </div>
+</footer>
 
 <script src="/pricing-data.js"></script>
 <script>
@@ -190,59 +227,57 @@
   document.getElementById('pz-title').innerHTML = P.year + ' Pricing &amp; Services';
   document.title = P.year + ' Pricing & Services — Jacob Schrader';
 
-  // Service sections
-  var host = document.getElementById('pz-services');
-  host.innerHTML = P.services.filter(function (s) { return s.key !== 'custom'; }).map(function (svc, i) {
-    var from = svc.quote
-      ? '<b style="font-size:1.1rem">Let&rsquo;s talk</b><small>Quoted per project</small>'
-      : svc.tiers
-        ? '<b>From ' + money(svc.tiers[0]) + '</b><small>By square footage</small>'
-        : '<b>' + money(svc.price) + '</b><small>Flat rate</small>';
-    var chips = svc.addons.length
-      ? '<div class="pz-adds"><b>Additional services</b><div class="pz-chips">' +
-        svc.addons.map(function (a) {
-          return '<span class="pz-chip"' + (a.note ? ' title="' + esc(a.note) + '"' : '') + '>' + esc(a.name) + ' <i>+' + money(a.price) + (a.unit ? '/' + a.unit : '') + '</i></span>';
-        }).join('') + '</div></div>'
-      : '';
-    var table = (svc.quote || !svc.tiers) ? '' :
-      '<button class="pz-toggle" data-t="t' + i + '"><span class="pm">+</span> View full pricing</button>' +
-      '<div class="pz-table" id="t' + i + '">' +
-      svc.tiers.map(function (p, ti) {
-        return '<div class="pz-trow"><span>' + P.tierLabels[ti] + '</span><b>' + money(p) + '</b></div>';
-      }).join('') + '</div>';
-    return '<section class="pz-svc">' +
-      '<div class="pz-svc__head"><h3>' + esc(svc.name) + '</h3><div class="from">' + from + '</div></div>' +
-      '<p class="pz-svc__desc">' + esc(svc.desc) + '</p>' +
-      (svc.includes ? '<div class="pz-inc">Includes &mdash; ' + esc(svc.includes) + '</div>' : '') +
-      chips + table +
-      '<div><a class="pz-examples" href="https://www.jacobcschrader.com/projects">View Examples &rarr;</a></div>' +
-      '</section>';
-  }).join('');
+  var IMAGES = {
+    photography: '/images/svc/photography.jpg',
+    film: '/images/svc/film.jpg',
+    reel: '/images/svc/reels.jpg'
+  };
+  var EXAMPLES = {
+    photography: 'https://www.jacobcschrader.com/projects',
+    film: 'https://www.jacobcschrader.com/services#films',
+    reel: 'https://www.jacobcschrader.com/services#reels'
+  };
 
-  document.querySelectorAll('.pz-toggle').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var t = document.getElementById(b.dataset.t);
-      var open = !t.classList.contains('open');
-      t.classList.toggle('open', open);
-      b.classList.toggle('open', open);
-    });
-  });
+  var trow = function (label, price) {
+    return '<div class="pz-trow"><span>' + esc(label) + '</span><b>' + money(price) + '</b></div>';
+  };
 
-  // À la carte + Zillow tiers
-  document.getElementById('pz-alacarte').innerHTML = '<div class="pz-table open">' +
-    P.alacarte.map(function (x) {
-      return '<div class="pz-trow"><span>' + esc(x.name) + '</span><b>' + money(x.price) + '</b></div>';
-    }).join('') + '</div>';
+  document.getElementById('pz-services').innerHTML =
+    P.services.filter(function (s) { return !s.quote; }).map(function (svc) {
+      var fromrow = svc.tiers
+        ? '<div class="fromrow"><span class="from">From ' + money(svc.tiers[0]) + '</span><span class="fromnote">By square footage</span></div>'
+        : '<div class="fromrow"><span class="from">' + money(svc.price) + '</span><span class="fromnote">Flat rate</span></div>';
+      var addons = svc.addons.length
+        ? '<div class="pz-addons"><span class="pz-caps">Additional services</span><p>' +
+          svc.addons.map(function (a) {
+            return esc(a.name) + ' <i>+' + money(a.price) + (a.unit ? '/' + a.unit : '') + '</i>';
+          }).join(' &nbsp;&middot;&nbsp; ') + '</p></div>'
+        : '';
+      var table = svc.tiers
+        ? '<details class="pz-details"><summary>View full pricing <span class="pm">+</span></summary>' +
+          svc.tiers.map(function (p, ti) { return trow(P.tierLabels[ti], p); }).join('') + '</details>'
+        : '';
+      return '<article class="pz-card">' +
+        (IMAGES[svc.key] ? '<img class="pz-card__img" loading="lazy" src="' + IMAGES[svc.key] + '" alt="' + esc(svc.name) + '">' : '') +
+        '<h3>' + esc(svc.name) + '</h3>' +
+        '<p class="desc">' + esc(svc.desc) + '</p>' +
+        fromrow +
+        (svc.includes ? '<div class="pz-inc">Includes &mdash; ' + esc(svc.includes) + '</div>' : '') +
+        addons + table +
+        '<div><a class="pz-examples" href="' + (EXAMPLES[svc.key] || 'https://www.jacobcschrader.com/projects') + '">View Examples &rarr;</a></div>' +
+        '</article>';
+    }).join('');
+
+  document.getElementById('pz-alacarte').innerHTML =
+    P.alacarte.map(function (x) { return trow(x.name, x.price); }).join('');
   var z = P.extras.find(function (x) { return x.tiers; });
-  if (z) document.getElementById('pz-zillow').innerHTML = z.tiers.map(function (p, ti) {
-    return '<div class="pz-trow"><span>' + P.tierLabels[ti] + '</span><b>' + money(p) + '</b></div>';
-  }).join('');
+  if (z) document.getElementById('pz-zillow').innerHTML =
+    z.tiers.map(function (p, ti) { return trow(P.tierLabels[ti], p); }).join('');
 
-  // Solid top bar after the hero
   var top = document.getElementById('pz-top');
-  addEventListener('scroll', function () {
-    top.classList.toggle('solid', scrollY > innerHeight * 0.7);
-  }, { passive: true });
+  var onScroll = function () { top.classList.toggle('solid', scrollY > innerHeight * 0.72); };
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 })();
 </script>
 </body>

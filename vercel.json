@@ -27,34 +27,11 @@
       "source": "/contact",
       "destination": "/book",
       "permanent": false
-    },
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "form.jacobcschrader.com" }],
-      "destination": "/book",
-      "permanent": false
-    },
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "pricing.jacobcschrader.com" }],
-      "destination": "/pricing",
-      "permanent": false
-    },
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "proposal.jacobcschrader.com" }],
-      "destination": "https://www.jacobcschrader.com/",
-      "permanent": false
     }
   ],
   "rewrites": [
     {
       "source": "/proposals/:slug([a-z0-9-]+)",
-      "destination": "/proposal"
-    },
-    {
-      "source": "/:slug([a-z0-9-]+)",
-      "has": [{ "type": "host", "value": "proposal.jacobcschrader.com" }],
       "destination": "/proposal"
     }
   ]

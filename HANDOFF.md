@@ -189,12 +189,13 @@ site_projects, discounts, settings (key/value), requests (+ launch_date,
 addons, estimated_total, details JSON, signature, signed_at), proposals
 (slug unique, items JSON, status draft/sent/accepted).
 
-**Subdomains (vercel.json):** host-based redirects send the roots of
-form./pricing.jacobcschrader.com to /book and /pricing (redirects run
-before the filesystem; rewriting "/" can't work because index.html wins).
-proposal.jacobcschrader.com/<slug> host-rewrites to /proposal, and
-/proposals/<slug> path-rewrites everywhere. ⚠️ The three subdomains must
-be added once in Vercel → Project → Settings → Domains.
+**Subdomains (middleware.js):** Edge Middleware (runs pre-filesystem;
+does NOT count toward the 12-function cap) serves the subdomain roots
+with no path in the URL — form. → /book, pricing. → /pricing,
+proposal./<slug> → /proposal (bare proposal. root redirects to www).
+vercel.json still handles /contact → /book and /proposals/:slug.
+The three subdomains are attached to the project in Vercel → Domains
+(DNS is Vercel-managed, so that was just "Add Domain" three times).
 
 ## 8. Email system
 
