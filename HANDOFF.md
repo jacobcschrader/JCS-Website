@@ -1,10 +1,5 @@
 # jacobcschrader.com — Project Handoff
 
-> **⚠️ 2026-07-22:** `pricing-data.js` is seeded with PLACEHOLDER numbers
-> (structure from the Guthrie reference). Jacob must replace them with his
-> real 2026 rates before promoting /book and /pricing. The booking-form
-> terms (book.html step 7) also await Jacob's/legal review.
-
 The complete guide to Jacob Schrader's photography-business platform.
 Chronological build history lives in `docs/CHANGELOG.md`. This file is the
 current-state reference.
@@ -243,8 +238,6 @@ Google Places key is NOT an env var — stored in admin Settings (DB).
 
 ## 11. Outstanding / known items
 
-- **Placeholder pricing** in pricing-data.js — swap in Jacob's real 2026
-  numbers (see banner at top of this file).
 - **Booking-form terms** (book.html step 7) need Jacob's/legal review —
   esp. the payment clause (currently "due on final invoice").
 - **Add subdomains in Vercel** (Settings → Domains): form., pricing.,

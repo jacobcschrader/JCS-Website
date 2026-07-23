@@ -2,17 +2,8 @@
 //  JCS PRICING — the single source of truth for public pricing.
 //  Powers BOTH the booking form (/book) and the pricing page (/pricing).
 //
-//  Structure mirrors Jacob's JCS-Pricing sheet (2026-07-22):
-//  PHOTOGRAPHY (flash/ambient by property size; aerial, vertical/
-//  vignette, twilight as flat line items) · VIDEOGRAPHY (cinematic film,
-//  social reel, twilight video; Zillow 3D by size) · ADD-ONS (floor
-//  plan, virtual staging, virtual twilight, property website).
-//
-//  ⚠️⚠️ PLACEHOLDER NUMBERS ⚠️⚠️
-//  The price cells in Jacob's sheet were still blank when it was shared,
-//  so every dollar figure below is a stand-in. Swap in the real 2026
-//  rates as soon as Jacob provides them — numbers only, the structure
-//  is final.
+//  Rates confirmed by Jacob 2026-07-22 (JCS-Pricing sheet). To change a
+//  price, edit the number here — never in the pages.
 //
 //  HOW PRICING WORKS
 //  - `tiers`: 5 prices for 0–2,000 / 2,000–3,000 / 3,000–4,000 /
@@ -35,13 +26,13 @@
       name: "Flash / Ambient Photography",
       desc: "Editorial, magazine-quality stills — flash-and-ambient frames hand-blended for a true luxury look. Priced by property size.",
       includes: "Edited high-res images · Web & print-ready",
-      tiers: [800, 950, 1200, 1350, 1500],
+      tiers: [500, 750, 1000, 1250, 1500],
       addons: [
-        { name: "Aerial Photography", price: 250, note: "Drone stills" },
-        { name: "Vertical / Vignette Images", price: 350, note: "Social-crop set" },
-        { name: "Twilight Photography", price: 350, note: "Golden-hour / dusk session" },
-        { name: "Virtual Staging", price: 50, unit: "image" },
-        { name: "Virtual Twilight", price: 150 }
+        { name: "Aerial Photography", price: 150, note: "Drone stills" },
+        { name: "Vertical / Vignette Images", price: 200, note: "Social-crop set" },
+        { name: "Twilight Photography", price: 250, note: "Golden-hour / dusk session" },
+        { name: "Virtual Staging", price: 25, unit: "image" },
+        { name: "Virtual Twilight", price: 25, unit: "image" }
       ]
     },
     {
@@ -49,9 +40,9 @@
       name: "Cinematic Film",
       desc: "A horizontal listing film that tells the property's story — drone coverage, licensed music, and world-class editing.",
       includes: "Aerial drone · Licensed music · Branded + unbranded cuts",
-      price: 1800,
+      price: 950,
       addons: [
-        { name: "Twilight Videography", price: 350, note: "Dusk film add-on" }
+        { name: "Twilight Videography", price: 250, note: "Dusk film add-on" }
       ]
     },
     {
@@ -59,15 +50,15 @@
       name: "Social Reel",
       desc: "A vertical 9:16 reel of the listing, cut for Instagram and social-first marketing.",
       includes: "Vertical 60–90s edit · Social-ready",
-      price: 800,
+      price: 950,
       addons: [
-        { name: "Twilight Videography", price: 350, note: "Dusk film add-on" }
+        { name: "Twilight Videography", price: 250, note: "Dusk film add-on" }
       ]
     },
     {
       key: "custom",
       name: "Something Else",
-      desc: "Design work, a property website, or something not listed? Select this and tell me what you have in mind.",
+      desc: "Design work or something not listed? Select this and tell me what you have in mind.",
       includes: "",
       quote: true,
       addons: []
@@ -76,18 +67,17 @@
 
   // Extras — offered on every shoot regardless of the services chosen.
   var EXTRAS = [
-    { name: "Zillow 3D Tour", tiers: [300, 400, 500, 600, 700] },
-    { name: "2D Floor Plan", price: 100, note: "Branded schematic" },
-    { name: "Property Website", price: 500, note: "Single-listing site" }
+    { name: "Zillow 3D Tour", tiers: [250, 300, 350, 400, 500] },
+    { name: "2D Floor Plan", price: 50, note: "Branded schematic" },
+    { name: "Property Website", price: 350, note: "Single-listing site" }
   ];
 
   // Stand-alone / à la carte (pricing page only).
   var ALACARTE = [
-    { name: "Aerial Photography only", price: 250 },
-    { name: "2D Floor Plan", price: 100 },
-    { name: "Virtual Staging (per image)", price: 50 },
-    { name: "Virtual Twilight (per image)", price: 150 },
-    { name: "Property Website", price: 500 }
+    { name: "2D Floor Plan", price: 50 },
+    { name: "Virtual Staging (per image)", price: 25 },
+    { name: "Virtual Twilight (per image)", price: 25 },
+    { name: "Property Website", price: 350 }
   ];
 
   // sqft → tier index (0–4). The top bracket is open-ended, so every

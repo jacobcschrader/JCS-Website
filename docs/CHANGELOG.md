@@ -925,3 +925,11 @@ title, else a navy JCS monogram tile.
   Cormorant-300 step headings, 19px serif subcopy, serif slate (--accent)
   prices, blurred bone sticky footer (rgba paper .92 + blur 10px), navy
   11px-radius Continue button. Verified steps 1/2/4/7 in the browser.
+
+### Real 2026 rates in (same day, later)
+- pricing-data.js updated with Jacob's confirmed numbers: Flash/Ambient
+  500/750/1000/1250/1500 by bracket; Aerial 150, Vertical/Vignette 200,
+  Twilight Photo 250; Cinematic Film 950, Social Reel 950, Twilight
+  Video 250; Zillow 3D 250/300/350/400/500; Floor Plan 50, Virtual
+  Staging 25/img, Virtual Twilight 25/img (now per-image), Property
+  Website 350. Placeholder banners removed from CLAUDE.md/HANDOFF.md.

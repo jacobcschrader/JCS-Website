@@ -25,8 +25,8 @@ Three surfaces: public site, /admin SPA (admin.html), client pages
 - All email goes through `sendEmail`/`jcsEmail` in `api/_lib/email.js`.
   Reply-to is always Jacob's gmail. Subjects: `{Property} | {Event}`.
 - **Public prices live ONLY in `pricing-data.js`** (drives /book and
-  /pricing). Never hardcode a price into a page. Current numbers are
-  PLACEHOLDERS pending Jacob's real rates.
+  /pricing). Never hardcode a price into a page. Rates confirmed by
+  Jacob 2026-07-22.
 - DB schema is created idempotently in `api/_lib/db.js` — add new
   tables/columns there (CREATE/ALTER IF NOT EXISTS), no migrations.
 - After editing RAW_PROJECTS in `projects-data.js`, run
